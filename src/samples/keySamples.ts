@@ -1,4 +1,4 @@
-import { StoreKey } from '../types';
+import { StorageKey } from '../@types';
 
 enum EnumSample {
   Light, Dark
@@ -6,38 +6,44 @@ enum EnumSample {
 
 const keySamples = {
   stringSample: {
-    namespace: 'typeStore',
+    namespace: 'type-storage',
     key: 'string-sample',
-    defaultValue: 'light',
-  } as StoreKey<'light' | 'dark'>,
+    defaultValue: 'string',
+  } as StorageKey<string>,
 
   booleanSample: {
-    namespace: 'typeStore',
+    namespace: 'type-storage',
     key: 'boolean-sample',
     defaultValue: true,
-  } as StoreKey<boolean>,
+  } as StorageKey<boolean>,
 
   numberSample: {
-    namespace: 'typeStore',
+    namespace: 'type-storage',
     key: 'number-sample',
     defaultValue: 10,
-  } as StoreKey<number>,
+  } as StorageKey<number>,
 
   objectSample: {
-    namespace: 'typeStore',
+    namespace: 'type-storage',
     key: 'object-sample',
     defaultValue: { darkMode: false, fontSize: 16 },
-  } as StoreKey<{ darkMode: boolean; fontSize: number }>,
+  } as StorageKey<{ darkMode: boolean; fontSize: number }>,
 
   enumSample: {
-    namespace: 'typeStore',
+    namespace: 'type-storage',
     key: 'enum-sample',
     defaultValue: EnumSample.Dark,
-  } as StoreKey<EnumSample>,
+  } as StorageKey<EnumSample>,
 
   undefinedSample: {
-    namespace: 'typeStore',
+    namespace: 'type-storage',
     key: 'nullable-sample',
     defaultValue: undefined,
-  } as StoreKey<string | undefined>,
+  } as StorageKey<string | undefined>,
+
+  literalSample: {
+    namespace: 'type-storage',
+    key: 'string-sample',
+    defaultValue: 'light',
+  } as StorageKey<'light' | 'dark'>,
 } as const;

@@ -1,13 +1,13 @@
-import { Serializable, StoreKey } from './types';
+import { Serializable, StorageKey } from './@types';
 
-export class TypeStore {
+export class TypeStorage {
 
   /**
    * Returns the current value associated with the given key, or null if the given key does not exist.
    *
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Storage/getItem)
    */
-  static get<T extends Serializable>(key: StoreKey<T>): T | null {
+  static get<T extends Serializable>(key: StorageKey<T>): T | null {
     const fullKey = this.getFullKey(key.namespace, key.key);
     const storedValue = localStorage.getItem(fullKey);
 
@@ -31,7 +31,7 @@ export class TypeStore {
    *
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Storage/setItem)
    */
-  static save<T extends Serializable>(key: StoreKey<T>, value: T): void {
+  static save<T extends Serializable>(key: StorageKey<T>, value: T): void {
     const fullKey = this.getFullKey(key.namespace, key.key);
     localStorage.setItem(fullKey, JSON.stringify(value));
   }
@@ -43,12 +43,12 @@ export class TypeStore {
    *
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Storage/removeItem)
    */
-  static remove<T extends Serializable>(storeKey: StoreKey<T>): void {
+  static remove<T extends Serializable>(storeKey: StorageKey<T>): void {
     const fullKey = this.getFullKey(storeKey.namespace, storeKey.key);
     localStorage.removeItem(fullKey);
   }
 
-  static has(storeKey: StoreKey<Serializable>): boolean {
+  static has(storeKey: StorageKey<Serializable>): boolean {
     const fullKey = this.getFullKey(storeKey.namespace, storeKey.key);
     return localStorage.getItem(fullKey) !== null;
   }
