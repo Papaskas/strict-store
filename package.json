@@ -5,7 +5,7 @@
     "name": "Pavel",
     "url": "https://github/Papaskas"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
