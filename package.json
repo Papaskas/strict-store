@@ -1,5 +1,11 @@
 {
   "name": "TypeStore",
+  "author": {
+    "email": "pavel.glugxix@gmail.com",
+    "name": "Pavel",
+    "url": "https://github/Papaskas"
+  },
+  "license": "MIT",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
