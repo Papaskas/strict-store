@@ -8,7 +8,7 @@ export class TypeStorage {
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Storage/getItem)
    */
   static get<T extends Serializable>(key: StorageKey<T>): T | null {
-    const fullKey = this.getFullKey(key.namespace, key.key);
+    const fullKey = this.getFullKey(key.ns, key.key);
     const storedValue = localStorage.getItem(fullKey);
 
     if (storedValue === null) {
@@ -32,7 +32,7 @@ export class TypeStorage {
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Storage/setItem)
    */
   static save<T extends Serializable>(key: StorageKey<T>, value: T): void {
-    const fullKey = this.getFullKey(key.namespace, key.key);
+    const fullKey = this.getFullKey(key.ns, key.key);
     localStorage.setItem(fullKey, JSON.stringify(value));
   }
 
@@ -44,12 +44,12 @@ export class TypeStorage {
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Storage/removeItem)
    */
   static remove<T extends Serializable>(storeKey: StorageKey<T>): void {
-    const fullKey = this.getFullKey(storeKey.namespace, storeKey.key);
+    const fullKey = this.getFullKey(storeKey.ns, storeKey.key);
     localStorage.removeItem(fullKey);
   }
 
   static has(storeKey: StorageKey<Serializable>): boolean {
-    const fullKey = this.getFullKey(storeKey.namespace, storeKey.key);
+    const fullKey = this.getFullKey(storeKey.ns, storeKey.key);
     return localStorage.getItem(fullKey) !== null;
   }
 
@@ -64,15 +64,15 @@ export class TypeStorage {
     localStorage.clear();
   }
 
-  static clearNamespace(namespace: string): void {
+  static clearNamespace(ns: string): void {
     Object.keys(localStorage).forEach(key => {
-      if (key.startsWith(`${namespace}:`)) {
+      if (key.startsWith(`${ns}:`)) {
         localStorage.removeItem(key);
       }
     });
   }
 
-  private static getFullKey(namespace: string, key: string): string {
-    return `${namespace}:${key}`
+  private static getFullKey(ns: string, key: string): string {
+    return `${ns}:${key}`
   }
 }
