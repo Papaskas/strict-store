@@ -1,7 +1,6 @@
 import { TypeStorage } from '../src/TypeStorage';
 
 describe('TypeStorage', () => {
-  // Тестовые ключи
   const stringKey = { ns: 'test', key: 'string', defaultValue: 'default' };
   const numberKey = { ns: 'test', key: 'number', defaultValue: 42 };
   const boolKey = { ns: 'test', key: 'bool', defaultValue: true };

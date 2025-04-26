@@ -10,7 +10,8 @@
   "description": "TypeScript-first wrapper for localStorage with strict typing, serialization and namespace support. Safely work with typed data instead of raw strings",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest"
   },
   "dependencies": {},
   "devDependencies": {
