@@ -11,8 +11,7 @@ Supported types:
 > - bigint 
 > - boolean
 > - object 
-> - array< any >
-> - array< T >
+> - array
 > - null
 > - enum
 > - union
@@ -45,7 +44,7 @@ export const keys = {
   user: {
     ns: 'app',
     key: 'user',
-    defaultValue: { first_name: null, last_name: null },
+    defaultValue: { first_name: null, last_name: null, age: null },
   } as StoreKey<User>,
 
   theme: {
