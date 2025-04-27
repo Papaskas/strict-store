@@ -26,23 +26,23 @@ Supported types:
 ### Usage example
 
 ```typescript
-TypeStorage.save(keys.username, 'papaska') // Only the string is allowed
-const username: string = TypeStorage.get(keys.username) // Return the string type
+StrictStore.save(keys.username, 'papaska') // Only the string is allowed
+const username: string = StrictStore.get(keys.username) // Return the string type
 
 type User = {
   first_name: string | null;
   last_name: string | null;
 };
 
-TypeStorage.get(keys.user) // Return default value (first_name: null, last_name: null)
+StrictStore.get(keys.user) // Return default value (first_name: null, last_name: null)
 
 const user: User = {
   first_name: 'Pavel',
   last_name: 'Dev',
 };
 
-TypeStorage.save(keys.user, user) // Only the User type is allowed
-const newUser: User = TypeStorage.get(keys.user) // Return object value 
+StrictStore.save(keys.user, user) // Only the User type is allowed
+const newUser: User = StrictStore.get(keys.user) // Return object value 
 ```
 
 ### Sample keys
@@ -56,18 +56,18 @@ export const keys = {
     ns: 'app',
     key: 'user_name',
     defaultValue: '',
-  } as StorageKey<string>,
+  } as StoreKey<string>,
 
   user: {
     ns: 'app',
     key: 'user',
     defaultValue: { first_name: null, last_name: null },
-  } as StorageKey<User>,
+  } as StoreKey<User>,
 
   theme: {
     ns: 'app',
     key: 'theme',
     defaultValue: Theme.Light,
-  } as StorageKey<Theme>,
+  } as StoreKey<Theme>,
 } as const;
 ```

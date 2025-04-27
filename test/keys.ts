@@ -1,4 +1,4 @@
-import { StorageKey } from '../src/@types';
+import { StoreKey } from '../src/@types';
 
 enum EnumTest {
   Light, Dark
@@ -9,41 +9,41 @@ export const keys = {
     ns: 'type-storage-test',
     key: 'string-test',
     defaultValue: 'string value',
-  } as StorageKey<string>,
+  } as StoreKey<string>,
 
   booleanKey: {
     ns: 'type-storage-test',
     key: 'boolean-test',
     defaultValue: true,
-  } as StorageKey<boolean>,
+  } as StoreKey<boolean>,
 
   numberKey: {
     ns: 'type-storage-test',
     key: 'number-test',
     defaultValue: 10,
-  } as StorageKey<number>,
+  } as StoreKey<number>,
 
   objectKey: {
     ns: 'type-storage-test',
     key: 'object-test',
     defaultValue: { darkMode: false, fontSize: 16 },
-  } as StorageKey<{ darkMode: boolean; fontSize: number }>,
+  } as StoreKey<{ darkMode: boolean; fontSize: number }>,
 
   enumKey: {
     ns: 'type-storage-test',
     key: 'enum-test',
     defaultValue: EnumTest.Dark,
-  } as StorageKey<EnumTest>,
+  } as StoreKey<EnumTest>,
 
   nullableKey: {
     ns: 'type-storage-test',
     key: 'nullable-test',
     defaultValue: null,
-  } as StorageKey<string | null>,
+  } as StoreKey<string | null>,
 
   literalKey: {
     ns: 'type-storage-test',
     key: 'string-test',
     defaultValue: 'light',
-  } as StorageKey<'light' | 'dark'>,
+  } as StoreKey<'light' | 'dark'>,
 } as const;

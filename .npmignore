@@ -1,8 +1,13 @@
 src
 test
+
+node_modules
+
 tsconfig.json
 jest.config.ts
+
 .idea
+
 .git
 .github
 .gitignore

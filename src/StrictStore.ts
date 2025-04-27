@@ -1,4 +1,4 @@
-import { Serializable, StorageKey } from './@types';
+import { Serializable, StoreKey } from './@types';
 
 /**
  * A type-safe wrapper around localStorage that provides:
@@ -12,25 +12,25 @@ import { Serializable, StorageKey } from './@types';
  *    ns: 'app',
  *    key: 'theme',
  *    defaultValue: 'light'
- * } as StorageKey<'light' | 'dark'>;
+ * } as StoreKey<'light' | 'dark'>;
  *
- * TypeStorage.save(key, 'dark');
- * const theme = TypeStorage.get(key); // Typed as literal
+ * StrictStore.save(key, 'dark');
+ * const theme = StrictStore.get(key); // Typed as literal
  * ```
  */
-export class TypeStorage {
+export class StrictStore {
 
   /**
    * Retrieves a value from storage. Returns defaultValue if key doesn't exist.
    *
-   * @typeParam T - Type of the stored value (inferred from StorageKey)
-   * @param key - StorageKey object containing namespace, key and default value
+   * @typeParam T - Type of the stored value (inferred from StoreKey)
+   * @param key - StoreKey object containing namespace, key and default value
    * @returns The stored value or defaultValue if not found
    *
    * @example
    * ```ts
    * // Returns 'light' if not found
-   * const theme = TypeStorage.get({
+   * const theme = StrictStore.get({
    *   ns: 'ui',
    *   key: 'theme',
    *   defaultValue: 'light'
@@ -41,7 +41,7 @@ export class TypeStorage {
    * - Automatically handles JSON parsing
    * - Returns defaultValue for non-existent keys
    */
-  static get<T extends Serializable>(key: StorageKey<T>): T {
+  static get<T extends Serializable>(key: StoreKey<T>): T {
     const fullKey = this.getFullKey(key.ns, key.key);
     const storedValue = localStorage.getItem(fullKey);
 
@@ -59,13 +59,13 @@ export class TypeStorage {
   /**
    * Saves a value to storage with automatic serialization.
    *
-   * @typeParam T - Type of the stored value (inferred from StorageKey)
-   * @param key - StorageKey object containing namespace and key
+   * @typeParam T - Type of the stored value (inferred from StoreKey)
+   * @param key - StoreKey object containing namespace and key
    * @param value - Value to store (will be JSON.stringified)
    *
    * @example
    * ```ts
-   * TypeStorage.save(
+   * StrictStore.save(
    *   { ns: 'user', key: 'token', defaultValue: undefined },
    *   456156150501
    * );
@@ -75,7 +75,7 @@ export class TypeStorage {
    * - Overwrites existing values
    * - Supports all JSON-serializable values
    */
-  static save<T extends StorageKey<any>>(key: T, value: T['defaultValue']): void {
+  static save<T extends StoreKey<any>>(key: T, value: T['defaultValue']): void {
     const fullKey = this.getFullKey(key.ns, key.key);
     localStorage.setItem(fullKey, JSON.stringify(value, this.replacer));
   }
@@ -83,19 +83,19 @@ export class TypeStorage {
   /**
    * Removes a key-value pair from storage.
    *
-   * @typeParam T - Type parameter for StorageKey consistency
-   * @param key - StorageKey object identifying item to remove
+   * @typeParam T - Type parameter for StoreKey consistency
+   * @param key - StoreKey object identifying item to remove
    *
    * @example
    * ```ts
-   * TypeStorage.remove({ ns: 'temp', key: 'cache' });
+   * StrictStore.remove({ ns: 'temp', key: 'cache' });
    * ```
    *
    * @remarks
    * - Silent if key doesn't exist
    * - Namespace-aware operation
    */
-  static remove<T extends Serializable>(key: StorageKey<T>): void {
+  static remove<T extends Serializable>(key: StoreKey<T>): void {
     const fullKey = this.getFullKey(key.ns, key.key);
     localStorage.removeItem(fullKey);
   }
@@ -103,7 +103,7 @@ export class TypeStorage {
   /**
    * Checks if a key exists in localStorage.
    *
-   * @param key - StorageKey object containing namespace and key identifier
+   * @param key - StoreKey object containing namespace and key identifier
    * @returns `true` if the key exists, `false` otherwise
    *
    * @example
@@ -114,7 +114,7 @@ export class TypeStorage {
    * @remarks
    * - Does not validate the stored value, only checks key presence
    */
-  static has<T extends Serializable>(key: StorageKey<T>): boolean {
+  static has<T extends Serializable>(key: StoreKey<T>): boolean {
     const fullKey = this.getFullKey(key.ns, key.key);
     return localStorage.getItem(fullKey) !== null;
   }
@@ -126,8 +126,8 @@ export class TypeStorage {
    *
    * @example
    * ```ts
-   * if (TypeStorage.countItems > 100) {
-   *   TypeStorage.clear();
+   * if (StrictStore.countItems > 100) {
+   *   StrictStore.clear();
    * }
    * ```
    */
@@ -140,7 +140,7 @@ export class TypeStorage {
    *
    * @example
    * ```ts
-   * TypeStorage.clear(); // Full reset
+   * StrictStore.clear(); // Full reset
    * ```
    *
    * @remarks
