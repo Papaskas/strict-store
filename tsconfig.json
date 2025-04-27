@@ -6,11 +6,12 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
+    "strictNullChecks": true,
     "outDir": "dist",
     "baseUrl": "./src",
     "paths": {
       "@src/*": ["src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }
