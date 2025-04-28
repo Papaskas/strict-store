@@ -23,10 +23,21 @@ Supported types:
 ## Samples
 
 ### Sample keys
+
 ```typescript
+import { StoreKey } from './@types';
+
 enum Theme {
   Light, Dark
 }
+
+type User = {
+  first_name: string | null;
+  last_name: string | null;
+  age: number | null;
+}
+
+type UserRole = 'guest' | 'user' | 'verified'
 
 export const keys = {
   username: {
@@ -47,12 +58,18 @@ export const keys = {
     defaultValue: { first_name: null, last_name: null, age: null },
   } as StoreKey<User>,
 
+  user_role: {
+    ns: 'app',
+    key: 'user_role',
+    defaultValue: 'guest',
+  } as StoreKey<UserRole>,
+
   theme: {
     ns: 'app',
     key: 'theme',
     defaultValue: Theme.Light,
   } as StoreKey<Theme>,
-} as const;
+} as const
 ```
 
 ### Usage example
@@ -68,18 +85,21 @@ const user_age: number = StrictStore.get(keys.user_age) // Return the number typ
 
 #### Advanced types
 ```typescript
-type User = {
-  first_name: string | null;
-  last_name: string | null;
-  age: number | null;
-};
-
+// Object
 const user: User = {
   first_name: 'John',
   last_name: 'Dev',
   age: 35,
-};
+}
 
 StrictStore.save(keys.user, user) // Only the User type is allowed
-const savedUser: User = StrictStore.get(keys.user) // Return object value 
+const savedUser: User = StrictStore.get(keys.user) // Return object value
+
+// Enum
+StrictStore.save(keys.theme, Theme.Dark) // Only the enum is allowed
+const savedTheme: Theme = StrictStore.get(keys.theme) // Return enum value
+
+// Literal type
+StrictStore.save(keys.user_role, 'verified') // Only the literal type is allowed ('guest' 'user' 'verified')
+const savedUserRole: UserRole = StrictStore.get(keys.user_role) // Return literal value
 ```
