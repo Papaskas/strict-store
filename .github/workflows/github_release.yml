@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows:
+      - 'Tests'
+    types:
+      - completed
+
+  pull_request:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      contains(github.ref, 'refs/tags/v')
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: yarn build
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/*.js
+            dist/*.d.ts
+            package.json
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
