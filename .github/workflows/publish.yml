@@ -33,9 +33,7 @@ jobs:
       - name: Get package version
         id: package-version
         run: echo "current-version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-      - name: Publish stable
-        run: |
-          npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
-          npm publish --provenance --access public --tag ${{ steps.package-version.outputs.current-version || 'latest' }}
-#        env:
-#          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish
+        run: npm publish --provenance --access public --tag ${{ steps.package-version.outputs.current-version || 'latest' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
