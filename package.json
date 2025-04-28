@@ -8,7 +8,7 @@
   "repository": "github:Papaskas/strict-store",
   "keywords": ["localStorage", "TypeScript", "storage"],
   "license": "Apache-2.0",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TypeScript-first wrapper for localStorage with strict typing, serialization and namespace support. Safely work with typed data instead of raw strings",
   "main": "dist/index.js",
   "scripts": {
