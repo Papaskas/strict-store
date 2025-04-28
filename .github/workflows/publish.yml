@@ -1,6 +1,8 @@
 name: Publish
 on:
-  release
+  release:
+    types:
+      - published
 
 jobs:
   test:
@@ -18,21 +20,14 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
       - run: yarn build
 
-      - name: Publish beta
-        if: github.event.prerelease == true
-        run: npm publish --tag beta
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-
       - name: Publish stable
-        if: github.event.prerelease == false
-        run: npm publish --tag beta
+        run: npm publish --tag latest
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
