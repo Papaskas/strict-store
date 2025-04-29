@@ -8,19 +8,21 @@ import { Serializable, StoreKey } from '@types';
  *
  * @example
  * ```ts
- * const key = {
- *    ns: 'app',
- *    key: 'theme',
- *    defaultValue: 'light'
- * } as StoreKey<'light' | 'dark'>;
+ * const key = createKey<'light', 'dark'>(
+ *  'app',
+ *  'theme',
+ *  'light'
+ * );
  *
- * StrictStore.save(key, 'dark');
- * const theme = StrictStore.get(key); // Typed as literal
+ * strictStore.save(key, 'dark'); // Only the literal type is allowed
+ * const theme: 'light' | 'dark' = StrictStore.get(key); // Return the literal type
  * ```
  */
 export const strictStore = {
+
   /**
-   * Retrieves a value from storage. Returns defaultValue if key doesn't exist.
+   * Retrieves a value from storage.
+   * Returns `defaultValue` if key doesn't exist.
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
    * @param key - StoreKey object containing namespace, key and default value
@@ -28,12 +30,13 @@ export const strictStore = {
    *
    * @example
    * ```ts
-   * // Returns 'light' if not found
-   * const theme = StrictStore.get({
-   *   ns: 'ui',
-   *   key: 'theme',
-   *   defaultValue: 'light'
-   * });
+   * const themeKey = createKey<'light', 'dark'>(
+   *  'app',
+   *  'theme',
+   *  'light'
+   * );
+   *
+   * const theme: 'light' | 'dark' = strictStore.get(themeKey);
    * ```
    *
    * @remarks
@@ -64,10 +67,14 @@ export const strictStore = {
    *
    * @example
    * ```ts
-   * StrictStore.save(
-   *   { ns: 'user', key: 'token', defaultValue: undefined },
-   *   456156150501
+   * const themeKey = createKey<'light', 'dark'>(
+   *  'app',
+   *  'theme',
+   *  'light'
    * );
+   *
+   * // Only the literal type is allowed
+   * strictStore.save(themeKey, 'dark');
    * ```
    *
    * @remarks
@@ -87,7 +94,13 @@ export const strictStore = {
    *
    * @example
    * ```ts
-   * StrictStore.remove({ ns: 'temp', key: 'cache' });
+   * const themeKey = createKey<'light', 'dark'>(
+   *  'app',
+   *  'theme',
+   *  'light'
+   * );
+   *
+   * strictStore.remove(themeKey);
    * ```
    *
    * @remarks
@@ -107,11 +120,18 @@ export const strictStore = {
    *
    * @example
    * ```ts
-   * const exists: boolean = TypedStorage.has({ ns: 'app', key: 'settings' });
+   * const themeKey = createKey<'light', 'dark'>(
+   *  'app',
+   *  'theme',
+   *  'light'
+   * );
+   *
+   * const exists: boolean = strictStore.has(themeKey);
    * ```
    *
    * @remarks
    * - Does not validate the stored value, only checks key presence
+   * - If the value is null, it returns false
    */
   has<T extends Serializable>(key: StoreKey<T>): boolean {
     const fullKey = getFullKey(key.ns, key.key);
@@ -125,8 +145,8 @@ export const strictStore = {
    *
    * @example
    * ```ts
-   * if (StrictStore.countItems > 100) {
-   *   StrictStore.clear();
+   * if (strictStore.countItems > 100) {
+   *   strictStore.clear();
    * }
    * ```
    */
@@ -139,7 +159,7 @@ export const strictStore = {
    *
    * @example
    * ```ts
-   * StrictStore.clear(); // Full reset
+   * strictStore.clear(); // Full reset
    * ```
    *
    * @remarks
@@ -157,7 +177,7 @@ export const strictStore = {
    *
    * @example
    * ```ts
-   * TypedStorage.clearNamespace('auth'); // Removes all 'auth:*' keys
+   * strictStore.clearNamespace('auth'); // Removes all 'auth:*' keys
    * ```
    *
    * @remarks
