@@ -1,2 +1,2 @@
-export { strictStore } from './strictStore';
-export { createKey } from './createKey';
+export { strictStore } from '@src/strictStore';
+export { createKey } from '@src/createKey';

@@ -1,5 +1,5 @@
-import { createKey } from '../src';
-import { Theme, User } from './@types';
+import { createKey } from '@src/createKey';
+import { Theme, User } from '@test/@types';
 
 export const keys = {
   stringKey: createKey<string>(

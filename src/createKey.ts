@@ -1,4 +1,4 @@
-import { Serializable, StoreKey } from '@types';
+import { Serializable, StoreKey } from '@src/@types';
 
 /**
  * Creates a type-safe store key object for use with strictStore.

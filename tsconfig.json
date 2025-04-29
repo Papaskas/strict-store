@@ -11,9 +11,10 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "outDir": "dist",
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@src/*": ["src/*"]
+      "@src/*": ["src/*"],
+      "@test/*": ["test/*"]
     }
   },
   "include": ["src", "test"],

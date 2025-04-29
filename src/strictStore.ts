@@ -1,4 +1,4 @@
-import { Serializable, StoreKey } from '@types';
+import { Serializable, StoreKey } from '@src/@types';
 
 /**
  * A type-safe wrapper around localStorage that provides:

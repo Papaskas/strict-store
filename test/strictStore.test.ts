@@ -1,7 +1,7 @@
-import { createKey } from '../src';
-import { strictStore } from '../src';
-import { keys } from './keys';
-import { Theme, User } from './@types';
+import { createKey } from '@src/createKey';
+import { strictStore } from '@src/strictStore';
+import { keys } from '@test/keys';
+import { Theme, User } from '@test/@types';
 
 describe('strictStore', () => {
   beforeEach(() => {

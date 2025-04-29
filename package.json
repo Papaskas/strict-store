@@ -15,9 +15,10 @@
     "storage"
   ],
   "license": "Apache-2.0",
-  "version": "1.0.11",
+  "version": "2.0.1-beta",
   "description": "TypeScript-first wrapper for localStorage with strict typing, serialization and namespace support. Safely work with typed data instead of raw strings",
   "main": "dist/index.js",
+  "types": "dist/@types.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest"
@@ -30,6 +31,9 @@
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.9.0"
   },
   "private": false,
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"

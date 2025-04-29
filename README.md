@@ -21,6 +21,9 @@ Supported types:
 - When using complex types, avoid using undefined
 - The createKey method uses `satisfies`
 
+## Required
+- TypeScript >=4.9.0
+
 ## Samples
 
 ### Sample keys
