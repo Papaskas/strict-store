@@ -25,8 +25,6 @@ Supported types:
 ### Sample keys
 
 ```typescript
-import { StoreKey } from './@types';
-
 enum Theme {
   Light, Dark
 }
