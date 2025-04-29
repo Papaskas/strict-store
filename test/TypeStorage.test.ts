@@ -1,5 +1,5 @@
-import { StoreKey } from '../src/@types';
-import { StrictStore } from '../src/StrictStore';
+import { StoreKey } from '../src';
+import { StrictStore } from '../src';
 import { keys } from './keys';
 
 describe('StrictStore', () => {
