@@ -1,2 +1,2 @@
-export { StrictStore } from 'StrictStore';
-export { StoreKey, Serializable } from '@types';
+export { strictStore } from './strictStore';
+export { createKey } from './createKey';

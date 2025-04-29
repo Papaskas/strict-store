@@ -18,8 +18,7 @@ import { Serializable, StoreKey } from '@types';
  * const theme = StrictStore.get(key); // Typed as literal
  * ```
  */
-export class StrictStore {
-
+export const strictStore = {
   /**
    * Retrieves a value from storage. Returns defaultValue if key doesn't exist.
    *
@@ -41,8 +40,8 @@ export class StrictStore {
    * - Automatically handles JSON parsing
    * - Returns defaultValue for non-existent keys
    */
-  static get<T extends Serializable>(key: StoreKey<T>): T {
-    const fullKey = this.getFullKey(key.ns, key.key);
+  get<T extends Serializable>(key: StoreKey<T>): T {
+    const fullKey = getFullKey(key.ns, key.key);
     const storedValue = localStorage.getItem(fullKey);
 
     if (storedValue === null) {
@@ -50,11 +49,11 @@ export class StrictStore {
     }
 
     try {
-      return JSON.parse(storedValue, this.reviver) as T;
+      return JSON.parse(storedValue, reviver) as T;
     } catch {
       return storedValue as T;
     }
-  }
+  },
 
   /**
    * Saves a value to storage with automatic serialization.
@@ -75,10 +74,10 @@ export class StrictStore {
    * - Overwrites existing values
    * - Supports all JSON-serializable values
    */
-  static save<T extends StoreKey<any>>(key: T, value: T['defaultValue']): void {
-    const fullKey = this.getFullKey(key.ns, key.key);
-    localStorage.setItem(fullKey, JSON.stringify(value, this.replacer));
-  }
+  save<T extends StoreKey<any>>(key: T, value: T['defaultValue']): void {
+    const fullKey = getFullKey(key.ns, key.key);
+    localStorage.setItem(fullKey, JSON.stringify(value, replacer));
+  },
 
   /**
    * Removes a key-value pair from storage.
@@ -95,10 +94,10 @@ export class StrictStore {
    * - Silent if key doesn't exist
    * - Namespace-aware operation
    */
-  static remove<T extends Serializable>(key: StoreKey<T>): void {
-    const fullKey = this.getFullKey(key.ns, key.key);
+  remove<T extends Serializable>(key: StoreKey<T>): void {
+    const fullKey = getFullKey(key.ns, key.key);
     localStorage.removeItem(fullKey);
-  }
+  },
 
   /**
    * Checks if a key exists in localStorage.
@@ -114,10 +113,10 @@ export class StrictStore {
    * @remarks
    * - Does not validate the stored value, only checks key presence
    */
-  static has<T extends Serializable>(key: StoreKey<T>): boolean {
-    const fullKey = this.getFullKey(key.ns, key.key);
+  has<T extends Serializable>(key: StoreKey<T>): boolean {
+    const fullKey = getFullKey(key.ns, key.key);
     return localStorage.getItem(fullKey) !== null;
-  }
+  },
 
   /**
    * Gets the total number of items in localStorage.
@@ -131,9 +130,9 @@ export class StrictStore {
    * }
    * ```
    */
-  static get countItems(): number {
+  get countItems(): number {
     return localStorage.length
-  }
+  },
 
   /**
    * Clears all items from localStorage (including non-namespaced).
@@ -147,9 +146,9 @@ export class StrictStore {
    * - Affects entire localStorage, not just typed keys
    * - Irreversible operation
    */
-  static clear() {
+  clear() {
     localStorage.clear();
-  }
+  },
 
   /**
    * Clears all keys in localStorage that belong to a specific namespace.
@@ -164,39 +163,41 @@ export class StrictStore {
    * @remarks
    * This operation is synchronous and affects only keys with matching namespace prefix.
    */
-  static clearNamespace(ns: string): void {
+  clearNamespace(ns: string): void {
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith(`${ns}:`)) {
         localStorage.removeItem(key);
       }
     });
-  }
+  },
+}
 
-  /**
-   * @internal
-   * Generates full storage key by combining namespace and key
-   */
-  private static getFullKey(ns: string, key: string): string {
-    return `${ns}:${key}`
-  }
+/**
+ * @internal
+ * Generates full storage key by combining namespace and key
+ */
+function getFullKey(ns: string, key: string): string {
+  return `${ns}:${key}`
+}
 
-  /**
-   * Custom JSON replacer for BigInt serialization
-   */
-  private static replacer(key: any, value: any) {
-    if (typeof value === 'bigint') {
-      return { __type: 'BigInt', value: value.toString() };
-    }
-    return value;
+/**
+ * @internal
+ * Custom JSON replacer for BigInt serialization
+ */
+function replacer(key: any, value: any) {
+  if (typeof value === 'bigint') {
+    return { __type: 'BigInt', value: value.toString() };
   }
+  return value;
+}
 
-  /**
-   * Custom JSON reviver for BigInt deserialization
-   */
-  private static reviver(key: any, value: any) {
-    if (typeof value === 'object' && value?.__type === 'BigInt') {
-      return BigInt(value.value);
-    }
-    return value;
+/**
+ * @internal
+ * Custom JSON reviver for BigInt deserialization
+ */
+function reviver(key: any, value: any) {
+  if (typeof value === 'object' && value?.__type === 'BigInt') {
+    return BigInt(value.value);
   }
+  return value;
 }
