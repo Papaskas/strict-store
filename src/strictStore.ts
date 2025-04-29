@@ -1,4 +1,4 @@
-import { Serializable, StoreKey } from './@types';
+import { Serializable, StoreKey } from '@src/@types';
 
 /**
  * A type-safe wrapper around localStorage that provides:
@@ -8,20 +8,21 @@ import { Serializable, StoreKey } from './@types';
  *
  * @example
  * ```ts
- * const key = {
- *    ns: 'app',
- *    key: 'theme',
- *    defaultValue: 'light'
- * } as StoreKey<'light' | 'dark'>;
+ * const key = createKey<'light', 'dark'>(
+ *  'app',
+ *  'theme',
+ *  'light'
+ * );
  *
- * StrictStore.save(key, 'dark');
- * const theme = StrictStore.get(key); // Typed as literal
+ * strictStore.save(key, 'dark'); // Only the literal type is allowed
+ * const theme: 'light' | 'dark' = StrictStore.get(key); // Return the literal type
  * ```
  */
-export class StrictStore {
+export const strictStore = {
 
   /**
-   * Retrieves a value from storage. Returns defaultValue if key doesn't exist.
+   * Retrieves a value from storage.
+   * Returns `defaultValue` if key doesn't exist.
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
    * @param key - StoreKey object containing namespace, key and default value
@@ -29,20 +30,21 @@ export class StrictStore {
    *
    * @example
    * ```ts
-   * // Returns 'light' if not found
-   * const theme = StrictStore.get({
-   *   ns: 'ui',
-   *   key: 'theme',
-   *   defaultValue: 'light'
-   * });
+   * const themeKey = createKey<'light', 'dark'>(
+   *  'app',
+   *  'theme',
+   *  'light'
+   * );
+   *
+   * const theme: 'light' | 'dark' = strictStore.get(themeKey);
    * ```
    *
    * @remarks
    * - Automatically handles JSON parsing
    * - Returns defaultValue for non-existent keys
    */
-  static get<T extends Serializable>(key: StoreKey<T>): T {
-    const fullKey = this.getFullKey(key.ns, key.key);
+  get<T extends Serializable>(key: StoreKey<T>): T {
+    const fullKey = getFullKey(key.ns, key.key);
     const storedValue = localStorage.getItem(fullKey);
 
     if (storedValue === null) {
@@ -50,11 +52,11 @@ export class StrictStore {
     }
 
     try {
-      return JSON.parse(storedValue, this.reviver) as T;
+      return JSON.parse(storedValue, reviver) as T;
     } catch {
       return storedValue as T;
     }
-  }
+  },
 
   /**
    * Saves a value to storage with automatic serialization.
@@ -65,20 +67,24 @@ export class StrictStore {
    *
    * @example
    * ```ts
-   * StrictStore.save(
-   *   { ns: 'user', key: 'token', defaultValue: undefined },
-   *   456156150501
+   * const themeKey = createKey<'light', 'dark'>(
+   *  'app',
+   *  'theme',
+   *  'light'
    * );
+   *
+   * // Only the literal type is allowed
+   * strictStore.save(themeKey, 'dark');
    * ```
    *
    * @remarks
    * - Overwrites existing values
    * - Supports all JSON-serializable values
    */
-  static save<T extends StoreKey<any>>(key: T, value: T['defaultValue']): void {
-    const fullKey = this.getFullKey(key.ns, key.key);
-    localStorage.setItem(fullKey, JSON.stringify(value, this.replacer));
-  }
+  save<T extends StoreKey<any>>(key: T, value: T['defaultValue']): void {
+    const fullKey = getFullKey(key.ns, key.key);
+    localStorage.setItem(fullKey, JSON.stringify(value, replacer));
+  },
 
   /**
    * Removes a key-value pair from storage.
@@ -88,17 +94,23 @@ export class StrictStore {
    *
    * @example
    * ```ts
-   * StrictStore.remove({ ns: 'temp', key: 'cache' });
+   * const themeKey = createKey<'light', 'dark'>(
+   *  'app',
+   *  'theme',
+   *  'light'
+   * );
+   *
+   * strictStore.remove(themeKey);
    * ```
    *
    * @remarks
    * - Silent if key doesn't exist
    * - Namespace-aware operation
    */
-  static remove<T extends Serializable>(key: StoreKey<T>): void {
-    const fullKey = this.getFullKey(key.ns, key.key);
+  remove<T extends Serializable>(key: StoreKey<T>): void {
+    const fullKey = getFullKey(key.ns, key.key);
     localStorage.removeItem(fullKey);
-  }
+  },
 
   /**
    * Checks if a key exists in localStorage.
@@ -108,16 +120,23 @@ export class StrictStore {
    *
    * @example
    * ```ts
-   * const exists: boolean = TypedStorage.has({ ns: 'app', key: 'settings' });
+   * const themeKey = createKey<'light', 'dark'>(
+   *  'app',
+   *  'theme',
+   *  'light'
+   * );
+   *
+   * const exists: boolean = strictStore.has(themeKey);
    * ```
    *
    * @remarks
    * - Does not validate the stored value, only checks key presence
+   * - If the value is null, it returns false
    */
-  static has<T extends Serializable>(key: StoreKey<T>): boolean {
-    const fullKey = this.getFullKey(key.ns, key.key);
+  has<T extends Serializable>(key: StoreKey<T>): boolean {
+    const fullKey = getFullKey(key.ns, key.key);
     return localStorage.getItem(fullKey) !== null;
-  }
+  },
 
   /**
    * Gets the total number of items in localStorage.
@@ -126,30 +145,30 @@ export class StrictStore {
    *
    * @example
    * ```ts
-   * if (StrictStore.countItems > 100) {
-   *   StrictStore.clear();
+   * if (strictStore.countItems > 100) {
+   *   strictStore.clear();
    * }
    * ```
    */
-  static get countItems(): number {
+  get countItems(): number {
     return localStorage.length
-  }
+  },
 
   /**
    * Clears all items from localStorage (including non-namespaced).
    *
    * @example
    * ```ts
-   * StrictStore.clear(); // Full reset
+   * strictStore.clear(); // Full reset
    * ```
    *
    * @remarks
    * - Affects entire localStorage, not just typed keys
    * - Irreversible operation
    */
-  static clear() {
+  clear() {
     localStorage.clear();
-  }
+  },
 
   /**
    * Clears all keys in localStorage that belong to a specific namespace.
@@ -158,45 +177,47 @@ export class StrictStore {
    *
    * @example
    * ```ts
-   * TypedStorage.clearNamespace('auth'); // Removes all 'auth:*' keys
+   * strictStore.clearNamespace('auth'); // Removes all 'auth:*' keys
    * ```
    *
    * @remarks
    * This operation is synchronous and affects only keys with matching namespace prefix.
    */
-  static clearNamespace(ns: string): void {
+  clearNamespace(ns: string): void {
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith(`${ns}:`)) {
         localStorage.removeItem(key);
       }
     });
-  }
+  },
+}
 
-  /**
-   * @internal
-   * Generates full storage key by combining namespace and key
-   */
-  private static getFullKey(ns: string, key: string): string {
-    return `${ns}:${key}`
-  }
+/**
+ * @internal
+ * Generates full storage key by combining namespace and key
+ */
+function getFullKey(ns: string, key: string): string {
+  return `${ns}:${key}`
+}
 
-  /**
-   * Custom JSON replacer for BigInt serialization
-   */
-  private static replacer(key: any, value: any) {
-    if (typeof value === 'bigint') {
-      return { __type: 'BigInt', value: value.toString() };
-    }
-    return value;
+/**
+ * @internal
+ * Custom JSON replacer for BigInt serialization
+ */
+function replacer(key: any, value: any) {
+  if (typeof value === 'bigint') {
+    return { __type: 'BigInt', value: value.toString() };
   }
+  return value;
+}
 
-  /**
-   * Custom JSON reviver for BigInt deserialization
-   */
-  private static reviver(key: any, value: any) {
-    if (typeof value === 'object' && value?.__type === 'BigInt') {
-      return BigInt(value.value);
-    }
-    return value;
+/**
+ * @internal
+ * Custom JSON reviver for BigInt deserialization
+ */
+function reviver(key: any, value: any) {
+  if (typeof value === 'object' && value?.__type === 'BigInt') {
+    return BigInt(value.value);
   }
+  return value;
 }

@@ -1,49 +1,70 @@
-import { StoreKey } from '../src/@types';
-
-enum EnumTest {
-  Light, Dark
-}
+import { createKey } from '@src/createKey';
+import { Theme, User } from '@test/@types';
 
 export const keys = {
-  stringKey: {
-    ns: 'type-storage-test',
-    key: 'string-test',
-    defaultValue: 'string value',
-  } as StoreKey<string>,
+  stringKey: createKey<string>(
+    'test-ns',
+    'string',
+    'string value',
+  ),
 
-  booleanKey: {
-    ns: 'type-storage-test',
-    key: 'boolean-test',
-    defaultValue: true,
-  } as StoreKey<boolean>,
+  booleanKey: createKey<boolean>(
+    'test-ns',
+    'boolean',
+    true,
+  ),
 
-  numberKey: {
-    ns: 'type-storage-test',
-    key: 'number-test',
-    defaultValue: 10,
-  } as StoreKey<number>,
+  numberKey: createKey<number>(
+    'test-ns',
+    'number',
+    10,
+  ),
 
-  objectKey: {
-    ns: 'type-storage-test',
-    key: 'object-test',
-    defaultValue: { darkMode: false, fontSize: 16 },
-  } as StoreKey<{ darkMode: boolean; fontSize: number }>,
+  hexKey: createKey<number>(
+    'test-ns',
+    'hex',
+    0XFFFFFF,
+  ),
 
-  enumKey: {
-    ns: 'type-storage-test',
-    key: 'enum-test',
-    defaultValue: EnumTest.Dark,
-  } as StoreKey<EnumTest>,
+  objectKey: createKey<User>(
+    'test-ns',
+    'object',
+    { first_name: null, last_name: null },
+  ),
 
-  nullableKey: {
-    ns: 'type-storage-test',
-    key: 'nullable-test',
-    defaultValue: null,
-  } as StoreKey<string | null>,
+  enumKey: createKey<Theme>(
+    'test-ns',
+    'enum',
+    Theme.Dark,
+  ),
 
-  literalKey: {
-    ns: 'type-storage-test',
-    key: 'string-test',
-    defaultValue: 'light',
-  } as StoreKey<'light' | 'dark'>,
+  nullableStringKey: createKey<string | null>(
+    'test-ns',
+    'nullable-string',
+    null,
+  ),
+
+  literalKey: createKey<'light' | 'dark' | null>(
+    'test-ns',
+    'literal',
+    null,
+  ),
+
+  bigIntKey: createKey<BigInt>(
+    'test-ns',
+    'bigInt',
+    BigInt(88888888888888888),
+  ),
+
+  arrayIntKey: createKey<number[]>(
+    'test-ns',
+    'arrayInt',
+    []
+  ),
+
+  arrayAnyKey: createKey<any[]>(
+    'test-ns',
+    'arrayInt',
+    [0, 'das', false, BigInt(999999999999999999999999999999)],
+  ),
 } as const;

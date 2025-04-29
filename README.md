@@ -19,14 +19,16 @@ Supported types:
 ## Remarks
 - The undefined type is not supported, because JSON converts it to null
 - When using complex types, avoid using undefined
+- The createKey method uses `satisfies`
+
+## Required
+- TypeScript >=4.9.0
 
 ## Samples
 
 ### Sample keys
 
 ```typescript
-import { StoreKey } from './@types';
-
 enum Theme {
   Light, Dark
 }
@@ -37,38 +39,54 @@ type User = {
   age: number | null;
 }
 
-type UserRole = 'guest' | 'user' | 'verified'
-
 export const keys = {
-  username: {
-    ns: 'app',
-    key: 'user_name',
-    defaultValue: '',
-  } as StoreKey<string>,
+  username: createKey<string | null>(
+    'app',
+    'username',
+    null,
+  ),
 
-  user_age: {
-    ns: 'app',
-    key: 'user_age',
-    defaultValue: 0,
-  } as StoreKey<number>,
+  soundEnabled: createKey<boolean>(
+    'app',
+    'soundEnabled',
+    true,
+  ),
+  
+  favouriteColor: createKey<number>(
+    'app',
+    'favourite-color',
+    0XFFFFFF,
+  ),
 
-  user: {
-    ns: 'app',
-    key: 'user',
-    defaultValue: { first_name: null, last_name: null, age: null },
-  } as StoreKey<User>,
+  user: createKey<User>(
+    'app',
+    'user',
+    { first_name: null, last_name: null, age: null },
+  ),
 
-  user_role: {
-    ns: 'app',
-    key: 'user_role',
-    defaultValue: 'guest',
-  } as StoreKey<UserRole>,
+  theme: createKey<Theme>(
+    'app',
+    'theme',
+    Theme.Dark,
+  ),
 
-  theme: {
-    ns: 'app',
-    key: 'theme',
-    defaultValue: Theme.Light,
-  } as StoreKey<Theme>,
+  themeAlt: createKey<'light' | 'dark'>(
+    'app',
+    'themeAlt',
+    'dark',
+  ),
+
+  bigIntKey: createKey<BigInt>(
+    'test-ns',
+    'bigInt',
+    BigInt(88888888888888888),
+  ),
+
+  arrayIntKey: createKey<number[]>(
+    'app',
+    'arrayInt',
+    [100, 45]
+  ),
 } as const
 ```
 
@@ -76,11 +94,11 @@ export const keys = {
 
 #### Primitive types
 ```typescript
-StrictStore.save(keys.username, 'John') // Only the string is allowed
+strictStore.save(keys.username, 'John') // Only the string is allowed
 const username: string = StrictStore.get(keys.username) // Return the string type
 
-StrictStore.save(keys.user_age, 35) // Only the number is allowed
-const user_age: number = StrictStore.get(keys.user_age) // Return the number type
+strictStore.save(keys.soundEnabled, false) // Only the boolean is allowed
+const user_age: boolean = StrictStore.get(keys.soundEnabled) // Return the boolean type
 ```
 
 #### Advanced types
@@ -100,6 +118,6 @@ StrictStore.save(keys.theme, Theme.Dark) // Only the enum is allowed
 const savedTheme: Theme = StrictStore.get(keys.theme) // Return enum value
 
 // Literal type
-StrictStore.save(keys.user_role, 'verified') // Only the literal type is allowed ('guest' 'user' 'verified')
-const savedUserRole: UserRole = StrictStore.get(keys.user_role) // Return literal value
+StrictStore.save(keys.themeAlt, 'light') // Only the literal type is allowed ('light' | 'dark' | null)
+const savedUserRole: 'light' | 'dark' | null = StrictStore.get(keys.themeAlt) // Return literal value
 ```

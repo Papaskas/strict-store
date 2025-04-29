@@ -7,7 +7,8 @@ const config: Config.InitialOptions = {
         '^.+\\.tsx?$': 'ts-jest',
     },
     moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
+        '^@src/(.*)$': '<rootDir>/src/$1',
+        '^@test/(.*)$': '<rootDir>/test/$1',
     },
     testPathIgnorePatterns: ['/node_modules/'],
 };
