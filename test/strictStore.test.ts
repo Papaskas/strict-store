@@ -1,5 +1,4 @@
-import { createKey } from '@src/createKey';
-import { strictStore } from '@src/strictStore';
+import { strictStore, createKey } from '@src/strict-store';
 import { keys } from '@test/keys';
 import { Theme, User } from '@test/@types';
 

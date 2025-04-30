@@ -14,13 +14,24 @@
     "TypeScript",
     "storage"
   ],
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "module": "./dist/strict-store.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/strict-store.mjs",
+      "types": "./dist/strict-store.d.ts"
+    }
+  },
   "license": "Apache-2.0",
-  "version": "2.0.1-beta",
+  "version": "2.1.0",
   "description": "TypeScript-first wrapper for localStorage with strict typing, serialization and namespace support. Safely work with typed data instead of raw strings",
-  "main": "dist/index.js",
-  "types": "dist/@types.d.ts",
+
   "scripts": {
-    "build": "tsc",
+    "build": "vite build",
     "test": "jest"
   },
   "dependencies": {},
@@ -30,7 +41,9 @@
     "jest-environment-jsdom": "^29.7.0",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "vite": "^6.3.4",
+    "vite-plugin-dts": "^4.5.3"
   },
   "peerDependencies": {
     "typescript": ">=4.9.0"
