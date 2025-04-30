@@ -1,4 +1,3 @@
-import { getFullKey, getStorage, replacer, reviver } from '@src/lib'
 import type { Serializable, StoreType, StoreKey } from '@src/types';
 
 /**
@@ -236,4 +235,41 @@ export function createKey<T extends Serializable>(
     defaultValue: defaultValue,
     storeType: storeType,
   } as const satisfies StoreKey<T>;
+}
+
+/**
+ * @internal
+ * */
+const getStorage = (type: StoreType): Storage => {
+  return type === 'local' ? localStorage : sessionStorage;
+}
+
+/**
+ * @internal
+ * Generates full storage key by combining namespace and key
+ */
+function getFullKey(ns: string, key: string): string {
+  return `${ns}:${key}`
+}
+
+/**
+ * @internal
+ * Custom JSON replacer for BigInt serialization
+ */
+function replacer(key: any, value: any) {
+  if (typeof value === 'bigint') {
+    return { __type: 'BigInt', value: value.toString() };
+  }
+  return value;
+}
+
+/**
+ * @internal
+ * Custom JSON reviver for BigInt deserialization
+ */
+function reviver(key: any, value: any) {
+  if (typeof value === 'object' && value?.__type === 'BigInt') {
+    return BigInt(value.value);
+  }
+  return value;
 }
