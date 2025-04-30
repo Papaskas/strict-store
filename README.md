@@ -1,4 +1,4 @@
-# A type-safe wrapper around localStorage that provides:
+# A type-safe wrapper around localStorage and sessionStorage that provides:
  - Automatic JSON serialization/deserialization
  - Namespace support to prevent key collisions
  - Strict typing for all operations
@@ -44,14 +44,17 @@ export const keys = {
     'app',
     'username',
     null,
+    'local'
   ),
 
   soundEnabled: createKey<boolean>(
     'app',
     'soundEnabled',
     true,
+    'session'
   ),
   
+  // Default 'session'
   favouriteColor: createKey<number>(
     'app',
     'favourite-color',

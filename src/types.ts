@@ -26,4 +26,10 @@ export type StoreKey<T extends Serializable> = {
   ns: string;
   key: string;
   defaultValue: T;
+  storeType: StoreType;
 };
+
+/**
+ * @Internal
+ * */
+export type StoreType = 'local' | 'session';

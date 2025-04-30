@@ -1,7 +1,8 @@
-import type { Serializable, StoreKey } from '@src/types';
+import { getFullKey, getStorage, replacer, reviver } from '@src/lib'
+import type { Serializable, StoreType, StoreKey } from '@src/types';
 
 /**
- * A type-safe wrapper around localStorage that provides:
+ * A type-safe wrapper around localStorage and sessionStorage that provides:
  * - Automatic JSON serialization/deserialization
  * - Namespace support to prevent key collisions
  * - Strict typing for all operations
@@ -44,8 +45,9 @@ export const strictStore = {
    * - Returns defaultValue for non-existent keys
    */
   get<T extends Serializable>(key: StoreKey<T>): T {
+    const storage = getStorage(key.storeType);
     const fullKey = getFullKey(key.ns, key.key);
-    const storedValue = localStorage.getItem(fullKey);
+    const storedValue = storage.getItem(fullKey);
 
     if (storedValue === null) {
       return key.defaultValue;
@@ -82,8 +84,10 @@ export const strictStore = {
    * - Supports all JSON-serializable values
    */
   save<T extends StoreKey<any>>(key: T, value: T['defaultValue']): void {
+    const storage = getStorage(key.storeType);
     const fullKey = getFullKey(key.ns, key.key);
-    localStorage.setItem(fullKey, JSON.stringify(value, replacer));
+
+    storage.setItem(fullKey, JSON.stringify(value, replacer));
   },
 
   /**
@@ -108,12 +112,14 @@ export const strictStore = {
    * - Namespace-aware operation
    */
   remove<T extends Serializable>(key: StoreKey<T>): void {
+    const storage = getStorage(key.storeType);
     const fullKey = getFullKey(key.ns, key.key);
-    localStorage.removeItem(fullKey);
+
+    storage.removeItem(fullKey);
   },
 
   /**
-   * Checks if a key exists in localStorage.
+   * Checks if a key exists in storage.
    *
    * @param key - StoreKey object containing namespace and key identifier
    * @returns `true` if the key exists, `false` otherwise
@@ -134,28 +140,30 @@ export const strictStore = {
    * - If the value is null, it returns false
    */
   has<T extends Serializable>(key: StoreKey<T>): boolean {
+    const storage = getStorage(key.storeType);
     const fullKey = getFullKey(key.ns, key.key);
-    return localStorage.getItem(fullKey) !== null;
+
+    return storage.getItem(fullKey) !== null;
   },
 
   /**
-   * Gets the total number of items in localStorage.
+   * Gets the total number of items in localStorage + sessionStorage.
    *
    * @returns Count of all items (including non-namespaced)
    *
    * @example
    * ```ts
-   * if (strictStore.countItems > 100) {
+   * if (strictStore.length > 100) {
    *   strictStore.clear();
    * }
    * ```
    */
-  get countItems(): number {
-    return localStorage.length
+  get length(): number {
+    return localStorage.length + sessionStorage.length
   },
 
   /**
-   * Clears all items from localStorage (including non-namespaced).
+   * Clears all items from storage (including non-namespaced).
    *
    * @example
    * ```ts
@@ -163,15 +171,16 @@ export const strictStore = {
    * ```
    *
    * @remarks
-   * - Affects entire localStorage, not just typed keys
+   * - Affects entire storage, not just typed keys
    * - Irreversible operation
    */
   clear() {
     localStorage.clear();
+    sessionStorage.clear();
   },
 
   /**
-   * Clears all keys in localStorage that belong to a specific namespace.
+   * Clears all keys in storage that belong to a specific namespace.
    *
    * @param ns - Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
    *
@@ -184,12 +193,14 @@ export const strictStore = {
    * This operation is synchronous and affects only keys with matching namespace prefix.
    */
   clearNamespace(ns: string): void {
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith(`${ns}:`)) {
-        localStorage.removeItem(key);
-      }
+    [localStorage, sessionStorage].forEach(storage => {
+      Object.keys(storage).forEach(key => {
+        if (key.startsWith(`${ns}:`)) {
+          storage.removeItem(key);
+        }
+      });
     });
-  },
+  }
 }
 
 /**
@@ -199,6 +210,9 @@ export const strictStore = {
  * @param ns - Namespace to prevent key collisions (e.g., 'app', 'user')
  * @param key - Unique identifier within the namespace
  * @param defaultValue - Default value returned if key doesn't exist in storage
+ * @param storeType - Determines which Web Storage API to use:
+ *                  - 'local': Uses `localStorage`
+ *                  - 'session': Uses `sessionStorage`
  *
  * @returns A frozen `StoreKey<T>` object with strict type information
  *
@@ -214,40 +228,12 @@ export function createKey<T extends Serializable>(
   ns: string,
   key: string,
   defaultValue: T,
+  storeType: StoreType = 'local',
 ) {
   return {
     ns: ns,
     key: key,
     defaultValue: defaultValue,
+    storeType: storeType,
   } as const satisfies StoreKey<T>;
-}
-
-/**
- * @internal
- * Generates full storage key by combining namespace and key
- */
-function getFullKey(ns: string, key: string): string {
-  return `${ns}:${key}`
-}
-
-/**
- * @internal
- * Custom JSON replacer for BigInt serialization
- */
-function replacer(key: any, value: any) {
-  if (typeof value === 'bigint') {
-    return { __type: 'BigInt', value: value.toString() };
-  }
-  return value;
-}
-
-/**
- * @internal
- * Custom JSON reviver for BigInt deserialization
- */
-function reviver(key: any, value: any) {
-  if (typeof value === 'object' && value?.__type === 'BigInt') {
-    return BigInt(value.value);
-  }
-  return value;
 }

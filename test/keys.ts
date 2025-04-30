@@ -12,12 +12,14 @@ export const keys = {
     'test-ns',
     'boolean',
     true,
+    'session'
   ),
 
   numberKey: createKey<number>(
     'test-ns',
     'number',
     10,
+    'session'
   ),
 
   hexKey: createKey<number>(
