@@ -41,10 +41,10 @@ type User = {
 
 export const keys = {
   username: createKey<string | null>(
-    'app',
-    'username',
-    null,
-    'local'
+    'app', // ns
+    'username', // key
+    null, // defaultValue
+    'local' // storage type
   ),
 
   soundEnabled: createKey<boolean>(
@@ -54,7 +54,7 @@ export const keys = {
     'session'
   ),
   
-  // Default 'session'
+  // Default storage 'local'
   favouriteColor: createKey<number>(
     'app',
     'favourite-color',
@@ -98,10 +98,10 @@ export const keys = {
 #### Primitive types
 ```typescript
 strictStore.save(keys.username, 'John') // Only the string is allowed
-const username: string = StrictStore.get(keys.username) // Return the string type
+const username: string = strictStore.get(keys.username) // Return the string type
 
 strictStore.save(keys.soundEnabled, false) // Only the boolean is allowed
-const user_age: boolean = StrictStore.get(keys.soundEnabled) // Return the boolean type
+const user_age: boolean = strictStore.get(keys.soundEnabled) // Return the boolean type
 ```
 
 #### Advanced types
@@ -113,14 +113,14 @@ const user: User = {
   age: 35,
 }
 
-StrictStore.save(keys.user, user) // Only the User type is allowed
-const savedUser: User = StrictStore.get(keys.user) // Return object value
+strictStore.save(keys.user, user) // Only the User type is allowed
+const savedUser: User = strictStore.get(keys.user) // Return object value
 
 // Enum
-StrictStore.save(keys.theme, Theme.Dark) // Only the enum is allowed
-const savedTheme: Theme = StrictStore.get(keys.theme) // Return enum value
+strictStore.save(keys.theme, Theme.Dark) // Only the enum is allowed
+const savedTheme: Theme = strictStore.get(keys.theme) // Return enum value
 
 // Literal type
-StrictStore.save(keys.themeAlt, 'light') // Only the literal type is allowed ('light' | 'dark' | null)
-const savedUserRole: 'light' | 'dark' | null = StrictStore.get(keys.themeAlt) // Return literal value
+strictStore.save(keys.themeAlt, 'light') // Only the literal type is allowed ('light' | 'dark' | null)
+const savedUserRole: 'light' | 'dark' | null = strictStore.get(keys.themeAlt) // Return literal value
 ```
