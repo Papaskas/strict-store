@@ -1,5 +1,4 @@
-import { createKey } from '@src/createKey';
-import { strictStore } from '@src/strictStore';
+import { strictStore, createKey } from '@src/strict-store';
 import { keys } from '@test/keys';
 import { Theme, User } from '@test/@types';
 
@@ -38,11 +37,11 @@ describe('strictStore', () => {
 
     test('should working clear method', () => {
       strictStore.save(keys.stringKey, 'clear value');
-      expect(strictStore.countItems).toBe(1);
+      expect(strictStore.length).toBe(1);
 
       strictStore.clear();
 
-      expect(strictStore.countItems).toBe(0);
+      expect(strictStore.length).toBe(0);
     });
 
     test('should working has method', () => {
