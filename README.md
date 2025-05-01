@@ -3,6 +3,7 @@
  - Namespace support to prevent key collisions
  - Strict typing for all operations
  - Default value support
+ - Convenient choice of storage location (session, storage)
 
 Supported types:
 > - string 
@@ -18,7 +19,6 @@ Supported types:
 
 ## Remarks
 - The undefined type is not supported, because JSON converts it to null
-- When using complex types, avoid using undefined
 - The createKey method uses `satisfies`
 
 ## Required
