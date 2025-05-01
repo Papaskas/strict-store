@@ -28,7 +28,7 @@
     }
   },
   "license": "Apache-2.0",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "TypeScript-first wrapper for localStorage and sessionStorage with strict typing, serialization and namespace support. Safely work with typed data instead of raw strings",
   "scripts": {
     "build": "vite build",
