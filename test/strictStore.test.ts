@@ -21,10 +21,14 @@ describe('strictStore', () => {
       strictStore.save(keys.stringKey, 'test primitive value');
       strictStore.save(keys.booleanKey,false);
       strictStore.save(keys.numberKey,100);
+      strictStore.save(keys.nullableStringKey,null);
+      strictStore.save(keys.bigIntKey,1000n);
 
       expect(strictStore.get(keys.stringKey)).toBe('test primitive value');
       expect(strictStore.get(keys.numberKey)).toBe(100);
       expect(strictStore.get(keys.booleanKey)).toBe(false);
+      expect(strictStore.get(keys.nullableStringKey)).toBe(null);
+      expect(strictStore.get(keys.bigIntKey)).toBe(1000n);
     });
 
     test('should remove items and get default value', () => {
@@ -112,11 +116,28 @@ describe('strictStore', () => {
       expect(strictStore.get(keys.arrayIntKey)).toStrictEqual([312, 0.31])
     });
 
-    test('array<any>', () => {
-      expect(strictStore.get(keys.arrayAnyKey)).toStrictEqual([0, 'das', false, BigInt(999999999999999999999999999999)],)
+    test('array<User>', () => {
+      expect(strictStore.get(keys.usersKey)).toStrictEqual([])
 
-      strictStore.save(keys.arrayAnyKey, [null, 'das', true, 0.31]);
-      expect(strictStore.get(keys.arrayAnyKey)).toStrictEqual([null, 'das', true, 0.31])
+      const users: User[] = [
+        {
+          first_name: '1',
+          last_name: '1',
+          age: 44,
+          cash: 1000n,
+          hasEmail: true,
+        },
+        {
+          first_name: 'null',
+          last_name: null,
+          age: 55,
+          cash: 10000000n,
+          hasEmail: false,
+        },
+      ]
+
+      strictStore.save(keys.usersKey, users);
+      expect(strictStore.get(keys.usersKey)).toStrictEqual(users)
     });
 
     test('union', () => {
@@ -127,11 +148,20 @@ describe('strictStore', () => {
     });
 
     test('object', () => {
-      expect(strictStore.get(keys.objectKey)).toStrictEqual({ first_name: null, last_name: null });
+      expect(strictStore.get(keys.objectKey)).toStrictEqual({
+        first_name: null,
+        last_name: null,
+        age: 35,
+        cash: 100n,
+        hasEmail: false,
+      });
 
       const user: User = {
         first_name: 'Pavel',
         last_name: 'Dev',
+        age: 46,
+        cash: 900n,
+        hasEmail: true,
       }
 
       strictStore.save(keys.objectKey, user)
@@ -139,10 +169,10 @@ describe('strictStore', () => {
     });
 
     test('bigint', () => {
-      expect(strictStore.get(keys.bigIntKey)).toStrictEqual(BigInt(88888888888888888));
+      expect(strictStore.get(keys.bigIntKey)).toStrictEqual(88888888888888888n);
 
-      strictStore.save(keys.bigIntKey, BigInt(999999999999999999999))
-      expect(strictStore.get(keys.bigIntKey)).toStrictEqual(BigInt(999999999999999999999));
+      strictStore.save(keys.bigIntKey,999999999999999999999n)
+      expect(strictStore.get(keys.bigIntKey)).toStrictEqual(999999999999999999999n);
     });
 
     test('hex number', () => {

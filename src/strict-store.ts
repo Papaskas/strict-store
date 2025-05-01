@@ -258,7 +258,7 @@ function getFullKey(ns: string, key: string): string {
  */
 function replacer(key: any, value: any) {
   if (typeof value === 'bigint') {
-    return { __type: 'BigInt', value: value.toString() };
+    return { __type: 'bigint', value: value.toString() };
   }
   return value;
 }
@@ -268,7 +268,7 @@ function replacer(key: any, value: any) {
  * Custom JSON reviver for BigInt deserialization
  */
 function reviver(key: any, value: any) {
-  if (typeof value === 'object' && value?.__type === 'BigInt') {
+  if (typeof value === 'object' && value?.__type === 'bigint') {
     return BigInt(value.value);
   }
   return value;

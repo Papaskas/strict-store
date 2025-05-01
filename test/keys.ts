@@ -31,7 +31,13 @@ export const keys = {
   objectKey: createKey<User>(
     'test-ns',
     'object',
-    { first_name: null, last_name: null },
+    {
+      first_name: null,
+      last_name: null,
+      age: 35,
+      cash: 100n,
+      hasEmail: false,
+    },
   ),
 
   enumKey: createKey<Theme>(
@@ -52,10 +58,10 @@ export const keys = {
     null,
   ),
 
-  bigIntKey: createKey<BigInt>(
+  bigIntKey: createKey<bigint>(
     'test-ns',
     'bigInt',
-    BigInt(88888888888888888),
+    88888888888888888n,
   ),
 
   arrayIntKey: createKey<number[]>(
@@ -64,9 +70,9 @@ export const keys = {
     []
   ),
 
-  arrayAnyKey: createKey<any[]>(
+  usersKey: createKey<User[]>(
     'test-ns',
-    'arrayInt',
-    [0, 'das', false, BigInt(999999999999999999999999999999)],
+    'users',
+    []
   ),
 } as const;
