@@ -1,4 +1,4 @@
-import type { Serializable, StoreType, StoreKey } from '@src/types';
+import { Serializable, StoreType, StoreKey, TYPED_ARRAY_CONSTRUCTORS } from '@src/types';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage that provides:
@@ -257,10 +257,25 @@ function getFullKey(ns: string, key: string): string {
  * Custom JSON replacer for BigInt serialization
  */
 function replacer(key: any, value: any) {
-  if (typeof value === 'bigint') {
-    return { __type: 'bigint', value: value.toString() };
-  }
+  if (typeof value === 'bigint') return typeHandlers.bigint(value);
+  else if (value instanceof Map) return typeHandlers.Map(value);
+  else if (value instanceof Set) return typeHandlers.Set(value);
+  else if (ArrayBuffer.isView(value) && !(value instanceof DataView)) return typeHandlers.TypedArray(value);
+
   return value;
+}
+
+const typeHandlers = {
+  bigint: (val: bigint) => ({ __type: 'bigint', value: val.toString() }),
+  Map: (val: Map<any, any>) => ({ __type: 'map', value: Array.from(val.entries()) }),
+  Set: (val: Set<any>) => ({ __type: 'set', value: Array.from(val) }),
+  TypedArray: (val: any) => ({
+    __type: 'typed_array',
+    subtype: val.constructor.name,
+    value: val instanceof BigInt64Array || val instanceof BigUint64Array
+      ? Array.from(val).map(n => n.toString())
+      : Array.from(val)
+  }),
 }
 
 /**
@@ -268,8 +283,21 @@ function replacer(key: any, value: any) {
  * Custom JSON reviver for BigInt deserialization
  */
 function reviver(key: any, value: any) {
-  if (typeof value === 'object' && value?.__type === 'bigint') {
-    return BigInt(value.value);
+  if (value !== null) {
+    switch (value.__type) {
+      case 'bigint': return BigInt(value.value);
+      case 'map': return new Map(value.value);
+      case 'set': return new Set(value.value);
+      case 'typed_array':
+      {
+        const Constructor = TYPED_ARRAY_CONSTRUCTORS[value.subtype];
+        if (!Constructor) {
+          throw new Error(`Unsupported TypedArray type: ${value.subtype}`);
+        }
+        return new Constructor(value.value);
+      }
+    }
   }
+
   return value;
 }
