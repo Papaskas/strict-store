@@ -4,14 +4,15 @@
 [![license](https://img.shields.io/npm/l/strict-store)](https://github.com/Papaskas/strict-store/blob/main/LICENSE)
 [![Bundle Size](https://img.shields.io/bundlephobia/min/strict-store)](https://bundlephobia.com/package/strict-store)
 
-A type-safe wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.
+A **type-safe** wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.
 
 ## Features
 - 🛡 **Full Type Safety** - Compile-time type checking for all operations
 - 🧠 **Smart Serialization** - Automatic handling of:
-    - Primitive types (string/number/boolean)
-    - Complex types (Objects/Arrays/Tuples/Literal)
-    - Special types (BigInt/Date/Map/Set)
+    - Primitive types
+    - Complex types
+    - Special types
+    - TypedArray
 - 🗂 **Namespace Isolation** - Prevent key collisions with hierarchical organization
 - ⚡ **Dual Storage Support** - Switch between localStorage (persistent) and sessionStorage (session-based)
 
@@ -19,14 +20,26 @@ A type-safe wrapper around localStorage and sessionStorage with TypeScript suppo
 
 > - string
 > - number
-> - hex
-> - bigint
 > - boolean
+> - null
+> - union
 > - object
 > - array
-> - null
 > - enum
-> - union
+> - BigInt
+> - Map
+> - Set
+> - Int8Array
+> - Uint8Array
+> - Uint8ClampedArray
+> - Int16Array
+> - Uint16Array
+> - Int32Array
+> - Uint32Array
+> - Float32Array
+> - Float64Array
+> - BigInt64Array
+> - BigUint64Array
 
 ## Installation
 

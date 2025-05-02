@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import * as path from 'node:path';
 
 export default defineConfig({
   build: {
@@ -10,6 +11,11 @@ export default defineConfig({
       formats: ['es']
     },
     emptyOutDir: true,
+  },
+  resolve: {
+    alias: {
+      '@src': path.resolve(__dirname, './src')
+    }
   },
   plugins: [dts()]
 })

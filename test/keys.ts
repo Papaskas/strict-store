@@ -5,7 +5,7 @@ export const keys = {
   stringKey: createKey<string>(
     'test-ns',
     'string',
-    'string value',
+    'default value',
   ),
 
   booleanKey: createKey<boolean>(
@@ -20,12 +20,6 @@ export const keys = {
     'number',
     10,
     'session'
-  ),
-
-  hexKey: createKey<number>(
-    'test-ns',
-    'hex',
-    0XFFFFFF,
   ),
 
   objectKey: createKey<User>(
@@ -46,10 +40,28 @@ export const keys = {
     Theme.Dark,
   ),
 
+  setKey: createKey(
+    'test-ns',
+    'set',
+    new Set(['first', 'second']),
+  ),
+
+  mapKey: createKey(
+    'test-ns',
+    'userMap',
+    new Map<string, number>([['admin', 1]])
+  ),
+
   nullableStringKey: createKey<string | null>(
     'test-ns',
     'nullable-string',
     null,
+  ),
+
+  typedArrayKey: createKey<Int8Array>(
+    'test-ns',
+    'typedArray',
+    new Int8Array([21, 31])
   ),
 
   literalKey: createKey<'light' | 'dark' | null>(

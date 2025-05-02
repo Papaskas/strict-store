@@ -1,15 +1,26 @@
 import { strictStore, createKey } from '@src/strict-store';
 import { keys } from '@test/keys';
 import { Theme, User } from '@test/@types';
+import { Serializable, StoreKey, TYPED_ARRAY_CONSTRUCTORS } from '../src/types';
 
 describe('strictStore', () => {
   beforeEach(() => {
     strictStore.clear();
   });
 
+  const strictTest = <T extends Serializable>(
+    key: StoreKey<T>,
+    newValue: T,
+  ) => {
+    expect(strictStore.get(key)).toStrictEqual(key.defaultValue);
+
+    strictStore.save(key, newValue);
+    expect(strictStore.get(key)).toStrictEqual(newValue);
+  }
+
   describe('Basic operations', () => {
     test('should return default value when empty', () => {
-      expect(strictStore.get(keys.stringKey)).toBe('string value');
+      expect(strictStore.get(keys.stringKey)).toBe(keys.stringKey.defaultValue);
     });
 
     test('should correct save and get this value', () => {
@@ -18,17 +29,18 @@ describe('strictStore', () => {
     });
 
     test('should set and get primitive values', () => {
-      strictStore.save(keys.stringKey, 'test primitive value');
-      strictStore.save(keys.booleanKey,false);
-      strictStore.save(keys.numberKey,100);
-      strictStore.save(keys.nullableStringKey,null);
-      strictStore.save(keys.bigIntKey,1000n);
-
-      expect(strictStore.get(keys.stringKey)).toBe('test primitive value');
-      expect(strictStore.get(keys.numberKey)).toBe(100);
-      expect(strictStore.get(keys.booleanKey)).toBe(false);
-      expect(strictStore.get(keys.nullableStringKey)).toBe(null);
-      expect(strictStore.get(keys.bigIntKey)).toBe(1000n);
+      new Map<StoreKey<Serializable>, Serializable>([
+        [keys.stringKey, 'test primitive value'],
+        [keys.booleanKey, false],
+        [keys.numberKey, 141],
+        [keys.nullableStringKey, null],
+        [keys.bigIntKey, 999999999999999n],
+      ]).forEach((value, key) => {
+        strictTest(
+          key,
+          value,
+        )
+      })
     });
 
     test('should remove items and get default value', () => {
@@ -36,7 +48,7 @@ describe('strictStore', () => {
       expect(strictStore.get(keys.stringKey)).toBe('remove value');
 
       strictStore.remove(keys.stringKey);
-      expect(strictStore.get(keys.stringKey)).toBe('string value');
+      expect(strictStore.get(keys.stringKey)).toBe(keys.stringKey.defaultValue);
     });
 
     test('should working clear method', () => {
@@ -103,22 +115,20 @@ describe('strictStore', () => {
 
   describe('advanced types', () => {
     test('enum', () => {
-      expect(strictStore.get(keys.enumKey)).toStrictEqual(Theme.Dark);
-
-      strictStore.save(keys.enumKey, Theme.Light);
-      expect(strictStore.get(keys.enumKey)).toStrictEqual(Theme.Light);
+      strictTest(
+        keys.enumKey,
+        Theme.Light
+      )
     });
 
     test('array<number>', () => {
-      expect(strictStore.get(keys.arrayIntKey)).toStrictEqual([])
-
-      strictStore.save(keys.arrayIntKey, [312, 0.31]);
-      expect(strictStore.get(keys.arrayIntKey)).toStrictEqual([312, 0.31])
+      strictTest(
+        keys.arrayIntKey,
+        [312, 0.31]
+      )
     });
 
     test('array<User>', () => {
-      expect(strictStore.get(keys.usersKey)).toStrictEqual([])
-
       const users: User[] = [
         {
           first_name: '1',
@@ -136,26 +146,20 @@ describe('strictStore', () => {
         },
       ]
 
-      strictStore.save(keys.usersKey, users);
-      expect(strictStore.get(keys.usersKey)).toStrictEqual(users)
+      strictTest(
+        keys.usersKey,
+        users
+      )
     });
 
     test('union', () => {
-      expect(strictStore.get(keys.literalKey)).toStrictEqual(null);
-
-      strictStore.save(keys.literalKey, 'dark');
-      expect(strictStore.get(keys.literalKey)).toStrictEqual('dark');
+      strictTest(
+        keys.literalKey,
+        'dark'
+      )
     });
 
     test('object', () => {
-      expect(strictStore.get(keys.objectKey)).toStrictEqual({
-        first_name: null,
-        last_name: null,
-        age: 35,
-        cash: 100n,
-        hasEmail: false,
-      });
-
       const user: User = {
         first_name: 'Pavel',
         last_name: 'Dev',
@@ -164,22 +168,96 @@ describe('strictStore', () => {
         hasEmail: true,
       }
 
-      strictStore.save(keys.objectKey, user)
-      expect(strictStore.get(keys.objectKey)).toStrictEqual(user);
+      strictTest(
+        keys.objectKey,
+        user
+      )
     });
 
     test('bigint', () => {
-      expect(strictStore.get(keys.bigIntKey)).toStrictEqual(88888888888888888n);
-
-      strictStore.save(keys.bigIntKey,999999999999999999999n)
-      expect(strictStore.get(keys.bigIntKey)).toStrictEqual(999999999999999999999n);
+      strictTest(
+        keys.bigIntKey,
+        999999999999999999999n
+      )
     });
 
-    test('hex number', () => {
-      expect(strictStore.get(keys.hexKey)).toStrictEqual(0XFFFFFF);
+    test('map', () => {
+      const map = new Map([
+        ["key1", 123],
+        ["key2", 321],
+      ]);
 
-      strictStore.save(keys.hexKey, 0XF12FF23)
-      expect(strictStore.get(keys.hexKey)).toStrictEqual(0XF12FF23);
+      strictTest(
+        keys.mapKey,
+        map,
+      )
+    });
+
+    test('set', () => {
+      strictTest(
+        keys.setKey,
+        new Set(['third', 'Fourth']),
+      )
+    });
+
+    test('TypedArray', () => {
+      [
+        {
+          defaultValue: new Int8Array([1, -2, 3]),
+          newValue: new Int8Array([3, -2, 1]),
+        },
+        {
+          defaultValue: new Uint8Array([3, 2, 1]),
+          newValue: new Uint8Array([1, 2, 3]),
+        },
+        {
+          defaultValue: new Uint8ClampedArray([256, 1, 2]),
+          newValue: new Uint8ClampedArray([1, 2, 256]),
+        },
+        {
+          defaultValue: new Int16Array([1000, -2000, 3000]),
+          newValue: new Int16Array([3000, 1000, -2000]),
+        },
+        {
+          defaultValue: new Uint16Array([1000, 2000, 3000]),
+          newValue: new Uint16Array([3000, 1000, 2000]),
+        },
+        {
+          defaultValue: new Int32Array([100000, -200000, 300000]),
+          newValue: new Int32Array([300000, 100000, -200000]),
+        },
+        {
+          defaultValue: new Uint32Array([100000, 200000, 300000]),
+          newValue: new Uint32Array([300000, 100000, 200000]),
+        },
+        {
+          defaultValue: new Float32Array([3.5, 1.5, -2.5]),
+          newValue: new Float32Array([1.5, -2.5, 3.5]),
+        },
+        {
+          defaultValue: new Float64Array([1.123456789, -2.987654321]),
+          newValue: new Float64Array([-2.987654321, 1.123456789]),
+        },
+        {
+          defaultValue: new BigInt64Array([1n, -2n, 3n]),
+          newValue: new BigInt64Array([3n, 1n, -2n]),
+        },
+        {
+          defaultValue: new BigUint64Array([1n, 2n, 3n]),
+          newValue: new BigUint64Array([3n, 1n, 2n]),
+        },
+      ].forEach((value, index) => {
+        const key = createKey(
+          'test-ns',
+          `typedArray${index}`,
+          value.defaultValue,
+        )
+
+        strictTest(
+          key,
+          value.newValue
+        )
+      })
     });
   })
 });
