@@ -22,18 +22,16 @@ export const strictStore = {
 
   /**
    * Retrieves a value from storage.
-   * Returns `defaultValue` if key doesn't exist.
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key - StoreKey object containing namespace, key and default value
-   * @returns The stored value or defaultValue if not found
+   * @param key StoreKey object containing namespace, key and default value
+   * @returns The stored value
    *
    * @example
    * ```ts
    * const themeKey = createKey<'light', 'dark'>(
    *  'app',
    *  'theme',
-   *  'light'
    * );
    *
    * const theme: 'light' | 'dark' = strictStore.get(themeKey);
@@ -41,16 +39,13 @@ export const strictStore = {
    *
    * @remarks
    * - Automatically handles JSON parsing
-   * - Returns defaultValue for non-existent keys
    */
-  get<T extends Serializable>(key: StoreKey<T>): T {
+  get<T extends Serializable>(key: StoreKey<T>): T | null {
     const storage = getStorage(key.storeType);
     const fullKey = getFullKey(key.ns, key.key);
     const storedValue = storage.getItem(fullKey);
 
-    if (storedValue === null) {
-      return key.defaultValue;
-    }
+    if(storedValue === null) return storedValue;
 
     try {
       return JSON.parse(storedValue, reviver) as T;
@@ -63,26 +58,21 @@ export const strictStore = {
    * Saves a value to storage with automatic serialization.
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key - StoreKey object containing namespace and key
-   * @param value - Value to store (will be JSON.stringified)
+   * @param key StoreKey object containing namespace and key
+   * @param value Value to store (will be JSON.stringified)
    *
    * @example
    * ```ts
    * const themeKey = createKey<'light', 'dark'>(
    *  'app',
    *  'theme',
-   *  'light'
    * );
    *
    * // Only the literal type is allowed
    * strictStore.save(themeKey, 'dark');
    * ```
-   *
-   * @remarks
-   * - Overwrites existing values
-   * - Supports all JSON-serializable values
    */
-  save<T extends StoreKey<any>>(key: T, value: T['defaultValue']): void {
+  save<T extends StoreKey<any>>(key: T, value: T['__type']): void {
     const storage = getStorage(key.storeType);
     const fullKey = getFullKey(key.ns, key.key);
 
@@ -93,14 +83,13 @@ export const strictStore = {
    * Removes a key-value pair from storage.
    *
    * @typeParam T - Type parameter for StoreKey consistency
-   * @param key - StoreKey object identifying item to remove
+   * @param key StoreKey object identifying item to remove
    *
    * @example
    * ```ts
    * const themeKey = createKey<'light', 'dark'>(
    *  'app',
    *  'theme',
-   *  'light'
    * );
    *
    * strictStore.remove(themeKey);
@@ -120,7 +109,7 @@ export const strictStore = {
   /**
    * Checks if a key exists in storage.
    *
-   * @param key - StoreKey object containing namespace and key identifier
+   * @param key StoreKey object containing namespace and key identifier
    * @returns `true` if the key exists, `false` otherwise
    *
    * @example
@@ -128,7 +117,6 @@ export const strictStore = {
    * const themeKey = createKey<'light', 'dark'>(
    *  'app',
    *  'theme',
-   *  'light'
    * );
    *
    * const exists: boolean = strictStore.has(themeKey);
@@ -162,7 +150,7 @@ export const strictStore = {
   },
 
   /**
-   * Clears all items from storage (including non-namespaced).
+   * Clears all items from localStorage and sessionStorage (including non-namespaced).
    *
    * @example
    * ```ts
@@ -181,7 +169,7 @@ export const strictStore = {
   /**
    * Clears all keys in storage that belong to a specific namespace.
    *
-   * @param ns - Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
+   * @param ns Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
    *
    * @example
    * ```ts
@@ -205,11 +193,11 @@ export const strictStore = {
 /**
  * Creates a type-safe store key object for use with strictStore.
  *
- * @template T - Type of the stored value, must extend `Serializable`
+ * @typeParam T - Type of the stored value, must extend `Serializable`
+ *
  * @param ns - Namespace to prevent key collisions (e.g., 'app', 'user')
  * @param key - Unique identifier within the namespace
- * @param defaultValue - Default value returned if key doesn't exist in storage
- * @param storeType - Determines which Web Storage API to use:
+ * @param [storeType] - Determines which Web Storage API to use:
  *                  - 'local': Uses `localStorage`
  *                  - 'session': Uses `sessionStorage`
  *
@@ -218,7 +206,6 @@ export const strictStore = {
  * @remarks
  * - The returned object is frozen with `as const` for type safety
  * - Namespace and key are combined to form the final storage key (e.g., 'app:counter')
- * - Default value determines the runtime type and TypeScript type inference
  *
  * @see {@link StoreKey} for the interface definition
  * @see {@link strictStore} for usage examples with storage methods
@@ -226,14 +213,13 @@ export const strictStore = {
 export function createKey<T extends Serializable>(
   ns: string,
   key: string,
-  defaultValue: T,
   storeType: StoreType = 'local',
 ) {
   return {
     ns: ns,
     key: key,
-    defaultValue: defaultValue,
     storeType: storeType,
+    __type: {} as T
   } as const satisfies StoreKey<T>;
 }
 
@@ -256,7 +242,7 @@ function getFullKey(ns: string, key: string): string {
  * @internal
  * Custom JSON replacer for BigInt serialization
  */
-function replacer(key: any, value: any) {
+function replacer(key: string, value: any) {
   if (typeof value === 'bigint') return typeHandlers.bigint(value);
   else if (value instanceof Map) return typeHandlers.Map(value);
   else if (value instanceof Set) return typeHandlers.Set(value);
@@ -282,7 +268,7 @@ const typeHandlers = {
  * @internal
  * Custom JSON reviver for BigInt deserialization
  */
-function reviver(key: any, value: any) {
+function reviver(key: string, value: any) {
   if (value !== null) {
     switch (value.__type) {
       case 'bigint': return BigInt(value.value);

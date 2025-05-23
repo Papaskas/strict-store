@@ -60,7 +60,6 @@ import { createKey, strictStore } from 'strict-storage';
 const themeKey = createKey<'light' | 'dark'>(
   'app', // namaspace
   'theme', // key name
-  'light', // default type
   'local' // storage (localStorage, sessionStorage)
 );
 
@@ -97,21 +96,25 @@ const sessionKey = createKey(..., 'session');
 
 ### API References
 
-```typescript
-createKey(ns, key, defaultValue, storeType?)
-```
-
 Creates a type-safe storage key.
 
 ```typescript
+createKey<T>(
+  ns: string, 
+  key: string, 
+  storeType?: T,
+): StoreKey<T>
+```
+
+```typescript
 strictStore
-.get(key) // Retrieves a value
-.save(key, value) // Stores a value
-.remove(key) // Removes a key
-.has(key) // Checks for key existence
-.length // Total items count
-.clear() // Clears all storage
-.clearNamespace(ns) // Clears a namespace
+  .get(key: StoreKey): T // Retrieves a value
+  .save<T>(key: StoreKey, value: T): void // Stores a value
+  .remove(key: StoreKey): void // Removes a key
+  .has(key: StoreKey): boolean // Checks for key existence
+  .length(): number // Total items count
+  .clear(): void // Clears all storage
+  .clearNamespace(ns: string): void // Clears a namespace
 ```
 
 ## Type Safety
@@ -119,7 +122,7 @@ strictStore
 The library enforces type safety at compile time:
 
 ```typescript
-const counterKey = createKey('app', 'counter', 0);
+const counterKey = createKey<number>('app', 'counter');
 
 strictStore.save(counterKey, 'text'); // Error: Type 'string' is not assignable to type 'number'
 strictStore.save(counterKey, 42); // OK
@@ -133,7 +136,6 @@ strictStore.save(counterKey, 42); // OK
 const tagsKey = createKey<string[]>(
   'app', 
   'tags',
-  ['default']
 );
 
 strictStore.save(tagsKey, ['ts', 'storage', 'util']); // string[] preserved
@@ -141,14 +143,17 @@ strictStore.save(tagsKey, ['ts', 'storage', 'util']); // string[] preserved
 
 **Objects:**
 ```typescript
-const userKey = createKey(
+type User = {
+  id: number;
+  name: string;
+  settings: {
+    darkMode: boolean
+  }
+};
+
+const userKey = createKey<User>(
   'app',
   'user',
-  {
-    id: 0,
-    name: '',
-    settings: { darkMode: false }
-  }
 );
 
 strictStore.save(userKey, {

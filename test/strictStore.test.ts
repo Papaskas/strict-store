@@ -1,26 +1,23 @@
 import { strictStore, createKey } from '@src/strict-store';
 import { keys } from '@test/keys';
 import { Theme, User } from '@test/@types';
-import { Serializable, StoreKey, TYPED_ARRAY_CONSTRUCTORS } from '../src/types';
+import { Serializable, StoreKey } from '@src/types';
 
 describe('strictStore', () => {
   beforeEach(() => {
     strictStore.clear();
   });
 
-  const strictTest = <T extends Serializable>(
-    key: StoreKey<T>,
-    newValue: T,
-  ) => {
-    expect(strictStore.get(key)).toStrictEqual(key.defaultValue);
+  const strictTest = <T extends StoreKey<any>>(key: T, newValue: T['__type']) => {
+    expect(strictStore.get(key)).toStrictEqual(null);
 
     strictStore.save(key, newValue);
     expect(strictStore.get(key)).toStrictEqual(newValue);
   }
 
   describe('Basic operations', () => {
-    test('should return default value when empty', () => {
-      expect(strictStore.get(keys.stringKey)).toBe(keys.stringKey.defaultValue);
+    test('should return `null` value when empty', () => {
+      expect(strictStore.get(keys.stringKey)).toBe(null);
     });
 
     test('should correct save and get this value', () => {
@@ -48,7 +45,7 @@ describe('strictStore', () => {
       expect(strictStore.get(keys.stringKey)).toBe('remove value');
 
       strictStore.remove(keys.stringKey);
-      expect(strictStore.get(keys.stringKey)).toBe(keys.stringKey.defaultValue);
+      expect(strictStore.get(keys.stringKey)).toBe(null);
     });
 
     test('should working clear method', () => {
@@ -86,18 +83,15 @@ describe('strictStore', () => {
         key1: createKey<string>(
           'ns1',
           'key1',
-          'key1',
         ),
 
         key2: createKey<string>(
           'ns1',
           'key2',
-          'key2',
         ),
 
         key3: createKey<string>(
           'ns2',
-          'key3',
           'key3',
         ),
       } as const;
@@ -107,8 +101,8 @@ describe('strictStore', () => {
       strictStore.save(nsKeys.key3, 'new value3'); // ns2
       strictStore.clearNamespace('ns1');
 
-      expect(strictStore.get(nsKeys.key1)).toBe('key1');
-      expect(strictStore.get(nsKeys.key2)).toBe('key2');
+      expect(strictStore.get(nsKeys.key1)).toBe(null);
+      expect(strictStore.get(nsKeys.key2)).toBe(null);
       expect(strictStore.get(nsKeys.key3)).toBe('new value3');
     });
   });
@@ -202,60 +196,26 @@ describe('strictStore', () => {
 
     test('TypedArray', () => {
       [
-        {
-          defaultValue: new Int8Array([1, -2, 3]),
-          newValue: new Int8Array([3, -2, 1]),
-        },
-        {
-          defaultValue: new Uint8Array([3, 2, 1]),
-          newValue: new Uint8Array([1, 2, 3]),
-        },
-        {
-          defaultValue: new Uint8ClampedArray([256, 1, 2]),
-          newValue: new Uint8ClampedArray([1, 2, 256]),
-        },
-        {
-          defaultValue: new Int16Array([1000, -2000, 3000]),
-          newValue: new Int16Array([3000, 1000, -2000]),
-        },
-        {
-          defaultValue: new Uint16Array([1000, 2000, 3000]),
-          newValue: new Uint16Array([3000, 1000, 2000]),
-        },
-        {
-          defaultValue: new Int32Array([100000, -200000, 300000]),
-          newValue: new Int32Array([300000, 100000, -200000]),
-        },
-        {
-          defaultValue: new Uint32Array([100000, 200000, 300000]),
-          newValue: new Uint32Array([300000, 100000, 200000]),
-        },
-        {
-          defaultValue: new Float32Array([3.5, 1.5, -2.5]),
-          newValue: new Float32Array([1.5, -2.5, 3.5]),
-        },
-        {
-          defaultValue: new Float64Array([1.123456789, -2.987654321]),
-          newValue: new Float64Array([-2.987654321, 1.123456789]),
-        },
-        {
-          defaultValue: new BigInt64Array([1n, -2n, 3n]),
-          newValue: new BigInt64Array([3n, 1n, -2n]),
-        },
-        {
-          defaultValue: new BigUint64Array([1n, 2n, 3n]),
-          newValue: new BigUint64Array([3n, 1n, 2n]),
-        },
+        { value: new Int8Array([3, -2, 1]), },
+        { value: new Uint8Array([1, 2, 3]), },
+        { value: new Uint8ClampedArray([1, 2, 256]), },
+        { value: new Int16Array([3000, 1000, -2000]), },
+        { value: new Uint16Array([3000, 1000, 2000]), },
+        { value: new Int32Array([300000, 100000, -200000]), },
+        { value: new Uint32Array([300000, 100000, 200000]), },
+        { value: new Float32Array([1.5, -2.5, 3.5]), },
+        { value: new Float64Array([-2.987654321, 1.123456789]), },
+        { value: new BigInt64Array([3n, 1n, -2n]), },
+        { value: new BigUint64Array([3n, 1n, 2n]), },
       ].forEach((value, index) => {
-        const key = createKey(
+        const key = createKey<typeof value.value>(
           'test-ns',
           `typedArray${index}`,
-          value.defaultValue,
         )
 
         strictTest(
           key,
-          value.newValue
+          value.value
         )
       })
     });
