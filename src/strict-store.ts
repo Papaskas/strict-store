@@ -1,4 +1,5 @@
-import { Serializable, StoreType, StoreKey, TYPED_ARRAY_CONSTRUCTORS } from '@src/types';
+import { Serializable, StoreType, StoreKey } from '@src/types';
+import { strictJson } from '@src/strict-json';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage that provides:
@@ -47,11 +48,7 @@ export const strictStore = {
 
     if(storedValue === null) return storedValue;
 
-    try {
-      return JSON.parse(storedValue, reviver) as T;
-    } catch {
-      return storedValue as T;
-    }
+    return strictJson.parse<T>(storedValue)
   },
 
   /**
@@ -76,7 +73,7 @@ export const strictStore = {
     const storage = getStorage(key.storeType);
     const fullKey = getFullKey(key.ns, key.key);
 
-    storage.setItem(fullKey, JSON.stringify(value, replacer));
+    storage.setItem(fullKey, strictJson.stringify(value));
   },
 
   /**
@@ -179,7 +176,7 @@ export const strictStore = {
    * @remarks
    * This operation is synchronous and affects only keys with matching namespace prefix.
    */
-  clearNamespace(ns: string): void {
+  clearNamespace(ns: string) {
     [localStorage, sessionStorage].forEach(storage => {
       Object.keys(storage).forEach(key => {
         if (key.startsWith(`${ns}:`)) {
@@ -234,56 +231,9 @@ const getStorage = (type: StoreType): Storage => {
  * @internal
  * Generates full storage key by combining namespace and key
  */
-function getFullKey(ns: string, key: string): string {
+function getFullKey(
+  ns: string,
+  key: string,
+): string {
   return `${ns}:${key}`
-}
-
-/**
- * @internal
- * Custom JSON replacer for BigInt serialization
- */
-function replacer(key: string, value: any) {
-  if (typeof value === 'bigint') return typeHandlers.bigint(value);
-  else if (value instanceof Map) return typeHandlers.Map(value);
-  else if (value instanceof Set) return typeHandlers.Set(value);
-  else if (ArrayBuffer.isView(value) && !(value instanceof DataView)) return typeHandlers.TypedArray(value);
-
-  return value;
-}
-
-const typeHandlers = {
-  bigint: (val: bigint) => ({ __type: 'bigint', value: val.toString() }),
-  Map: (val: Map<any, any>) => ({ __type: 'map', value: Array.from(val.entries()) }),
-  Set: (val: Set<any>) => ({ __type: 'set', value: Array.from(val) }),
-  TypedArray: (val: any) => ({
-    __type: 'typed_array',
-    subtype: val.constructor.name,
-    value: val instanceof BigInt64Array || val instanceof BigUint64Array
-      ? Array.from(val).map(n => n.toString())
-      : Array.from(val)
-  }),
-}
-
-/**
- * @internal
- * Custom JSON reviver for BigInt deserialization
- */
-function reviver(key: string, value: any) {
-  if (value !== null) {
-    switch (value.__type) {
-      case 'bigint': return BigInt(value.value);
-      case 'map': return new Map(value.value);
-      case 'set': return new Set(value.value);
-      case 'typed_array':
-      {
-        const Constructor = TYPED_ARRAY_CONSTRUCTORS[value.subtype];
-        if (!Constructor) {
-          throw new Error(`Unsupported TypedArray type: ${value.subtype}`);
-        }
-        return new Constructor(value.value);
-      }
-    }
-  }
-
-  return value;
 }

@@ -28,7 +28,7 @@
     }
   },
   "license": "MIT",
-  "version": "3.0.0",
+  "version": "3.0.1-beta",
   "description": "TypeScript-first wrapper for localStorage and sessionStorage with strict typing, serialization and namespace support. Safely work with typed data instead of raw strings",
   "scripts": {
     "build": "vite build",

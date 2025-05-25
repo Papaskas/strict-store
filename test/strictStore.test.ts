@@ -8,11 +8,11 @@ describe('strictStore', () => {
     strictStore.clear();
   });
 
-  const strictTest = <T extends StoreKey<any>>(key: T, newValue: T['__type']) => {
+  const strictTest = <T extends StoreKey<any>>(key: T, value: T['__type']) => {
     expect(strictStore.get(key)).toStrictEqual(null);
 
-    strictStore.save(key, newValue);
-    expect(strictStore.get(key)).toStrictEqual(newValue);
+    strictStore.save(key, value);
+    expect(strictStore.get(key)).toStrictEqual(value);
   }
 
   describe('Basic operations', () => {
@@ -25,7 +25,7 @@ describe('strictStore', () => {
       expect(strictStore.get(keys.stringKey)).toBe('save and get test');
     });
 
-    test('should set and get primitive values', () => {
+    test('should Set and get primitive values', () => {
       new Map<StoreKey<Serializable>, Serializable>([
         [keys.stringKey, 'test primitive value'],
         [keys.booleanKey, false],
@@ -196,26 +196,26 @@ describe('strictStore', () => {
 
     test('TypedArray', () => {
       [
-        { value: new Int8Array([3, -2, 1]), },
-        { value: new Uint8Array([1, 2, 3]), },
-        { value: new Uint8ClampedArray([1, 2, 256]), },
-        { value: new Int16Array([3000, 1000, -2000]), },
-        { value: new Uint16Array([3000, 1000, 2000]), },
-        { value: new Int32Array([300000, 100000, -200000]), },
-        { value: new Uint32Array([300000, 100000, 200000]), },
-        { value: new Float32Array([1.5, -2.5, 3.5]), },
-        { value: new Float64Array([-2.987654321, 1.123456789]), },
-        { value: new BigInt64Array([3n, 1n, -2n]), },
-        { value: new BigUint64Array([3n, 1n, 2n]), },
+        new Int8Array([3, -2, 1]),
+        new Uint8Array([1, 2, 3]),
+        new Uint8ClampedArray([1, 2, 256]),
+        new Int16Array([3000, 1000, -2000]),
+        new Uint16Array([3000, 1000, 2000]),
+        new Int32Array([300000, 100000, -200000]),
+        new Uint32Array([300000, 100000, 200000]),
+        new Float32Array([1.5, -2.5, 3.5]),
+        new Float64Array([-2.987654321, 1.123456789]),
+        new BigInt64Array([3n, 1n, -2n]),
+        new BigUint64Array([3n, 1n, 2n]),
       ].forEach((value, index) => {
-        const key = createKey<typeof value.value>(
+        const key = createKey<typeof value>(
           'test-ns',
           `typedArray${index}`,
         )
 
         strictTest(
           key,
-          value.value
+          value
         )
       })
     });

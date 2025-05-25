@@ -1,24 +1,23 @@
 /**
  * @internal
  * Represents all serializable value types that can be stored in `strictStore`.
- *
- * @remarks
- * This type is marked as `@internal` and should not be referenced directly in public API.
- * Includes all JSON-compatible types plus BigInt (with custom serialization).
  * */
 export type Serializable =
-  | string
-  | number
-  | bigint
-  | boolean
+  | Primitives
+  | null
   | { [key: string]: Serializable }
   | Serializable[]
   | Set<Serializable>
   | Map<Serializable, Serializable>
-  | TypedArray
-  | null;
+  | bigint
+  | TypedArray;
 
-type TypedArray =
+export type Primitives =
+  | string
+  | number
+  | boolean;
+
+export type TypedArray =
   | Int8Array
   | Uint8Array
   | Uint8ClampedArray

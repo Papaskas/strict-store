@@ -9,7 +9,7 @@ A **type-safe** wrapper around localStorage and sessionStorage with TypeScript s
 ## Features
 - 🛡 **Full Type Safety** - Compile-time type checking for all operations
 - 🧠 **Smart Serialization** - Automatic handling of:
-    - Primitive types
+    - Primitives types
     - Complex types
     - Special types
     - TypedArray
