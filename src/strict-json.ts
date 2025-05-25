@@ -1,5 +1,5 @@
 import { Primitives, Serializable, StoreKey, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/types';
-import { ComplexTypeData, ComplexTypeName, typeHandlers } from '@src/complex-types';
+import { ComplexTypeData, ComplexTypeName, typeComplexHandlers } from '@src/complex-types';
 import * as console from 'node:console';
 
 export const strictJson = {
@@ -21,16 +21,16 @@ const replacer = (
   value: Serializable,
 ): Serializable => {
   if (typeof value === 'bigint')
-    return typeHandlers.bigint(value)
+    return typeComplexHandlers.bigint(value)
 
   else if (value instanceof Map)
-    return typeHandlers.map(value)
+    return typeComplexHandlers.map(value)
 
   else if (value instanceof Set)
-    return typeHandlers.set(value)
+    return typeComplexHandlers.set(value)
 
   else if (ArrayBuffer.isView(value) && !(value instanceof DataView))
-    return typeHandlers.TypedArray(value)
+    return typeComplexHandlers.TypedArray(value)
 
   else
     return value

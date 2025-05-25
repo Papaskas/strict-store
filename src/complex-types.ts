@@ -39,7 +39,7 @@ const processTypedArray = (value: TypedArray): Serializable[] => {
   return Array.from(value);
 }
 
-export const typeHandlers = {
+export const typeComplexHandlers = {
   bigint: (val: bigint) => BigIntData(val),
   map: (val: Map<Serializable, Serializable>) => MapData(val),
   set: (val: Set<Serializable>) => SetData(val),
