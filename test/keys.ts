@@ -34,7 +34,7 @@ export const keys = {
     'set',
   ),
 
-  mapKey: createKey(
+  mapKey: createKey<Map<string, number>>(
     'test-ns',
     'userMap',
   ),

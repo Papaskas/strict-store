@@ -16,7 +16,10 @@ export const strictJson = {
   },
 }
 
-const replacer = (key: string, value: Serializable)=> {
+const replacer = (
+  key: string,
+  value: Serializable,
+): Serializable => {
   if (typeof value === 'bigint')
     return typeHandlers.bigint(value)
 
@@ -36,7 +39,7 @@ const replacer = (key: string, value: Serializable)=> {
 const reviver = (
   key: string,
   value: Serializable | ComplexTypeData
-) => {
+): Serializable => {
   if (
     value !== null &&
     typeof value === 'object' &&
