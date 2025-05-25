@@ -9,7 +9,7 @@ A **type-safe** wrapper around localStorage and sessionStorage with TypeScript s
 ## Features
 - 🛡 **Full Type Safety** - Compile-time type checking for all operations
 - 🧠 **Smart Serialization** - Automatic handling of:
-    - Primitives types
+    - Primitive types
     - Complex types
     - Special types
     - TypedArray
@@ -67,7 +67,7 @@ const themeKey = createKey<'light' | 'dark'>(
 strictStore.save(themeKey, 'dark'); // Only 'light' or 'dark' allowed
 
 // Retrieve with correct type inference
-const theme = strictStore.get(themeKey); // Type: 'light' | 'dark'
+const theme: 'light' | 'dark' | null = strictStore.get(themeKey); // Type: 'light' | 'dark' | null
 
 // Remove when done
 strictStore.remove(themeKey);
@@ -102,7 +102,7 @@ Creates a type-safe storage key.
 createKey<T>(
   ns: string, 
   key: string, 
-  storeType?: T,
+  storeType?: 'sessin' | 'local' = 'local',
 ): StoreKey<T>
 ```
 
