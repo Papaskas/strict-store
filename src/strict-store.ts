@@ -211,7 +211,11 @@ export function createKey<T extends Serializable>(
   ns: string,
   key: string,
   storeType: StoreType = 'local',
-) {
+): StoreKey<T> {
+  if (ns.includes(':') || key.includes(':')) {
+    throw new Error('Namespace and key must not contain the ":" character.');
+  }
+
   return {
     ns: ns,
     key: key,

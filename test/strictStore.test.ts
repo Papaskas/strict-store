@@ -20,6 +20,24 @@ describe('strictStore', () => {
       expect(strictStore.get(keys.stringKey)).toBe(null);
     });
 
+    test('should throw an exception if the ns is incorrect.', () => {
+      const nsKey = () => createKey(
+        'ans:dassda',
+        'name',
+      )
+
+      expect(nsKey).toThrow('Namespace and key must not contain the ":" character.');
+    });
+
+    test('should throw an exception if the name is incorrect.', () => {
+      const nameKey = () => createKey(
+        'ns',
+        'nam:e',
+      )
+
+      expect(nameKey).toThrow('Namespace and key must not contain the ":" character.');
+    });
+
     test('should correct save and get this value', () => {
       strictStore.save(keys.stringKey, 'save and get test');
       expect(strictStore.get(keys.stringKey)).toBe('save and get test');
