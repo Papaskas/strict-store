@@ -11,7 +11,7 @@ export const strictJson = {
     }
   },
 
-  stringify<T extends StoreKey<any>>(value: T['__type']): string {
+  stringify<T extends StoreKey<Serializable>>(value: T['__type']): string {
     return JSON.stringify(value, replacer);
   },
 }
