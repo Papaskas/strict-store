@@ -12,6 +12,8 @@
   "keywords": [
     "localStorage",
     "sessionStorage",
+    "json",
+    "namespace",
     "TypeScript",
     "storage"
   ],

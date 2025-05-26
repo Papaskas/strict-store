@@ -7,6 +7,9 @@ export type Serializable =
   | null
   | { [key: string]: Serializable }
   | Serializable[]
+  | ComplexTypes;
+
+export type ComplexTypes =
   | Set<Serializable>
   | Map<Serializable, Serializable>
   | bigint
@@ -59,13 +62,13 @@ export const TYPED_ARRAY_CONSTRUCTORS: Record<string, TypedArrayConstructor> = {
 
 /**
  * @internal
- * Defines a type-safe storage key structure for `strictStore` operations.
+ * Defines a type-safe storage name structure for `strictStore` operations.
  *
  * @typeParam T Concrete serializable type for this storage entry
  *
- * @property ns Namespace prefix to prevent key collisions between modules
- * @property key Unique identifier within the namespace
- * @property __type Acceptable types for a key
+ * @property ns Namespace prefix to prevent name collisions between modules
+ * @property key Unique identifier within the ns
+ * @property __type Acceptable types for a name
  *
  * @remarks
  * This type is marked as `@internal` but its shape is part of public API.
@@ -73,7 +76,7 @@ export const TYPED_ARRAY_CONSTRUCTORS: Record<string, TypedArrayConstructor> = {
  * */
 export type StoreKey<T extends Serializable> = {
   readonly ns: string;
-  readonly key: string;
+  readonly name: string;
   readonly storeType: StoreType;
   readonly __type: T;
 };

@@ -4,19 +4,18 @@ import { strictJson } from '@src/strict-json';
 /**
  * A type-safe wrapper around localStorage and sessionStorage that provides:
  * - Automatic JSON serialization/deserialization
- * - Namespace support to prevent key collisions
+ * - Namespace support to prevent name collisions
  * - Strict typing for all operations
  *
  * @example
  * ```ts
- * const key = createKey<'light', 'dark'>(
+ * const name = createKey<'light', 'dark'>(
  *  'app',
  *  'theme',
- *  'light'
  * );
  *
- * strictStore.save(key, 'dark'); // Only the literal type is allowed
- * const theme: 'light' | 'dark' = StrictStore.get(key); // Return the literal type
+ * strictStore.save(name, 'dark'); // Only the literal type is allowed
+ * const theme: 'light' | 'dark' | null = StrictStore.get(name); // Return the literal type
  * ```
  */
 export const strictStore = {
@@ -25,7 +24,7 @@ export const strictStore = {
    * Retrieves a value from storage.
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key StoreKey object containing namespace, key and default value
+   * @param key StoreKey object containing ns, name and default value
    * @returns The stored value
    *
    * @example
@@ -35,7 +34,7 @@ export const strictStore = {
    *  'theme',
    * );
    *
-   * const theme: 'light' | 'dark' = strictStore.get(themeKey);
+   * const theme: 'light' | 'dark' | null = strictStore.get(themeKey);
    * ```
    *
    * @remarks
@@ -43,8 +42,7 @@ export const strictStore = {
    */
   get<T extends Serializable>(key: StoreKey<T>): T | null {
     const storage = getStorage(key.storeType);
-    const fullKey = getFullKey(key.ns, key.key);
-    const storedValue = storage.getItem(fullKey);
+    const storedValue = storage.getItem(`${key.ns}:${key.name}`);
 
     if(storedValue === null) return storedValue;
 
@@ -55,7 +53,7 @@ export const strictStore = {
    * Saves a value to storage with automatic serialization.
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key StoreKey object containing namespace and key
+   * @param key StoreKey object containing ns and name
    * @param value Value to store (will be JSON.stringified)
    *
    * @example
@@ -69,15 +67,14 @@ export const strictStore = {
    * strictStore.save(themeKey, 'dark');
    * ```
    */
-  save<T extends StoreKey<any>>(key: T, value: T['__type']): void {
+  save<T extends StoreKey<Serializable>>(key: T, value: T['__type']): void {
     const storage = getStorage(key.storeType);
-    const fullKey = getFullKey(key.ns, key.key);
 
-    storage.setItem(fullKey, strictJson.stringify(value));
+    storage.setItem(`${key.ns}:${key.name}`, strictJson.stringify(value));
   },
 
   /**
-   * Removes a key-value pair from storage.
+   * Removes a name-value pair from storage.
    *
    * @typeParam T - Type parameter for StoreKey consistency
    * @param key StoreKey object identifying item to remove
@@ -93,21 +90,20 @@ export const strictStore = {
    * ```
    *
    * @remarks
-   * - Silent if key doesn't exist
+   * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
   remove<T extends Serializable>(key: StoreKey<T>): void {
     const storage = getStorage(key.storeType);
-    const fullKey = getFullKey(key.ns, key.key);
 
-    storage.removeItem(fullKey);
+    storage.removeItem(`${key.ns}:${key.name}`);
   },
 
   /**
-   * Checks if a key exists in storage.
+   * Checks if a name exists in storage.
    *
-   * @param key StoreKey object containing namespace and key identifier
-   * @returns `true` if the key exists, `false` otherwise
+   * @param key StoreKey object containing ns and name identifier
+   * @returns `true` if the name exists, `false` otherwise
    *
    * @example
    * ```ts
@@ -120,14 +116,13 @@ export const strictStore = {
    * ```
    *
    * @remarks
-   * - Does not validate the stored value, only checks key presence
+   * - Does not validate the stored value, only checks name presence
    * - If the value is null, it returns false
    */
   has<T extends Serializable>(key: StoreKey<T>): boolean {
     const storage = getStorage(key.storeType);
-    const fullKey = getFullKey(key.ns, key.key);
 
-    return storage.getItem(fullKey) !== null;
+    return storage.getItem(`${key.ns}:${key.name}`) !== null;
   },
 
   /**
@@ -164,7 +159,7 @@ export const strictStore = {
   },
 
   /**
-   * Clears all keys in storage that belong to a specific namespace.
+   * Clears all keys in storage that belong to a specific ns.
    *
    * @param ns Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
    *
@@ -174,7 +169,7 @@ export const strictStore = {
    * ```
    *
    * @remarks
-   * This operation is synchronous and affects only keys with matching namespace prefix.
+   * This operation is synchronous and affects only keys with matching ns prefix.
    */
   clearNamespace(ns: string) {
     [localStorage, sessionStorage].forEach(storage => {
@@ -188,12 +183,12 @@ export const strictStore = {
 }
 
 /**
- * Creates a type-safe store key object for use with strictStore.
+ * Creates a type-safe store name object for use with strictStore.
  *
  * @typeParam T - Type of the stored value, must extend `Serializable`
  *
- * @param ns - Namespace to prevent key collisions (e.g., 'app', 'user')
- * @param key - Unique identifier within the namespace
+ * @param ns - Namespace to prevent name collisions (e.g., 'app', 'user')
+ * @param name - Unique identifier within the ns
  * @param [storeType] - Determines which Web Storage API to use:
  *                  - 'local': Uses `localStorage`
  *                  - 'session': Uses `sessionStorage`
@@ -202,23 +197,23 @@ export const strictStore = {
  *
  * @remarks
  * - The returned object is frozen with `as const` for type safety
- * - Namespace and key are combined to form the final storage key (e.g., 'app:counter')
+ * - Namespace and name are combined to form the final storage name (e.g., 'app:counter')
  *
  * @see {@link StoreKey} for the interface definition
  * @see {@link strictStore} for usage examples with storage methods
  */
 export function createKey<T extends Serializable>(
   ns: string,
-  key: string,
+  name: string,
   storeType: StoreType = 'local',
 ): StoreKey<T> {
-  if (ns.includes(':') || key.includes(':')) {
-    throw new Error('Namespace and key must not contain the ":" character.');
+  if (ns.includes(':') || name.includes(':')) {
+    throw new Error('Namespace and name must not contain the ":" character.');
   }
 
   return {
     ns: ns,
-    key: key,
+    name: name,
     storeType: storeType,
     __type: {} as T
   } as const satisfies StoreKey<T>;
@@ -229,15 +224,4 @@ export function createKey<T extends Serializable>(
  * */
 const getStorage = (type: StoreType): Storage => {
   return type === 'local' ? localStorage : sessionStorage;
-}
-
-/**
- * @internal
- * Generates full storage key by combining namespace and key
- */
-function getFullKey(
-  ns: string,
-  key: string,
-): string {
-  return `${ns}:${key}`
 }

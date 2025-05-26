@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/npm/l/strict-store?v=2)](https://github.com/Papaskas/strict-store/blob/main/LICENSE)
 [![Bundle Size](https://img.shields.io/bundlephobia/min/strict-store)](https://bundlephobia.com/package/strict-store)
 
-A **type-safe** wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.
+A **type-safe** wrapper around localStorage and sessionStorage with TypeScript support, ns isolation, and automatic serialization.
 
 ## Features
 - 🛡 **Full Type Safety** - Compile-time type checking for all operations
@@ -13,7 +13,7 @@ A **type-safe** wrapper around localStorage and sessionStorage with TypeScript s
     - Complex types
     - Special types
     - TypedArray
-- 🗂 **Namespace Isolation** - Prevent key collisions with hierarchical organization
+- 🗂 **Namespace Isolation** - Prevent name collisions with hierarchical organization
 - ⚡ **Dual Storage Support** - Switch between localStorage (persistent) and sessionStorage (session-based)
 
 ### Supported types:
@@ -56,10 +56,10 @@ pnpm add strict-store
 ```typescript
 import { createKey, strictStore } from 'strict-storage';
 
-// Create a type-safe key
+// Create a type-safe name
 const themeKey = createKey<'light' | 'dark'>(
   'app', // namaspace
-  'theme', // key name
+  'theme', // name name
   'local' // storage (localStorage, sessionStorage)
 );
 
@@ -72,13 +72,13 @@ const theme: 'light' | 'dark' | null = strictStore.get(themeKey); // Type: 'ligh
 // Remove when done
 strictStore.remove(themeKey);
 
-// Check key
+// Check name
 strictStore.has(userKey);  // → true
 
 // Get all items count
 console.log(`Total items: ${strictStore.length}`);
 
-// Clears all keys in storage that belong to a specific namespace
+// Clears all keys in storage that belong to a specific ns
 strictStore.clearNamespace('app');
 
 // Clears all items from storage (including non-namespaced)
@@ -96,25 +96,25 @@ const sessionKey = createKey(..., 'session');
 
 ### API References
 
-Creates a type-safe storage key.
+Creates a type-safe storage name.
 
 ```typescript
 createKey<T>(
   ns: string, 
-  key: string, 
-  storeType?: 'sessin' | 'local' = 'local',
+  name: string, 
+  storeType?: 'sessin' | 'local' = 'local'
 ): StoreKey<T>
 ```
 
 ```typescript
 strictStore
-  .get(key: StoreKey): T // Retrieves a value
-  .save<T>(key: StoreKey, value: T): void // Stores a value
-  .remove(key: StoreKey): void // Removes a key
-  .has(key: StoreKey): boolean // Checks for key existence
+  .get(name: StoreKey): T // Retrieves a value
+  .save<T>(name: StoreKey, value: T): void // Stores a value
+  .remove(name: StoreKey): void // Removes a name
+  .has(name: StoreKey): boolean // Checks for name existence
   .length(): number // Total items count
   .clear(): void // Clears all storage
-  .clearNamespace(ns: string): void // Clears a namespace
+  .clearNamespace(ns: string): void // Clears a ns
 ```
 
 ## Type Safety
@@ -165,7 +165,7 @@ strictStore.save(userKey, {
 
 ## Limitations
 
-1. Avoid using colons (':') in namespace or key values — this symbol is reserved as a namespace delimiter.
+1. Avoid using colons (':') in ns or name values — this symbol is reserved as a ns delimiter.
 2. The undefined type is not supported — it will be converted to null during JSON serialization
 
 ## Required

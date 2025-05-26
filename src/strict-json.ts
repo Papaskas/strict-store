@@ -1,4 +1,4 @@
-import { Primitives, Serializable, StoreKey, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/types';
+import { ComplexTypes, Primitives, Serializable, StoreKey, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/types';
 import { ComplexTypeData, ComplexTypeName, typeComplexHandlers } from '@src/complex-types';
 import * as console from 'node:console';
 
@@ -36,9 +36,17 @@ const replacer = (
     return value
 }
 
+/**
+ * @param value All except complex types, they are stored in a different form.
+ * */
 const reviver = (
   key: string,
-  value: Serializable | ComplexTypeData
+  value:
+    | Primitives
+    | null
+    | { [key: string]: Serializable }
+    | Serializable[]
+    | ComplexTypeData // ComplexTypes -> ComplexTypeData
 ): Serializable => {
   if (
     value !== null &&

@@ -8,7 +8,7 @@ describe('strictStore', () => {
     strictStore.clear();
   });
 
-  const strictTest = <T extends StoreKey<any>>(key: T, value: T['__type']) => {
+  const strictTest = <T extends StoreKey<Serializable>>(key: T, value: T['__type']) => {
     expect(strictStore.get(key)).toStrictEqual(null);
 
     strictStore.save(key, value);
@@ -26,16 +26,16 @@ describe('strictStore', () => {
         'name',
       )
 
-      expect(nsKey).toThrow('Namespace and key must not contain the ":" character.');
+      expect(nsKey).toThrow('Namespace and name must not contain the ":" character.');
     });
 
     test('should throw an exception if the name is incorrect.', () => {
       const nameKey = () => createKey(
-        'ns',
+        'namespace',
         'nam:e',
       )
 
-      expect(nameKey).toThrow('Namespace and key must not contain the ":" character.');
+      expect(nameKey).toThrow('Namespace and name must not contain the ":" character.');
     });
 
     test('should correct save and get this value', () => {
@@ -86,7 +86,7 @@ describe('strictStore', () => {
   });
 
   describe('Namespaces operations', () => {
-    test('correct generate namespace', () => {
+    test('correct generate ns', () => {
       strictStore.save(keys.stringKey, 'key1');
 
       const valueLib = strictStore.get(keys.stringKey)
