@@ -11,7 +11,6 @@ A **type-safe** wrapper around localStorage and sessionStorage with TypeScript s
 - 🧠 **Smart Serialization** - Automatic handling of:
     - Primitive types
     - Complex types
-    - Special types
     - TypedArray
 - 🗂 **Namespace Isolation** - Prevent name collisions with hierarchical organization
 - ⚡ **Dual Storage Support** - Switch between localStorage (persistent) and sessionStorage (session-based)
@@ -56,10 +55,10 @@ pnpm add strict-store
 ```typescript
 import { createKey, strictStore } from 'strict-storage';
 
-// Create a type-safe name
+// Create a type-safe key
 const themeKey = createKey<'light' | 'dark'>(
   'app', // namaspace
-  'theme', // name name
+  'theme', // name
   'local' // storage (localStorage, sessionStorage)
 );
 
@@ -72,11 +71,11 @@ const theme: 'light' | 'dark' | null = strictStore.get(themeKey); // Type: 'ligh
 // Remove when done
 strictStore.remove(themeKey);
 
-// Check name
-strictStore.has(userKey);  // → true
+// Check key
+const hasKey: boolean = strictStore.has(userKey);
 
 // Get all items count
-console.log(`Total items: ${strictStore.length}`);
+const count: number = strictStore.length;
 
 // Clears all keys in storage that belong to a specific ns
 strictStore.clearNamespace('app');
@@ -96,7 +95,7 @@ const sessionKey = createKey(..., 'session');
 
 ### API References
 
-Creates a type-safe storage name.
+Create a type-safe storage key.
 
 ```typescript
 createKey<T>(
@@ -110,10 +109,10 @@ createKey<T>(
 strictStore
   .get(name: StoreKey): T // Retrieves a value
   .save<T>(name: StoreKey, value: T): void // Stores a value
-  .remove(name: StoreKey): void // Removes a name
-  .has(name: StoreKey): boolean // Checks for name existence
+  .remove(name: StoreKey): void // Removes a key
+  .has(name: StoreKey): boolean // Checks for key existence
   .length(): number // Total items count
-  .clear(): void // Clears all storage
+  .clear(): void // Clear all storages
   .clearNamespace(ns: string): void // Clears a ns
 ```
 
