@@ -43,5 +43,5 @@ export const typeComplexHandlers = {
   bigint: (val: bigint) => BigIntData(val),
   map: (val: Map<Serializable, Serializable>) => MapData(val),
   set: (val: Set<Serializable>) => SetData(val),
-  TypedArray: (val: TypedArray) => TypedArrayData(val),
+  typedArray: (val: TypedArray) => TypedArrayData(val),
 }

@@ -1,6 +1,5 @@
-import { ComplexTypes, Primitives, Serializable, StoreKey, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/types';
+import { Primitives, Serializable, StoreKey, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/types';
 import { ComplexTypeData, ComplexTypeName, typeComplexHandlers } from '@src/complex-types';
-import * as console from 'node:console';
 
 export const strictJson = {
   parse<T extends Serializable>(value: string): T {
@@ -30,7 +29,7 @@ const replacer = (
     return typeComplexHandlers.set(value)
 
   else if (ArrayBuffer.isView(value) && !(value instanceof DataView))
-    return typeComplexHandlers.TypedArray(value)
+    return typeComplexHandlers.typedArray(value)
 
   else
     return value
