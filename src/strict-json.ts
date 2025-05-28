@@ -43,9 +43,6 @@ const reviver = (
   key: string,
   value:
     | Primitives
-    | null
-    | { [key: string]: Serializable }
-    | Serializable[]
     | ComplexTypeData // ComplexTypes -> ComplexTypeData
 ): Serializable => {
   if (

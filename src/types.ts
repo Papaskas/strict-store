@@ -4,9 +4,6 @@
  * */
 export type Serializable =
   | Primitives
-  | null
-  | { [key: string]: Serializable }
-  | Serializable[]
   | ComplexTypes;
 
 export type ComplexTypes =
@@ -17,6 +14,9 @@ export type ComplexTypes =
 
 export type Primitives =
   | string
+  | null
+  | { [key: string]: Serializable }
+  | Serializable[]
   | number
   | boolean;
 
