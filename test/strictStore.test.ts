@@ -128,7 +128,7 @@ describe('strictStore', () => {
       strictStore.save(keys.stringKey, 'key1');
 
       const valueLib = strictStore.get(keys.stringKey)
-      const valueCommon = localStorage.getItem('test-ns:string');
+      const valueCommon = localStorage.getItem('strict-store/test-ns:string');
 
       expect(valueCommon).not.toBe(null);
       expect(valueLib).toBe(JSON.parse(valueCommon!));

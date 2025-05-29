@@ -42,7 +42,7 @@ export const strictStore = {
    */
   get<T extends Serializable>(key: StoreKey<T>): T | null {
     const storage = getStorage(key.storeType);
-    const storedValue = storage.getItem(`${key.ns}:${key.name}`);
+    const storedValue = storage.getItem(getFullName(key.ns, key.name));
 
     if(storedValue === null) return storedValue;
 
@@ -93,7 +93,7 @@ export const strictStore = {
   save<T extends StoreKey<Serializable>>(key: T, value: T['__type']): void {
     const storage = getStorage(key.storeType);
 
-    storage.setItem(`${key.ns}:${key.name}`, strictJson.stringify(value));
+    storage.setItem(getFullName(key.ns, key.name), strictJson.stringify(value));
   },
 
   /**
@@ -125,7 +125,7 @@ export const strictStore = {
     }
 
     const storage = getStorage(key.storeType);
-    storage.removeItem(`${key.ns}:${key.name}`);
+    storage.removeItem(getFullName(key.ns, key.name));
   },
 
   /**
@@ -151,7 +151,7 @@ export const strictStore = {
   has(key: StoreKey<Serializable>): boolean {
     const storage = getStorage(key.storeType);
 
-    return storage.getItem(`${key.ns}:${key.name}`) !== null;
+    return storage.getItem(getFullName(key.ns, key.name)) !== null;
   },
 
   /**
@@ -203,7 +203,7 @@ export const strictStore = {
   clearNamespace(ns: string) {
     [localStorage, sessionStorage].forEach(storage => {
       Object.keys(storage).forEach(key => {
-        if (key.startsWith(`${ns}:`)) {
+        if (key.startsWith(`strict-store/${ns}:`)) {
           storage.removeItem(key);
         }
       })
@@ -253,4 +253,8 @@ export function createKey<T extends Serializable>(
  * */
 const getStorage = (type: StoreType): Storage => {
   return type === 'local' ? localStorage : sessionStorage
+}
+
+const getFullName = (ns: string, name: string): string => {
+  return `strict-store/${ns}:${name}`
 }
