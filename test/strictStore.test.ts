@@ -81,6 +81,32 @@ describe('strictStore', () => {
       expect(numberEntry?.value).toBe(45);
     });
 
+    test('should correct getAllByNamespace method', () => {
+      strictStore.save(keys.stringKey, 'remove test');
+      strictStore.save(keys.numberKey, 45);
+      strictStore.save(createKey<number>(
+        'ns-2',
+        'name-2',
+      ), 45);
+
+      expect(strictStore.length).toBe(3);
+
+      const all = strictStore.getAll("test-ns")
+
+      expect(all.length).toBe(2);
+
+      const stringEntry = all.find(entry => entry.key.endsWith('/test-ns:string'));
+      const numberEntry = all.find(entry => entry.key.endsWith('/test-ns:number'));
+      const unknownEntry = all.find(entry => entry.key.endsWith('/ns-2:name-2'));
+
+      expect(stringEntry).toBeDefined();
+      expect(stringEntry?.value).toBe('remove test');
+
+      expect(numberEntry).toBeDefined();
+      expect(numberEntry?.value).toBe(45);
+
+      expect(unknownEntry).toBe(undefined);
+    });
 
     test('should correct getSeveral method', () => {
       const themeKey = createKey<'light' | 'dark'>('app', 'theme');

@@ -73,35 +73,39 @@ export const strictStore = {
   },
 
   /**
-   * Retrieves all values stored via strictStore from both localStorage and sessionStorage.
-   * Only keys with the 'strict-store/' prefix are included, ensuring that only values managed by strictStore are returned.
+   * Retrieves all stored key-value pairs from both localStorage and sessionStorage that belong to strictStore.
+   * If a namespace is provided, only keys with the 'strict-store/{ns}:' prefix are included.
+   * Otherwise, all keys with the 'strict-store/' prefix are returned.
    *
+   * @param ns (optional) Namespace to filter keys (e.g., 'user' will return all 'user:*' keys)
    * @returns An array of objects, each containing the storage key and its parsed value.
    *
    * @example
    * ```ts
-   * const all = strictStore.getAll();
+   * // Get all items stored by strictStore
+   * const allItems = strictStore.getAll();
    *
-   * all.forEach(({ key, value }) => {
+   * // Get only items for the 'user' namespace
+   * const userItems = strictStore.getAll('user');
+   *
+   * userItems.forEach(({ key, value }) => {
    *   console.log(key, value);
    * });
-   *
-   * // Example output:
-   * // 'strict-store/app:theme', 'dark'
-   * // 'strict-store/app:lang', 'en'
    * ```
    *
    * @remarks
-   * - Only keys saved via strictStore (with the 'strict-store/' prefix) are included
+   * - Scans both localStorage and sessionStorage.
+   * - Only includes keys managed by strictStore (those starting with 'strict-store/').
    */
-  getAll() {
+  getAll(ns?: string) {
     const result: { key: string, value: Serializable }[] = [];
+    const prefix = ns ? `strict-store/${ns}:` : 'strict-store/';
 
     [localStorage, sessionStorage].forEach((storage) => {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
 
-        if (key && key.startsWith('strict-store/')) {
+        if (key && key.startsWith(prefix)) {
           const value = storage.getItem(key);
 
           if (value !== null) {
@@ -109,7 +113,7 @@ export const strictStore = {
           }
         }
       }
-    })
+    });
 
     return result;
   },

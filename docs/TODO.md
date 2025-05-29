@@ -4,10 +4,11 @@
 - [ ] Added Date type
 - [ ] Added saveSeveral method
 - [X] Added pick method
-- [ ] Added getAll method
+- [X] Added getAll method
 - [X] Added removeSeveral method
 - [ ] Added merge method - Merges a value into an existing object stored under the specified key
-- [ ] Added getNamespace method - Retrieves all key-value pairs within a specific namespace
+- [X] Added getByNamespace method - Retrieves all key-value pairs within a specific namespace
 - [ ] Added keys method - Returns an array of all keys in the storage
 - [ ] Added forEach method - Iterates over all key-value pairs in the storage and executes a callback for each
 - [ ] Added onChange method - Allows you to listen for changes to the storage (this may require additional implementation for event handling) 
+- [ ] Add a void check for name and ns 
