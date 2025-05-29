@@ -93,9 +93,15 @@ export const strictStore = {
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  remove<T extends Serializable>(key: StoreKey<T>): void {
-    const storage = getStorage(key.storeType);
+  remove<T extends Serializable>(key: StoreKey<T> | StoreKey<Serializable>[]): void {
+    if (Array.isArray(key)) {
+      for (const singleKey of key) {
+        strictStore.remove(singleKey);
+      }
+      return
+    }
 
+    const storage = getStorage(key.storeType);
     storage.removeItem(`${key.ns}:${key.name}`);
   },
 
@@ -177,10 +183,10 @@ export const strictStore = {
         if (key.startsWith(`${ns}:`)) {
           storage.removeItem(key);
         }
-      });
-    });
-  }
-}
+      })
+    })
+  },
+} as const
 
 /**
  * Creates a type-safe store name object for use with strictStore.
@@ -208,7 +214,7 @@ export function createKey<T extends Serializable>(
   storeType: StoreType = 'local',
 ): StoreKey<T> {
   if (ns.includes(':') || name.includes(':')) {
-    throw new Error('Namespace and name must not contain the ":" character.');
+    throw new Error('Namespace and name must not contain the ":" character.')
   }
 
   return {
@@ -216,12 +222,12 @@ export function createKey<T extends Serializable>(
     name: name,
     storeType: storeType,
     __type: {} as T
-  } as const satisfies StoreKey<T>;
+  } as const satisfies StoreKey<T>
 }
 
 /**
  * @internal
  * */
 const getStorage = (type: StoreType): Storage => {
-  return type === 'local' ? localStorage : sessionStorage;
+  return type === 'local' ? localStorage : sessionStorage
 }

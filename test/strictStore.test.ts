@@ -43,6 +43,24 @@ describe('strictStore', () => {
       expect(strictStore.get(keys.stringKey)).toBe('save and get test');
     });
 
+    test('should correct removeAll method', () => {
+      strictStore.save(keys.stringKey, 'remove test');
+      strictStore.save(keys.numberKey, 45);
+
+      expect(strictStore.length).toBe(2);
+
+      strictStore.remove([
+        keys.stringKey,
+        keys.numberKey,
+        keys.booleanKey,
+        keys.enumKey,
+        keys.literalKey,
+        keys.setKey
+      ]);
+
+      expect(strictStore.length).toBe(0);
+    });
+
     test('should Set and get primitive values', () => {
       new Map<StoreKey<Serializable>, Serializable>([
         [keys.stringKey, 'test primitive value'],
@@ -61,9 +79,11 @@ describe('strictStore', () => {
     test('should remove items and get default value', () => {
       strictStore.save(keys.stringKey, 'remove value');
       expect(strictStore.get(keys.stringKey)).toBe('remove value');
+      expect(strictStore.length).toBe(1);
 
       strictStore.remove(keys.stringKey);
       expect(strictStore.get(keys.stringKey)).toBe(null);
+      expect(strictStore.length).toBe(0);
     });
 
     test('should working clear method', () => {

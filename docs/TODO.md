@@ -2,3 +2,11 @@
 - [ ] Added Symbol type
 - [ ] Added Function type
 - [ ] Added Date type
+- [ ] Added saveSeveral method
+- [ ] Added getSeveral method
+- [X] Added removeSeveral method
+- [ ] Added merge method - Merges a value into an existing object stored under the specified key
+- [ ] Added getNamespace method - Retrieves all key-value pairs within a specific namespace
+- [ ] Added keys method - Returns an array of all keys in the storage
+- [ ] Added forEach method - Iterates over all key-value pairs in the storage and executes a callback for each
+- [ ] Added onChange method - Allows you to listen for changes to the storage (this may require additional implementation for event handling) 
