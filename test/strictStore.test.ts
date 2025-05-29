@@ -15,6 +15,8 @@ describe('strictStore', () => {
     expect(strictStore.get(key)).toStrictEqual(value);
   }
 
+  const expectType = <T>(_value: T) => {}
+
   describe('Basic operations', () => {
     test('should return `null` value when empty', () => {
       expect(strictStore.get(keys.stringKey)).toBe(null);
@@ -59,6 +61,22 @@ describe('strictStore', () => {
       ]);
 
       expect(strictStore.length).toBe(0);
+    });
+
+    test('should correct getSeveral method', () => {
+      const themeKey = createKey<'light' | 'dark'>('app', 'theme');
+      const langKey = createKey<'en' | 'ru'>('app', 'lang');
+
+      strictStore.save(themeKey, 'dark')
+      strictStore.save(langKey, 'en')
+
+      const [theme, lang] = strictStore.pick([themeKey, langKey]);
+
+      expectType<'light' | 'dark' | null>(theme)
+      expectType<'en' | 'ru' | null>(lang)
+
+      expect(theme).toBe('dark');
+      expect(lang).toBe('en');
     });
 
     test('should Set and get primitive values', () => {

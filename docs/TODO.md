@@ -3,7 +3,8 @@
 - [ ] Added Function type
 - [ ] Added Date type
 - [ ] Added saveSeveral method
-- [ ] Added getSeveral method
+- [X] Added pick method
+- [ ] Added getAll method
 - [X] Added removeSeveral method
 - [ ] Added merge method - Merges a value into an existing object stored under the specified key
 - [ ] Added getNamespace method - Retrieves all key-value pairs within a specific namespace

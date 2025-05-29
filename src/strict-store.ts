@@ -50,6 +50,29 @@ export const strictStore = {
   },
 
   /**
+   * Retrieves values from storage for a tuple of keys, preserving the type for each key.
+   *
+   * @typeParam K A tuple of StoreKey objects with different value types
+   * @param keys A tuple of StoreKey objects
+   * @returns A tuple of values (or null), corresponding to each key
+   *
+   * @example
+   * ```ts
+   * const themeKey = createKey<'light' | 'dark'>('app', 'theme');
+   * const langKey = createKey<'en' | 'ru'>('app', 'lang');
+   *
+   * const [theme, lang] = strictStore.pick([themeKey, langKey]);
+   * ```
+   */
+  pick<const K extends readonly StoreKey<Serializable>[]>(
+    keys: K
+  ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never } {
+    return keys.map(key => strictStore.get(key)) as {
+      [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never
+    };
+  },
+
+  /**
    * Saves a value to storage with automatic serialization.
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
