@@ -284,6 +284,8 @@ export function createKey<T extends Serializable>(
 ): StoreKey<T> {
   if (ns.includes(':') || name.includes(':')) {
     throw new Error('Namespace and name must not contain the ":" character.')
+  } else if(ns.length === 0 || name.length === 0) {
+    throw new Error('The name or namespace cannot be empty.')
   }
 
   return {

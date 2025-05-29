@@ -22,24 +22,6 @@ describe('strictStore', () => {
       expect(strictStore.get(keys.stringKey)).toBe(null);
     });
 
-    test('should throw an exception if the ns is incorrect.', () => {
-      const nsKey = () => createKey(
-        'ans:dassda',
-        'name',
-      )
-
-      expect(nsKey).toThrow('Namespace and name must not contain the ":" character.');
-    });
-
-    test('should throw an exception if the name is incorrect.', () => {
-      const nameKey = () => createKey(
-        'namespace',
-        'nam:e',
-      )
-
-      expect(nameKey).toThrow('Namespace and name must not contain the ":" character.');
-    });
-
     test('should correct save and get this value', () => {
       strictStore.save(keys.stringKey, 'save and get test');
       expect(strictStore.get(keys.stringKey)).toBe('save and get test');
@@ -207,6 +189,32 @@ describe('strictStore', () => {
       expect(strictStore.get(nsKeys.key3)).toBe('new value3');
     });
   });
+
+  describe('createKey correct working', () => {
+    test('should throw an exception if the name or ns is incorrect.', () => {
+      const nsKey = () => createKey('ans:dassda', 'name')
+      const nameKey = () => createKey('namespace', 'nam:e')
+
+      expect(nameKey).toThrow('Namespace and name must not contain the ":" character.');
+      expect(nsKey).toThrow('Namespace and name must not contain the ":" character.');
+    });
+
+    test('should throw an exception if the ns or name is empty.', () => {
+      const nsKey = () => createKey('', 'name',)
+      const nameKey = () => createKey('ns', '',)
+
+      expect(nsKey).toThrow('The name or namespace cannot be empty.');
+      expect(nameKey).toThrow('The name or namespace cannot be empty.');
+    });
+
+    test('createKey return correct type', () => {
+      const key = createKey<string>('namespace', 'name');
+      const key2 = createKey<{ key: string; value: number; }>('namespace', 'name');
+      
+      expectType<StoreKey<string>>(key)
+      expectType<StoreKey<{ key: string, value: number }>>(key2)
+    });
+  })
 
   describe('advanced types', () => {
     test('enum', () => {
