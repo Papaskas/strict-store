@@ -57,11 +57,30 @@ describe('strictStore', () => {
         keys.booleanKey,
         keys.enumKey,
         keys.literalKey,
-        keys.setKey
+        keys.setKey,
       ]);
 
       expect(strictStore.length).toBe(0);
     });
+
+    test('should correct getAll method', () => {
+      strictStore.save(keys.stringKey, 'remove test');
+      strictStore.save(keys.numberKey, 45);
+
+      const all = strictStore.getAll()
+
+      expect(all.length).toBe(2);
+
+      const stringEntry = all.find(entry => entry.key.endsWith('/test-ns:string'));
+      const numberEntry = all.find(entry => entry.key.endsWith('/test-ns:number'));
+
+      expect(stringEntry).toBeDefined();
+      expect(stringEntry?.value).toBe('remove test');
+
+      expect(numberEntry).toBeDefined();
+      expect(numberEntry?.value).toBe(45);
+    });
+
 
     test('should correct getSeveral method', () => {
       const themeKey = createKey<'light' | 'dark'>('app', 'theme');

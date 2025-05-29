@@ -73,6 +73,48 @@ export const strictStore = {
   },
 
   /**
+   * Retrieves all values stored via strictStore from both localStorage and sessionStorage.
+   * Only keys with the 'strict-store/' prefix are included, ensuring that only values managed by strictStore are returned.
+   *
+   * @returns An array of objects, each containing the storage key and its parsed value.
+   *
+   * @example
+   * ```ts
+   * const all = strictStore.getAll();
+   *
+   * all.forEach(({ key, value }) => {
+   *   console.log(key, value);
+   * });
+   *
+   * // Example output:
+   * // 'strict-store/app:theme', 'dark'
+   * // 'strict-store/app:lang', 'en'
+   * ```
+   *
+   * @remarks
+   * - Only keys saved via strictStore (with the 'strict-store/' prefix) are included
+   */
+  getAll() {
+    const result: { key: string, value: Serializable }[] = [];
+
+    [localStorage, sessionStorage].forEach((storage) => {
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+
+        if (key && key.startsWith('strict-store/')) {
+          const value = storage.getItem(key);
+
+          if (value !== null) {
+            result.push({ key, value: strictJson.parse(value) });
+          }
+        }
+      }
+    })
+
+    return result;
+  },
+
+  /**
    * Saves a value to storage with automatic serialization.
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
