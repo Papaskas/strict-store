@@ -93,7 +93,7 @@ export const strictStore = {
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  remove<T extends Serializable>(key: StoreKey<T> | StoreKey<Serializable>[]): void {
+  remove(key: StoreKey<Serializable> | StoreKey<Serializable>[]): void {
     if (Array.isArray(key)) {
       for (const singleKey of key) {
         strictStore.remove(singleKey);
@@ -125,7 +125,7 @@ export const strictStore = {
    * - Does not validate the stored value, only checks name presence
    * - If the value is null, it returns false
    */
-  has<T extends Serializable>(key: StoreKey<T>): boolean {
+  has(key: StoreKey<Serializable>): boolean {
     const storage = getStorage(key.storeType);
 
     return storage.getItem(`${key.ns}:${key.name}`) !== null;
