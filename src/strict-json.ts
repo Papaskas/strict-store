@@ -1,5 +1,13 @@
-import { Primitives, Serializable, StoreKey, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/types';
-import { ComplexTypeData, ComplexTypeName, typeComplexHandlers } from '@src/complex-types';
+import {
+  ComplexTypeData,
+  ComplexTypeNames,
+  Primitives,
+  Serializable,
+  StoreKey,
+  TYPED_ARRAY_CONSTRUCTORS,
+  TypedArray
+} from '@src/types';
+import { complexTypeMappers } from '@src/complex-types-mappers';
 
 export const strictJson = {
   parse<T extends Serializable>(value: string): T {
@@ -20,16 +28,16 @@ const replacer = (
   value: Serializable,
 ): Serializable => {
   if (typeof value === 'bigint')
-    return typeComplexHandlers.bigint(value)
+    return complexTypeMappers.bigint(value)
 
   else if (value instanceof Map)
-    return typeComplexHandlers.map(value)
+    return complexTypeMappers.map(value)
 
   else if (value instanceof Set)
-    return typeComplexHandlers.set(value)
+    return complexTypeMappers.set(value)
 
   else if (ArrayBuffer.isView(value) && !(value instanceof DataView))
-    return typeComplexHandlers.typedArray(value)
+    return complexTypeMappers.typedArray(value)
 
   else
     return value
@@ -50,7 +58,7 @@ const reviver = (
     '__type' in value &&
     'value' in value
   ) {
-    const typeName: ComplexTypeName = (value as ComplexTypeData).__type
+    const typeName: ComplexTypeNames = (value as ComplexTypeData).__type
 
     switch (typeName) {
       case 'bigint':

@@ -60,6 +60,14 @@ export const TYPED_ARRAY_CONSTRUCTORS: Record<string, TypedArrayConstructor> = {
   'BigUint64Array': BigUint64Array,
 }
 
+export type ComplexTypeNames = 'bigint' |'set' | 'map' |'typedArray';
+
+export type ComplexTypeData = {
+  __type: ComplexTypeNames,
+  value: Serializable,
+  subtype?: string,
+}
+
 /**
  * @internal
  * Defines a type-safe storage name structure for `strictStore` operations.
