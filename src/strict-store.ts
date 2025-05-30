@@ -291,11 +291,11 @@ const strictStore = {
  * @see {@link StoreKey} for the interface definition
  * @see {@link strictStore} for usage examples with storage methods
  */
-function createKey<T extends Serializable>(
+const createKey = <T extends Serializable>(
   ns: string,
   name: string,
   storeType: StoreType = 'local',
-): StoreKey<T> {
+): StoreKey<T> => {
   if (ns.includes(':') || name.includes(':')) {
     throw new Error('Namespace and name must not contain the ":" character.')
   } else if(ns.length === 0 || name.length === 0) {
