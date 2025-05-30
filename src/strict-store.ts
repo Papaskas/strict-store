@@ -223,7 +223,7 @@ const strictStore = {
       const keys: string[] = [];
 
       Object.keys(storage).forEach(key => {
-        if (key !== null && key.startsWith('strict-store'))
+        if (key !== null && key.startsWith('strict-store/'))
           keys.push(key);
       })
 
