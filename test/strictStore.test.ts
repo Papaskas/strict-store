@@ -6,6 +6,8 @@ import { Serializable, StoreKey } from '@src/types';
 describe('strictStore', () => {
   beforeEach(() => {
     strictStore.clear();
+    localStorage.clear();
+    sessionStorage.clear();
   });
 
   const strictTest = <T extends StoreKey<Serializable>>(key: T, value: T['__type']) => {
@@ -132,12 +134,35 @@ describe('strictStore', () => {
     });
 
     test('should working clear method', () => {
+      localStorage.setItem('1', '231')
+      sessionStorage.setItem('1', '231')
       strictStore.save(keys.stringKey, 'clear value');
-      expect(strictStore.length).toBe(1);
+
+      expect(strictStore.length).toBe(1); // stringKey
+      expect(localStorage.length).toBe(2); // stringKey, localKey
+      expect(sessionStorage.length).toBe(1); // sessionKey
+
+      strictStore.clear(); // only strictStore keys
+
+      expect(strictStore.length).toBe(0); // strictStore keys
+      expect(localStorage.length).toBe(1);
+      expect(sessionStorage.length).toBe(1);
+    });
+
+    test('should working length method', () => {
+      localStorage.setItem('localKey', 'asd')
+      sessionStorage.setItem('sessionKey', 'asd')
+      strictStore.save(keys.stringKey, 'value');
+
+      expect(localStorage.length).toBe(2); // stringKey, localKey
+      expect(sessionStorage.length).toBe(1); // sessionKey
+      expect(strictStore.length).toBe(1); // stringKey
 
       strictStore.clear();
 
       expect(strictStore.length).toBe(0);
+      expect(localStorage.length).toBe(1); // localKey
+      expect(sessionStorage.length).toBe(1); // sessionKey
     });
 
     test('should working has method', () => {
@@ -210,7 +235,7 @@ describe('strictStore', () => {
     test('createKey return correct type', () => {
       const key = createKey<string>('namespace', 'name');
       const key2 = createKey<{ key: string; value: number; }>('namespace', 'name');
-      
+
       expectType<StoreKey<string>>(key)
       expectType<StoreKey<{ key: string, value: number }>>(key2)
     });

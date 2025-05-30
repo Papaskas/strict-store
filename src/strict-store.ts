@@ -1,5 +1,6 @@
 import { Serializable, StoreType, StoreKey } from '@src/types';
 import { strictJson } from '@src/strict-json';
+import { getFullName, getStorage } from '@src/utils';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage that provides:
@@ -213,24 +214,37 @@ export const strictStore = {
    * ```
    */
   get length(): number {
-    return localStorage.length + sessionStorage.length
+    let count = 0;
+
+    [localStorage, sessionStorage].forEach(storage => {
+      const keys: string[] = [];
+
+      Object.keys(storage).forEach(key => {
+        if (key !== null && key.startsWith('strict-store'))
+          keys.push(key);
+      })
+
+      count += keys.length;
+    });
+
+    return count;
   },
 
   /**
-   * Clears all items from localStorage and sessionStorage (including non-namespaced).
+   * Clears all items from localStorage and sessionStorage only from strict-store.
    *
    * @example
    * ```ts
-   * strictStore.clear(); // Full reset
+   * strictStore.clear(); // Remove only strict-store keys
    * ```
-   *
-   * @remarks
-   * - Affects entire storage, not just typed keys
-   * - Irreversible operation
    */
   clear() {
-    localStorage.clear();
-    sessionStorage.clear();
+    [localStorage, sessionStorage].forEach(storage => {
+      Object.keys(storage).forEach(key => {
+        if (key !== null && key.startsWith(`strict-store`))
+          storage.removeItem(key)
+      })
+    })
   },
 
   /**
@@ -294,15 +308,4 @@ export function createKey<T extends Serializable>(
     storeType: storeType,
     __type: {} as T
   } as const satisfies StoreKey<T>
-}
-
-/**
- * @internal
- * */
-const getStorage = (type: StoreType): Storage => {
-  return type === 'local' ? localStorage : sessionStorage
-}
-
-const getFullName = (ns: string, name: string): string => {
-  return `strict-store/${ns}:${name}`
 }
