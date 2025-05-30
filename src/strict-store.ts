@@ -19,7 +19,7 @@ import { getFullName, getStorage } from '@src/utils';
  * const theme: 'light' | 'dark' | null = StrictStore.get(name); // Return the literal type
  * ```
  */
-export const strictStore = {
+const strictStore = {
 
   /**
    * Retrieves a value from storage.
@@ -202,9 +202,9 @@ export const strictStore = {
   },
 
   /**
-   * Gets the total number of items in localStorage + sessionStorage.
+   * Gets the total number of items in localStorage + sessionStorage, but **only from strict-store**.
    *
-   * @returns Count of all items (including non-namespaced)
+   * @returns Count of all items from strict-store
    *
    * @example
    * ```ts
@@ -212,6 +212,9 @@ export const strictStore = {
    *   strictStore.clear();
    * }
    * ```
+   *
+   * @remarks
+   * it only works in strictStore
    */
   get length(): number {
     let count = 0;
@@ -231,42 +234,39 @@ export const strictStore = {
   },
 
   /**
-   * Clears all items from localStorage and sessionStorage only from strict-store.
-   *
-   * @example
-   * ```ts
-   * strictStore.clear(); // Remove only strict-store keys
-   * ```
-   */
-  clear() {
-    [localStorage, sessionStorage].forEach(storage => {
-      Object.keys(storage).forEach(key => {
-        if (key !== null && key.startsWith(`strict-store`))
-          storage.removeItem(key)
-      })
-    })
-  },
-
-  /**
-   * Clears all keys in storage that belong to a specific ns.
+   * Clears all **strict-store managed** items from localStorage and sessionStorage.
    *
    * @param ns Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
    *
    * @example
    * ```ts
-   * strictStore.clearNamespace('auth'); // Removes all 'auth:*' keys
+   * strictStore.clear(); // Remove only strict-store keys
+   * strictStore.clear('auth'); // Removes all strict-store 'auth:*' keys
    * ```
    *
    * @remarks
-   * This operation is synchronous and affects only keys with matching ns prefix.
+   * it only works in strictStore
    */
-  clearNamespace(ns: string) {
+  clear(ns?: string) {
     [localStorage, sessionStorage].forEach(storage => {
-      Object.keys(storage).forEach(key => {
-        if (key.startsWith(`strict-store/${ns}:`)) {
-          storage.removeItem(key);
+      const keysToRemove: string[] = [];
+
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (!key) continue;
+
+        if (ns !== undefined) {
+          if (key.startsWith(`strict-store/${ns}:`)) {
+            keysToRemove.push(key);
+          }
+        } else {
+          if (key.startsWith('strict-store/')) {
+            keysToRemove.push(key);
+          }
         }
-      })
+      }
+
+      keysToRemove.forEach(key => storage.removeItem(key));
     })
   },
 } as const
@@ -291,7 +291,7 @@ export const strictStore = {
  * @see {@link StoreKey} for the interface definition
  * @see {@link strictStore} for usage examples with storage methods
  */
-export function createKey<T extends Serializable>(
+function createKey<T extends Serializable>(
   ns: string,
   name: string,
   storeType: StoreType = 'local',
@@ -308,4 +308,9 @@ export function createKey<T extends Serializable>(
     storeType: storeType,
     __type: {} as T
   } as const satisfies StoreKey<T>
+}
+
+export {
+  strictStore,
+  createKey
 }

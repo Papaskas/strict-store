@@ -114,7 +114,7 @@ describe('strictStore', () => {
         [keys.booleanKey, false],
         [keys.numberKey, 141],
         [keys.nullableStringKey, null],
-        [keys.bigIntKey, 999999999999999n],
+        [keys.bigIntKey, 98741954896215948924132156489498412315618948941321532156489748915618949484n],
       ]).forEach((value, key) => {
         strictTest(
           key,
@@ -207,7 +207,7 @@ describe('strictStore', () => {
       strictStore.save(nsKeys.key1, 'new value1'); // ns1
       strictStore.save(nsKeys.key2, 'new value2'); // ns1
       strictStore.save(nsKeys.key3, 'new value3'); // ns2
-      strictStore.clearNamespace('ns1');
+      strictStore.clear('ns1');
 
       expect(strictStore.get(nsKeys.key1)).toBe(null);
       expect(strictStore.get(nsKeys.key2)).toBe(null);
@@ -281,7 +281,7 @@ describe('strictStore', () => {
     });
 
     test('union', () => {
-      strictTest(
+      strictTest<StoreKey<'light' | 'dark' | null>>(
         keys.literalKey,
         'dark'
       )
