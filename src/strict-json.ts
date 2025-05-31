@@ -8,6 +8,7 @@ import {
   TypedArray
 } from '@src/types';
 import { complexTypeMappers } from '@src/complex-types-mappers';
+import { isTypedArray } from '@src/utils';
 
 export const strictJson = {
   parse<T extends Serializable>(value: string): T {
@@ -36,7 +37,7 @@ const replacer = (
   else if (value instanceof Set)
     return complexTypeMappers.set(value)
 
-  else if (ArrayBuffer.isView(value) && !(value instanceof DataView))
+  else if (isTypedArray(value))
     return complexTypeMappers.typedArray(value)
 
   else

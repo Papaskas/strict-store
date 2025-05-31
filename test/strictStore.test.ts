@@ -215,6 +215,119 @@ describe('strictStore', () => {
     });
   });
 
+  describe('Advanced methods', () => {
+    describe('merge method', () => {
+      test('should merge partial object into existing object', () => {
+        const userKey = createKey<{ name: string; age: number; email?: string }>('test-ns', 'user');
+        strictStore.save(userKey, { name: 'Ivan', age: 30 });
+
+        strictStore.merge(userKey, { age: 31, email: 'ivan@example.com' });
+
+        expect(strictStore.get(userKey)).toEqual({
+          name: 'Ivan',
+          age: 31,
+          email: 'ivan@example.com'
+        });
+      });
+
+      test('should set value if no value exists', () => {
+        const userKey = createKey<{ name: string; age: number }>('test-ns', 'user2');
+        expect(strictStore.get(userKey)).toBe(null);
+
+        expect(() => {
+          strictStore.merge(userKey, { name: 'Ivan' });
+        }).toThrow('strictStore.merge: Cannot initialize the object. Use strictStore.save for initial value.');
+      });
+
+      test('should throw if trying to merge into non-object', () => {
+        const numberKey = createKey<number>('test-ns', 'num');
+        strictStore.save(numberKey, 123);
+
+        expect(() => {
+          // @ts-expect-error
+          strictStore.merge(numberKey, { foo: 'bar' });
+        }).toThrow('strictStore.merge: Can only merge into plain objects');
+      });
+
+      test('should merge only provided fields (shallow merge)', () => {
+        const objKey = createKey<{ a: number; b: { c: number; d: number } }>('test-ns', 'shallow');
+        strictStore.save(objKey, { a: 1, b: { c: 2, d: 3 } });
+
+        strictStore.merge(objKey, { b: { c: 99 } });
+
+        expect(strictStore.get(objKey)).toEqual({ a: 1, b: { c: 99, d: 3 } });
+      });
+
+      test('should merge object with array property', () => {
+        const arrKey = createKey<{ name: string; tags: string[] }>('test-ns', 'arr');
+        strictStore.save(arrKey, { name: 'Alex', tags: ['ts', 'storage'] });
+
+        strictStore.merge(arrKey, { tags: ['typescript', 'store', 'util'] });
+
+        expect(strictStore.get(arrKey)).toEqual({ name: 'Alex', tags: ['typescript', 'store', 'util'] });
+      });
+
+      test('should merge object with Set property', () => {
+        const setKey = createKey<{ name: string; roles: Set<string> }>('test-ns', 'set');
+        strictStore.save(setKey, { name: 'Bob', roles: new Set(['admin', 'user']) });
+
+        strictStore.merge(setKey, { roles: new Set(['editor']) });
+
+        const result = strictStore.get(setKey);
+        expect(result?.name).toBe('Bob');
+        expect(result?.roles instanceof Set).toBe(true);
+        expect(Array.from(result!.roles)).toEqual(['editor']);
+      });
+
+      test('should merge object with Map property', () => {
+        const mapKey = createKey<{ name: string; scores: Map<string, number> }>('test-ns', 'map');
+        strictStore.save(mapKey, { name: 'Carl', scores: new Map([['math', 5], ['eng', 4]]) });
+
+        strictStore.merge(mapKey, { scores: new Map([['fr', 4], ['sci', 3]]) });
+
+        const result = strictStore.get(mapKey);
+        expect(result?.name).toBe('Carl');
+        expect(result?.scores instanceof Map).toBe(true);
+        expect(Array.from(result!.scores.entries())).toEqual([
+          ['fr', 4],
+          ['sci', 3]
+        ]);
+      });
+
+      test('should merge deeply nested object with array and set', () => {
+        const complexKey = createKey<{
+          user: {
+            name: string;
+            tags: string[];
+            permissions: Set<string>;
+          }
+        }>('test-ns', 'complex');
+
+        strictStore.save(complexKey, {
+          user: {
+            name: 'Dina',
+            tags: ['a', 'b'],
+            permissions: new Set(['read'])
+          }
+        });
+
+        strictStore.merge(complexKey, {
+          user: {
+            tags: ['c'],
+            permissions: new Set(['write'])
+          }
+        });
+
+        const result = strictStore.get(complexKey);
+        expect(result?.user.name).toBe('Dina');
+        expect(result?.user.tags).toEqual(['c']);
+        expect(result?.user.permissions instanceof Set).toBe(true);
+        expect(Array.from(result!.user.permissions)).toEqual(['write']);
+      });
+
+    });
+  });
+
   describe('createKey correct working', () => {
     test('should throw an exception if the name or ns is incorrect.', () => {
       const nsKey = () => createKey('ans:dassda', 'name')

@@ -178,6 +178,7 @@ strictStore.save(userKey, {
 
 - Avoid using colons (':') in namespace or name values — this symbol is reserved as a namespace delimiter.
 - The undefined type is not supported — it will be converted to null during JSON serialization.
+- Lodash is used under the hood.
 
 ## Requirements
 - TypeScript >= 4.9.0

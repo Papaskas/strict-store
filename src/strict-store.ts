@@ -1,6 +1,6 @@
-import { Serializable, StoreType, StoreKey } from '@src/types';
+import { Serializable, StoreType, StoreKey, DeepPartial } from '@src/types';
 import { strictJson } from '@src/strict-json';
-import { getFullName, getStorage } from '@src/utils';
+import { deepMergeWithCollections, getFullName, getStorage } from '@src/utils';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage that provides:
@@ -141,6 +141,51 @@ const strictStore = {
     const storage = getStorage(key.storeType);
 
     storage.setItem(getFullName(key.ns, key.name), strictJson.stringify(value));
+  },
+
+  /**
+   * Merges a partial value into an existing object stored under the specified key.
+   *
+   * **Lodash is used under the hood. For all the features of merge, see the Lodash documentation.**
+   *
+   * @typeParam T - Type of the stored value (must be an object)
+   * @param key StoreKey object identifying the item to merge into
+   * @param partial Partial object to merge
+   *
+   * @example
+   * ```ts
+   * type User = {
+   *  name: string;
+   *  age: number;
+   * }
+   * const userKey = createKey<User>('app', 'user');
+   *
+   * strictStore.merge(userKey, { name: 'Alex' });
+   * ```
+   */
+  merge<T extends Record<string, Serializable>>(
+    key: StoreKey<T>,
+    partial: DeepPartial<T>
+  ): void {
+    const storage = getStorage(key.storeType);
+    const fullKey = getFullName(key.ns, key.name);
+    const storedValue = storage.getItem(fullKey);
+
+    let current: T | null = null;
+    if (storedValue !== null) {
+      current = strictJson.parse<T>(storedValue);
+    }
+
+    if (current === null) {
+      throw new Error('strictStore.merge: Cannot initialize the object. Use strictStore.save for initial value.');
+    }
+
+    if (typeof current !== 'object' || Array.isArray(current)) {
+      throw new Error('strictStore.merge: Can only merge into plain objects');
+    }
+
+    const merged = deepMergeWithCollections(current, partial);
+    storage.setItem(fullKey, strictJson.stringify(merged));
   },
 
   /**
