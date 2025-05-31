@@ -189,6 +189,42 @@ const strictStore = {
   },
 
   /**
+   * Iterates over all strictStore-managed key-value pairs and executes a callback for each.
+   *
+   * @param callback - Function to execute for each key-value pair.
+   *   Receives (key: string, value: Serializable, storageType: 'local' | 'session')
+   * @param ns - Optional namespace to filter keys.
+   *
+   * @example
+   * strictStore.forEach((key, value, storageType) => {
+   *   console.log(key, value, storageType);
+   * });
+   */
+  forEach(
+    callback: (key: string, value: Serializable, storageType: 'local' | 'session') => void,
+    ns?: string
+  ): void {
+    const prefix = ns ? `strict-store/${ns}:` : 'strict-store/';
+
+    [localStorage, sessionStorage].forEach((storage, idx) => {
+      const storageType = idx === 0 ? 'local' : 'session';
+
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+
+        if (key && key.startsWith(prefix)) {
+          const valueStr = storage.getItem(key);
+
+          if (valueStr !== null) {
+            const value = strictJson.parse(valueStr);
+            callback(key, value, storageType);
+          }
+        }
+      }
+    });
+  },
+
+  /**
    * Removes a name-value pair from storage.
    *
    * @typeParam T - Type parameter for StoreKey consistency

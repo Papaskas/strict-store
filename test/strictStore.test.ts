@@ -326,6 +326,88 @@ describe('strictStore', () => {
       });
 
     });
+
+    describe('forEach method', () => {
+      describe('strictStore.forEach', () => {
+        beforeEach(() => {
+          strictStore.clear();
+          localStorage.clear();
+          sessionStorage.clear();
+        });
+
+        test('should iterate over all strictStore-managed keys in both storages', () => {
+          const key1 = createKey<string>('ns1', 'k1', 'local');
+          const key2 = createKey<number>('ns2', 'k2', 'session');
+          const key3 = createKey<boolean>('ns1', 'k3', 'local');
+
+          strictStore.save(key1, 'foo');
+          strictStore.save(key2, 42);
+          strictStore.save(key3, true);
+
+          const seen: Array<{ key: string; value: unknown; storageType: string }> = [];
+          strictStore.forEach((key, value, storageType) => {
+            seen.push({ key, value, storageType });
+          });
+
+          // We check that all the keys are found
+          expect(seen).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ key: expect.stringContaining('/ns1:k1'), value: 'foo', storageType: 'local' }),
+              expect.objectContaining({ key: expect.stringContaining('/ns2:k2'), value: 42, storageType: 'session' }),
+              expect.objectContaining({ key: expect.stringContaining('/ns1:k3'), value: true, storageType: 'local' }),
+            ])
+          );
+          expect(seen.length).toBe(3);
+        });
+
+        test('should filter by namespace if ns is provided', () => {
+          const key1 = createKey<string>('ns1', 'k1', 'local');
+          const key2 = createKey<number>('ns2', 'k2', 'session');
+          const key3 = createKey<boolean>('ns1', 'k3', 'local');
+
+          strictStore.save(key1, 'foo');
+          strictStore.save(key2, 42);
+          strictStore.save(key3, true);
+
+          const seen: Array<{ key: string; value: unknown; storageType: string }> = [];
+          strictStore.forEach((key, value, storageType) => {
+            seen.push({ key, value, storageType });
+          }, 'ns1');
+
+          // There should only be keys with ns1
+          expect(seen.length).toBe(2);
+          expect(seen.every(item => item.key.includes('/ns1:'))).toBe(true);
+        });
+
+        test('should not call callback for non-strictStore keys', () => {
+          localStorage.setItem('randomKey', '123');
+          sessionStorage.setItem('anotherKey', '456');
+
+          const key = createKey<string>('ns', 'k', 'local');
+          strictStore.save(key, 'foo');
+
+          const seen: string[] = [];
+          strictStore.forEach((key) => seen.push(key));
+
+          // only one key needs to be found
+          expect(seen.length).toBe(1);
+          expect(seen[0]).toContain('/ns:k');
+        });
+
+        test('should correctly pass storageType argument', () => {
+          const keyLocal = createKey<string>('ns', 'local', 'local');
+          const keySession = createKey<string>('ns', 'session', 'session');
+          strictStore.save(keyLocal, 'l');
+          strictStore.save(keySession, 's');
+
+          const types: string[] = [];
+          strictStore.forEach((_, __, storageType) => types.push(storageType));
+
+          expect(types).toEqual(expect.arrayContaining(['local', 'session']));
+          expect(types.length).toBe(2);
+        });
+      });
+    });
   });
 
   describe('createKey correct working', () => {
