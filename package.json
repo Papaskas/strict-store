@@ -18,20 +18,23 @@
     "storage"
   ],
   "files": [
+    "index.d.ts",
     "dist",
     "LICENSE",
     "README.md"
   ],
   "module": "./dist/strict-store.mjs",
+  "main": "./dist/strict-store.mjs",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/strict-store.mjs",
-      "types": "./dist/strict-store.d.ts"
+      "types": "./index.d.ts"
     }
   },
   "license": "MIT",
   "version": "3.0.1",
-  "description": "TypeScript-first wrapper for localStorage and sessionStorage with strict typing, serialization and namespace support. Safely work with typed data instead of raw strings",
+  "description": "A type-safe wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.",
   "scripts": {
     "build": "vite build",
     "test": "jest"

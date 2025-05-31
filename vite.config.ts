@@ -17,5 +17,12 @@ export default defineConfig({
       '@src': path.resolve(__dirname, './src')
     }
   },
-  plugins: [dts()]
+  plugins: [
+    dts({
+      entryRoot: 'src',
+      outDir: '.',
+      rollupTypes: true,
+      insertTypesEntry: true
+    }
+  )]
 })

@@ -1,5 +1,4 @@
 /**
- * @internal
  * Represents all serializable value types that can be stored in `strictStore`.
  * */
 export type Serializable =
@@ -69,7 +68,6 @@ export type ComplexTypeData = {
 }
 
 /**
- * @internal
  * Defines a type-safe storage name structure for `strictStore` operations.
  *
  * @typeParam T Concrete serializable type for this storage entry
