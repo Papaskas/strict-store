@@ -51,7 +51,7 @@
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
-    "vite": "^6.3.4",
+    "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.3"
   },
   "peerDependencies": {
