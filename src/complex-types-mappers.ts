@@ -3,7 +3,7 @@ import { ComplexTypeData, Serializable, TypedArray } from '@src/types';
 /**
  * Converts a bigint value to ComplexTypeData.
  *
- * @param value The bigint value to convert.
+ * @param value - The bigint value to convert.
  * @returns ComplexTypeData object representing the bigint value.
  */
 const BigIntMapper = (value: bigint): ComplexTypeData => ({
@@ -14,7 +14,7 @@ const BigIntMapper = (value: bigint): ComplexTypeData => ({
 /**
  * Converts a Map value to ComplexTypeData.
  *
- * @param value The Map value to convert.
+ * @param value - The Map value to convert.
  * @returns ComplexTypeData object representing the Map value.
  */
 const MapMapper = (value: Map<Serializable, Serializable>): ComplexTypeData => ({
@@ -25,7 +25,7 @@ const MapMapper = (value: Map<Serializable, Serializable>): ComplexTypeData => (
 /**
  * Converts a Set value to ComplexTypeData.
  *
- * @param value The Set value to convert.
+ * @param value - The Set value to convert.
  * @returns ComplexTypeData object representing the Set value.
  */
 const SetMapper = (value: Set<Serializable>): ComplexTypeData => ({
@@ -36,7 +36,7 @@ const SetMapper = (value: Set<Serializable>): ComplexTypeData => ({
 /**
  * Converts a TypedArray value to ComplexTypeData.
  *
- * @param value The TypedArray value to convert.
+ * @param value - The TypedArray value to convert.
  * @returns ComplexTypeData object representing the TypedArray value.
  */
 const TypedArrayMapper = (value: TypedArray): ComplexTypeData => {
@@ -51,7 +51,7 @@ const TypedArrayMapper = (value: TypedArray): ComplexTypeData => {
 /**
  * Processes a TypedArray value and converts it to an array of Serializable.
  *
- * @param value The TypedArray value to process.
+ * @param value - The TypedArray value to process.
  * @returns An array of Serializable representing the processed TypedArray value.
  */
 const processTypedArray = (value: TypedArray): Serializable[] => {

@@ -81,11 +81,11 @@ export type ComplexTypeData = {
 /**
  * Defines a type-safe storage name structure for `strictStore` operations.
  *
- * @typeParam T Concrete serializable type for this storage entry
+ * @typeParam T - Concrete serializable type for this storage entry
  *
- * @property ns Namespace prefix to prevent name collisions between modules
- * @property key Unique identifier within the ns
- * @property __type Acceptable types for a name
+ * @param ns - Namespace prefix to prevent name collisions between modules
+ * @param key - Unique identifier within the ns
+ * @param __type - Acceptable types for a name
  *
  * @remarks
  * This type is marked as `@internal` but its shape is part of public API.
@@ -101,12 +101,12 @@ export type StoreKey<T extends Serializable> = {
 /**
  * Specifies the type of web storage to use for persistence.
  *
- * @property local - Uses `localStorage` for persistent storage:
+ * @param local - Uses `localStorage` for persistent storage:
  *   - Data persists across browser sessions
  *   - Available until explicitly cleared
  *   - Storage limit typically ~5-10MB per domain
  *
- * @property session - Uses `sessionStorage` for temporary storage:
+ * @param session - Uses `sessionStorage` for temporary storage:
  *   - Data cleared when tab/browser closes
  *   - Scoped to current browsing session
  *   - Useful for sensitive/short-lived data
@@ -118,6 +118,5 @@ export type StoreKey<T extends Serializable> = {
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API | MDN Web Storage API}
  * @see {@link createKey} for usage with store keys
- * @see {@link strictStore} for storage operations
  */
 export type StoreType = 'local' | 'session';

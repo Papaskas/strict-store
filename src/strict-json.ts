@@ -45,7 +45,7 @@ const replacer = (
 }
 
 /**
- * @param value All except complex types, they are stored in a different form.
+ * @param value - All except complex types, they are stored in a different form.
  * */
 const reviver = (
   key: string,

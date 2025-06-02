@@ -4,6 +4,7 @@ import { deepMergeWithCollections, getFullName, getStorage } from '@src/utils';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
+ * @public
  *
  * ```
  * StrictStore.save(name, 'dark'); // Only the literal type is allowed
@@ -14,9 +15,10 @@ class StrictStore {
 
   /**
    * Retrieves a value from storage.
+   * @public
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key StoreKey object containing ns, name and default value
+   * @param key - StoreKey object containing ns, name and default value
    * @returns The stored value that provides:
    * - Automatic JSON serialization/deserialization
    * - Namespace support to prevent name collisions
@@ -46,9 +48,10 @@ class StrictStore {
 
   /**
    * Retrieves values from storage for a tuple of keys, preserving the type for each key.
+   * @public
    *
-   * @typeParam K A tuple of StoreKey objects with different value types
-   * @param keys A tuple of StoreKey objects
+   * @typeParam K - A tuple of StoreKey objects with different value types
+   * @param keys - A tuple of StoreKey objects
    * @returns A tuple of values (or null), corresponding to each key
    *
    * @example
@@ -69,10 +72,11 @@ class StrictStore {
 
   /**
    * Retrieves all stored key-value pairs from both localStorage and sessionStorage that belong to strictStore.
-   * If a namespace is provided, only keys with the 'strict-store/{ns}:' prefix are included.
+   * If a namespace is provided, only keys with the 'strict-store/[ns]:' prefix are included.
    * Otherwise, all keys with the 'strict-store/' prefix are returned.
+   * @public
    *
-   * @param ns (optional) Namespace to filter keys (e.g., 'user' will return all 'user:*' keys)
+   * @param ns - (optional) Namespace to filter keys (e.g., 'user' will return all 'user:*' keys)
    * @returns An array of objects, each containing the storage key and its parsed value.
    *
    * @example
@@ -115,10 +119,11 @@ class StrictStore {
 
   /**
    * Saves a value to storage with automatic serialization.
+   * @public
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key StoreKey object containing ns and name
-   * @param value Value to store (will be JSON.stringified)
+   * @param key - StoreKey object containing ns and name
+   * @param value - Value to store (will be JSON.stringified)
    *
    * @example
    * ```ts
@@ -139,12 +144,13 @@ class StrictStore {
 
   /**
    * Merges a partial value into an existing object stored under the specified key.
+   * @public
    *
    * **Lodash is used under the hood. For all the features of merge, see the Lodash documentation.**
    *
    * @typeParam T - Type of the stored value (must be an object)
-   * @param key StoreKey object identifying the item to merge into
-   * @param partial Partial object to merge
+   * @param key - StoreKey object identifying the item to merge into
+   * @param partial - Partial object to merge
    *
    * @example
    * ```ts
@@ -184,15 +190,18 @@ class StrictStore {
 
   /**
    * Iterates over all strictStore-managed key-value pairs and executes a callback for each.
+   * @public
    *
    * @param callback - Function to execute for each key-value pair.
    *   Receives (key: string, value: Serializable, storageType: 'local' | 'session')
    * @param ns - Optional namespace to filter keys.
    *
    * @example
+   * ```ts
    * strictStore.forEach((key, value, storageType) => {
    *   console.log(key, value, storageType);
    * });
+   * ```
    */
   static forEach(
     callback: (key: string, value: Serializable, storageType: 'local' | 'session') => void,
@@ -220,12 +229,13 @@ class StrictStore {
 
   /**
    * Subscribes to changes of strictStore-managed keys in localStorage/sessionStorage.
+   * @public
    *
-   * @param callback Function to call when a value changes.
+   * @param callback - Function to call when a value changes.
    *   Receives (key: StoreKey<Serializable>, newValue: Serializable, oldValue: Serializable, storageType: 'local' | 'session')
-   * @param keys (optional) Array of StoreKey objects to listen for changes.
+   * @param keys - (optional) Array of StoreKey objects to listen for changes.
    *   If provided, callback will only be called for these keys. If omitted, all keys in the namespace (or all strict-store keys) are observed.
-   * @param ns (optional) Namespace to filter keys. If provided, only keys with the 'strict-store/{ns}:' prefix are observed.
+   * @param ns (optional) - Namespace to filter keys. If provided, only keys with the 'strict-store/{ns}:' prefix are observed.
    *   If both ns and keys are provided, both filters are applied.
    * @returns Unsubscribe function.
    *
@@ -290,9 +300,10 @@ class StrictStore {
 
   /**
    * Removes a name-value pair from storage.
+   * @public
    *
    * @typeParam T - Type parameter for StoreKey consistency
-   * @param key StoreKey object identifying item to remove
+   * @param key - StoreKey object identifying item to remove
    *
    * @example
    * ```ts
@@ -302,12 +313,15 @@ class StrictStore {
    * );
    *
    * strictStore.remove(themeKey);
+   * strictStore.remove([themeKey, ...]);
    * ```
    *
    * @remarks
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
+  static remove(key: StoreKey<Serializable>): void
+  static remove(key: StoreKey<Serializable>[]): void
   static remove(key: StoreKey<Serializable> | StoreKey<Serializable>[]): void {
     if (Array.isArray(key)) {
       for (const singleKey of key) {
@@ -322,8 +336,9 @@ class StrictStore {
 
   /**
    * Checks if a name exists in storage.
+   * @public
    *
-   * @param key StoreKey object containing ns and name identifier
+   * @param key - StoreKey object containing ns and name identifier
    * @returns `true` if the name exists, `false` otherwise
    *
    * @example
@@ -348,6 +363,7 @@ class StrictStore {
 
   /**
    * Gets the total number of items in localStorage + sessionStorage, but **only from strict-store**.
+   * @public
    *
    * @returns Count of all items from strict-store
    *
@@ -380,8 +396,9 @@ class StrictStore {
 
   /**
    * Clears all **strict-store managed** items from localStorage and sessionStorage.
+   * @public
    *
-   * @param ns Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
+   * @param ns - Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
    *
    * @example
    * ```ts
@@ -418,12 +435,13 @@ class StrictStore {
 
 /**
  * Creates a type-safe store name object for use with strictStore.
+ * @public
  *
  * @typeParam T - Type of the stored value, must extend `Serializable`
  *
  * @param ns - Namespace to prevent name collisions (e.g., 'app', 'user')
  * @param name - Unique identifier within the ns
- * @param [storeType] - Determines which Web Storage API to use:
+ * @param storeType - Determines which Web Storage API to use:
  *                  - 'local': Uses `localStorage`
  *                  - 'session': Uses `sessionStorage`
  *
@@ -433,7 +451,6 @@ class StrictStore {
  * - The returned object is frozen with `as const` for type safety
  * - Namespace and name are combined to form the final storage name (e.g., 'app:counter')
  *
- * @see {@link StoreKey} for the interface definition
  * @see {@link StrictStore} for usage examples with storage methods
  */
 const createKey = <T extends Serializable>(

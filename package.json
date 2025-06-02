@@ -37,12 +37,17 @@
   "description": "A type-safe wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.",
   "scripts": {
     "build": "vite build",
-    "test": "jest"
+    "test": "jest",
+    "api:extract": "api-extractor run --local",
+    "api:docs": "api-documenter markdown -i temp -o docs",
+    "docs": "yarn api:extract && yarn api:docs"
   },
   "dependencies": {
     "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@microsoft/api-documenter": "^7.26.27",
+    "@microsoft/api-extractor": "^7.52.8",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.17",
     "@types/node": "^22.15.29",
