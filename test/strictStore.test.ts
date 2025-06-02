@@ -92,7 +92,7 @@ describe('StrictStore', () => {
       expect(unknownEntry).toBe(undefined);
     });
 
-    test('should correct getSeveral method', () => {
+    test('should correct pick method', () => {
       const themeKey = createKey<'light' | 'dark'>('app', 'theme');
       const langKey = createKey<'en' | 'ru'>('app', 'lang');
 
@@ -108,7 +108,7 @@ describe('StrictStore', () => {
       expect(lang).toBe('en');
     });
 
-    test('should Set and get primitive values', () => {
+    test('should set and get primitive values', () => {
       new Map<StoreKey<Serializable>, Serializable>([
         [keys.stringKey, 'test primitive value'],
         [keys.booleanKey, false],
@@ -164,15 +164,49 @@ describe('StrictStore', () => {
       expect(localStorage.length).toBe(1); // localKey
       expect(sessionStorage.length).toBe(1); // sessionKey
     });
+  });
 
-    test('should working has method', () => {
-      StrictStore.save(keys.stringKey, 'clear value');
-      expect(StrictStore.has(keys.stringKey)).toBe(true);
-
-      StrictStore.remove([keys.stringKey]);
-
+  describe('StrictStore.has', () => {
+    test('returns false for non-existent single key', () => {
       expect(StrictStore.has(keys.stringKey)).toBe(false);
-    })
+    });
+
+    test('returns true for existing single key', () => {
+      StrictStore.save(keys.stringKey, 'test');
+      expect(StrictStore.has(keys.stringKey)).toBe(true);
+    });
+
+    test('returns correct array for multiple keys (all exist)', () => {
+      StrictStore.save(keys.stringKey, 'test');
+      StrictStore.save(keys.numberKey, 42);
+      expect(StrictStore.has([keys.stringKey, keys.numberKey])).toEqual([true, true]);
+    });
+
+    test('returns correct array for multiple keys (some exist, some not)', () => {
+      StrictStore.save(keys.stringKey, 'test');
+      expect(StrictStore.has([keys.stringKey, keys.numberKey])).toEqual([true, false]);
+    });
+
+    test('returns correct array for multiple keys (none exist)', () => {
+      expect(StrictStore.has([keys.stringKey, keys.numberKey])).toEqual([false, false]);
+    });
+
+    test('returns empty array for empty input array', () => {
+      expect(StrictStore.has([])).toEqual([]);
+    });
+
+    test('works with keys from different storage types', () => {
+      StrictStore.save(keys.stringKey, 'test');
+      StrictStore.save(keys.booleanKey, true); // session storage
+      expect(StrictStore.has([keys.stringKey, keys.booleanKey])).toEqual([true, true]);
+      StrictStore.remove([keys.stringKey]);
+      expect(StrictStore.has([keys.stringKey, keys.booleanKey])).toEqual([false, true]);
+    });
+
+    test('does not throw for keys that were never saved', () => {
+      expect(() => StrictStore.has(keys.enumKey)).not.toThrow();
+      expect(() => StrictStore.has([keys.enumKey, keys.literalKey])).not.toThrow();
+    });
   });
 
   describe('Namespaces operations', () => {

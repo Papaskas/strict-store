@@ -385,16 +385,25 @@ class StrictStore {
    * );
    *
    * const exists: boolean = strictStore.has(themeKey);
+   * const exists: boolean[] = strictStore.has([themeKey, anotherKey]);
    * ```
    *
    * @remarks
-   * - Does not validate the stored value, only checks name presence
    * - If the value is null, it returns false
    */
-  static has(key: StoreKey<Serializable>): boolean {
-    const storage = getStorage(key.storeType);
+  static has(key: StoreKey<Serializable>): boolean;
+  static has(key: StoreKey<Serializable>[]): boolean[];
+  static has(key: StoreKey<Serializable> | StoreKey<Serializable>[]): boolean | boolean[] {
+    if (Array.isArray(key)) {
+      return key.map(storeKey => {
+        const storage = getStorage(storeKey.storeType);
+        return storage.getItem(getFullName(storeKey.ns, storeKey.name)) !== null;
+      })
 
-    return storage.getItem(getFullName(key.ns, key.name)) !== null;
+    } else {
+      const storage = getStorage(key.storeType);
+      return storage.getItem(getFullName(key.ns, key.name)) !== null;
+    }
   }
 
   /**
