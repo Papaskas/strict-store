@@ -426,25 +426,24 @@ class StrictStore {
    * ```
    */
   static size(ns?: string[]): number {
-    if (Array.isArray(ns) && ns.length === 0) {
+    if (Array.isArray(ns) && ns.length === 0)
       return 0;
-    }
+
     let count = 0;
     let prefixes: string[];
 
-    if (ns && ns.length > 0) {
+    if (ns && ns.length > 0)
       prefixes = ns.map(n => `strict-store/${n}:`);
-    } else {
+    else
       prefixes = ['strict-store/'];
-    }
 
     [localStorage, sessionStorage].forEach(storage => {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
+
         if (!key) continue;
-        if (prefixes.some(prefix => key.startsWith(prefix))) {
+        if (prefixes.some(prefix => key.startsWith(prefix)))
           count++;
-        }
       }
     });
 
@@ -460,13 +459,22 @@ class StrictStore {
    * @example
    * ```ts
    * StrictStore.clear(); // Remove only strict-store keys
-   * StrictStore.clear('auth'); // Removes all strict-store 'auth:*' keys
+   * StrictStore.clear(['auth']); // Removes all strict-store 'auth:*' keys
    * ```
    *
    * @remarks
    * it only works in StrictStore
    */
-  static clear(ns?: string) {
+  static clear(ns?: string[]) {
+    if (Array.isArray(ns) && ns.length === 0)
+      return;
+
+    let prefixes: string[];
+    if (ns && ns.length > 0)
+      prefixes = ns.map(n => `strict-store/${n}:`);
+    else
+      prefixes = ['strict-store/'];
+
     [localStorage, sessionStorage].forEach(storage => {
       const keysToRemove: string[] = [];
 
@@ -474,19 +482,12 @@ class StrictStore {
         const key = storage.key(i);
         if (!key) continue;
 
-        if (ns !== undefined) {
-          if (key.startsWith(`strict-store/${ns}:`)) {
-            keysToRemove.push(key);
-          }
-        } else {
-          if (key.startsWith('strict-store/')) {
-            keysToRemove.push(key);
-          }
-        }
+        if (prefixes.some(prefix => key.startsWith(prefix)))
+          keysToRemove.push(key);
       }
 
       keysToRemove.forEach(key => storage.removeItem(key));
-    })
+    });
   }
 }
 

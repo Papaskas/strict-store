@@ -259,6 +259,67 @@ describe('StrictStore', () => {
     });
   });
 
+  describe('StrictStore.clear', () => {
+    test('clears all strict-store keys when called without arguments', () => {
+      const key1 = createKey<string>('ns1', 'k1');
+      const key2 = createKey<number>('ns2', 'k2');
+      StrictStore.save(key1, 'v1');
+      StrictStore.save(key2, 2);
+
+      expect(StrictStore.size()).toBe(2);
+
+      StrictStore.clear();
+
+      expect(StrictStore.size()).toBe(0);
+      expect(StrictStore.get(key1)).toBe(null);
+      expect(StrictStore.get(key2)).toBe(null);
+    });
+
+    test('clears only specified namespace', () => {
+      const key1 = createKey<string>('ns1', 'k1');
+      const key2 = createKey<number>('ns2', 'k2');
+      StrictStore.save(key1, 'v1');
+      StrictStore.save(key2, 2);
+
+      StrictStore.clear(['ns1']);
+
+      expect(StrictStore.get(key1)).toBe(null);
+      expect(StrictStore.get(key2)).toBe(2);
+      expect(StrictStore.size()).toBe(1);
+    });
+
+    test('clears multiple namespaces', () => {
+      const key1 = createKey<string>('ns1', 'k1');
+      const key2 = createKey<number>('ns2', 'k2');
+      const key3 = createKey<boolean>('ns3', 'k3');
+      StrictStore.save(key1, 'v1');
+      StrictStore.save(key2, 2);
+      StrictStore.save(key3, true);
+
+      StrictStore.clear(['ns1', 'ns3']);
+
+      expect(StrictStore.get(key1)).toBe(null);
+      expect(StrictStore.get(key2)).toBe(2);
+      expect(StrictStore.get(key3)).toBe(null);
+      expect(StrictStore.size()).toBe(1);
+    });
+
+    test('does nothing if empty array is passed', () => {
+      const key1 = createKey<string>('ns1', 'k1');
+      StrictStore.save(key1, 'v1');
+      StrictStore.clear([]);
+      expect(StrictStore.get(key1)).toBe('v1');
+      expect(StrictStore.size()).toBe(1);
+    });
+
+    test('does not remove non-strict-store keys', () => {
+      localStorage.setItem('foreign', 'value');
+      StrictStore.save(keys.stringKey, 'test');
+      StrictStore.clear();
+      expect(localStorage.getItem('foreign')).toBe('value');
+    });
+  });
+
   describe('Namespaces operations', () => {
     test('correct generate ns', () => {
       StrictStore.save(keys.stringKey, 'key1');
@@ -291,7 +352,7 @@ describe('StrictStore', () => {
       StrictStore.save(nsKeys.key1, 'new value1'); // ns1
       StrictStore.save(nsKeys.key2, 'new value2'); // ns1
       StrictStore.save(nsKeys.key3, 'new value3'); // ns2
-      StrictStore.clear('ns1');
+      StrictStore.clear(['ns1']);
 
       expect(StrictStore.get(nsKeys.key1)).toBe(null);
       expect(StrictStore.get(nsKeys.key2)).toBe(null);
