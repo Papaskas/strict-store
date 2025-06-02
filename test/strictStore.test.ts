@@ -128,7 +128,7 @@ describe('StrictStore', () => {
       expect(StrictStore.get(keys.stringKey)).toBe('remove value');
       expect(StrictStore.size).toBe(1);
 
-      StrictStore.remove(keys.stringKey);
+      StrictStore.remove([keys.stringKey]);
       expect(StrictStore.get(keys.stringKey)).toBe(null);
       expect(StrictStore.size).toBe(0);
     });
@@ -169,7 +169,7 @@ describe('StrictStore', () => {
       StrictStore.save(keys.stringKey, 'clear value');
       expect(StrictStore.has(keys.stringKey)).toBe(true);
 
-      StrictStore.remove(keys.stringKey);
+      StrictStore.remove([keys.stringKey]);
 
       expect(StrictStore.has(keys.stringKey)).toBe(false);
     })

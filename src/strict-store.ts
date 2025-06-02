@@ -332,7 +332,7 @@ class StrictStore {
    * @public
    *
    * @typeParam T - Type parameter for StoreKey consistency
-   * @param key - StoreKey object identifying item to remove
+   * @param keys - StoreKey object identifying item to remove
    *
    * @example
    * ```ts
@@ -349,16 +349,11 @@ class StrictStore {
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  static remove(key: StoreKey<Serializable> | StoreKey<Serializable>[]): void {
-    if (Array.isArray(key)) {
-      for (const singleKey of key) {
-        StrictStore.remove(singleKey);
-      }
-      return
+  static remove(keys: StoreKey<Serializable>[]): void {
+    for (const key of keys) {
+      const storage = getStorage(key.storeType);
+      storage.removeItem(getFullName(key.ns, key.name));
     }
-
-    const storage = getStorage(key.storeType);
-    storage.removeItem(getFullName(key.ns, key.name));
   }
 
   /**
