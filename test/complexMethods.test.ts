@@ -130,23 +130,22 @@ describe('Complex methods', () => {
       StrictStore.save(key2, 42);
       StrictStore.save(key3, true);
 
-      const seen: Array<{ key: string; value: unknown; storageType: string }> = [];
+      const seen: Array<{ key: StoreKey<Serializable>; value: unknown; storageType: string }> = [];
       StrictStore.forEach((key, value, storageType) => {
         seen.push({ key, value, storageType });
       });
 
-      // We check that all the keys are found
       expect(seen).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ key: expect.stringContaining('/ns1:k1'), value: 'foo', storageType: 'local' }),
-          expect.objectContaining({ key: expect.stringContaining('/ns2:k2'), value: 42, storageType: 'session' }),
-          expect.objectContaining({ key: expect.stringContaining('/ns1:k3'), value: true, storageType: 'local' }),
+          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns1', name: 'k1' }), value: 'foo', storageType: 'local' }),
+          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns2', name: 'k2' }), value: 42, storageType: 'session' }),
+          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns1', name: 'k3' }), value: true, storageType: 'local' }),
         ])
       );
       expect(seen.length).toBe(3);
     });
 
-    test('should filter by namespace if ns is provided', () => {
+    test('should filter by namespace if ns is provided as array', () => {
       const key1 = createKey<string>('ns1', 'k1', 'local');
       const key2 = createKey<number>('ns2', 'k2', 'session');
       const key3 = createKey<boolean>('ns1', 'k3', 'local');
@@ -155,14 +154,31 @@ describe('Complex methods', () => {
       StrictStore.save(key2, 42);
       StrictStore.save(key3, true);
 
-      const seen: Array<{ key: string; value: unknown; storageType: string }> = [];
+      const seen: Array<{ key: StoreKey<Serializable>; value: unknown; storageType: string }> = [];
       StrictStore.forEach((key, value, storageType) => {
         seen.push({ key, value, storageType });
-      }, 'ns1');
+      }, ['ns1']);
 
-      // There should only be keys with ns1
       expect(seen.length).toBe(2);
-      expect(seen.every(item => item.key.includes('/ns1:'))).toBe(true);
+      expect(seen.every(item => item.key.ns === 'ns1')).toBe(true);
+    });
+
+    test('should filter by multiple namespaces', () => {
+      const key1 = createKey<string>('ns1', 'k1', 'local');
+      const key2 = createKey<number>('ns2', 'k2', 'session');
+      const key3 = createKey<boolean>('ns3', 'k3', 'local');
+
+      StrictStore.save(key1, 'foo');
+      StrictStore.save(key2, 42);
+      StrictStore.save(key3, true);
+
+      const seen: Array<{ key: StoreKey<Serializable>; value: unknown; storageType: string }> = [];
+      StrictStore.forEach((key, value, storageType) => {
+        seen.push({ key, value, storageType });
+      }, ['ns1', 'ns3']);
+
+      expect(seen.length).toBe(2);
+      expect(seen.map(item => item.key.ns).sort()).toEqual(['ns1', 'ns3']);
     });
 
     test('should not call callback for non-StrictStore keys', () => {
@@ -172,12 +188,12 @@ describe('Complex methods', () => {
       const key = createKey<string>('ns', 'k', 'local');
       StrictStore.save(key, 'foo');
 
-      const seen: string[] = [];
+      const seen: StoreKey<Serializable>[] = [];
       StrictStore.forEach((key) => seen.push(key));
 
-      // only one key needs to be found
       expect(seen.length).toBe(1);
-      expect(seen[0]).toContain('/ns:k');
+      expect(seen[0].ns).toBe('ns');
+      expect(seen[0].name).toBe('k');
     });
 
     test('should correctly pass storageType argument', () => {

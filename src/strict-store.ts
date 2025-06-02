@@ -193,21 +193,23 @@ class StrictStore {
    * @public
    *
    * @param callback - Function to execute for each key-value pair.
-   *   Receives (key: string, value: Serializable, storageType: 'local' | 'session')
+   *   Receives (key: Key<Serializable>, value: Serializable, storageType: 'local' | 'session')
    * @param ns - Optional namespace to filter keys.
    *
    * @example
    * ```ts
    * strictStore.forEach((key, value, storageType) => {
    *   console.log(key, value, storageType);
-   * });
+   * }, ["namespace1", "namespace2"]);
    * ```
    */
   static forEach(
-    callback: (key: string, value: Serializable, storageType: 'local' | 'session') => void,
-    ns?: string
+    callback: (key: StoreKey<Serializable>, value: Serializable, storageType: 'local' | 'session') => void,
+    ns?: string[]
   ): void {
-    const prefix = ns ? `strict-store/${ns}:` : 'strict-store/';
+    const prefixes = ns && ns.length > 0
+      ? ns.map(n => `strict-store/${n}:`)
+      : ['strict-store/'];
 
     [localStorage, sessionStorage].forEach((storage, idx) => {
       const storageType = idx === 0 ? 'local' : 'session';
@@ -215,12 +217,24 @@ class StrictStore {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
 
-        if (key && key.startsWith(prefix)) {
+        if (key && prefixes.some(prefix => key.startsWith(prefix))) {
           const valueStr = storage.getItem(key);
 
           if (valueStr !== null) {
             const value = strictJson.parse(valueStr);
-            callback(key, value, storageType);
+
+            const match = /^strict-store\/([^:]+):(.+)$/.exec(key);
+            if (!match) continue;
+            const [ , ns, name ] = match;
+
+            const storeKey: StoreKey<Serializable> = {
+              ns,
+              name,
+              storeType: storageType,
+              __type: undefined as any,
+            };
+
+            callback(storeKey, value, storageType);
           }
         }
       }
