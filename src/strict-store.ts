@@ -408,32 +408,44 @@ class StrictStore {
 
   /**
    * Gets the total number of items in localStorage + sessionStorage, but **only from strict-store**.
+   * If ns is provided, counts only items from the specified namespaces.
    * @public
    *
-   * @returns Count of all items from strict-store
+   * @param ns - (optional) Array of namespaces to filter by
+   * @returns Count of all items from strict-store or from the specified namespaces
    *
    * @example
    * ```ts
-   * if (StrictStore.size > 100) {
+   * if (StrictStore.size() > 100) {
    *   StrictStore.clear();
    * }
-   * ```
    *
-   * @remarks
-   * it only works in strictStore
+   * if (StrictStore.size(['user', 'settings']) > 10) {
+   *   StrictStore.clear(['user', 'settings']);
+   * }
+   * ```
    */
-  static get size(): number {
+  static size(ns?: string[]): number {
+    if (Array.isArray(ns) && ns.length === 0) {
+      return 0;
+    }
     let count = 0;
+    let prefixes: string[];
+
+    if (ns && ns.length > 0) {
+      prefixes = ns.map(n => `strict-store/${n}:`);
+    } else {
+      prefixes = ['strict-store/'];
+    }
 
     [localStorage, sessionStorage].forEach(storage => {
-      const keys: string[] = [];
-
-      Object.keys(storage).forEach(key => {
-        if (key !== null && key.startsWith('strict-store/'))
-          keys.push(key);
-      })
-
-      count += keys.length;
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (!key) continue;
+        if (prefixes.some(prefix => key.startsWith(prefix))) {
+          count++;
+        }
+      }
     });
 
     return count;

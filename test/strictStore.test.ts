@@ -33,7 +33,7 @@ describe('StrictStore', () => {
       StrictStore.save(keys.stringKey, 'remove test');
       StrictStore.save(keys.numberKey, 45);
 
-      expect(StrictStore.size).toBe(2);
+      expect(StrictStore.size()).toBe(2);
 
       StrictStore.remove([
         keys.stringKey,
@@ -44,7 +44,7 @@ describe('StrictStore', () => {
         keys.setKey,
       ]);
 
-      expect(StrictStore.size).toBe(0);
+      expect(StrictStore.size()).toBe(0);
     });
 
     test('should correct getAll method', () => {
@@ -73,7 +73,7 @@ describe('StrictStore', () => {
         'name-2',
       ), 45);
 
-      expect(StrictStore.size).toBe(3);
+      expect(StrictStore.size()).toBe(3);
 
       const all = StrictStore.getAll("test-ns")
 
@@ -126,11 +126,11 @@ describe('StrictStore', () => {
     test('should remove items and get default value', () => {
       StrictStore.save(keys.stringKey, 'remove value');
       expect(StrictStore.get(keys.stringKey)).toBe('remove value');
-      expect(StrictStore.size).toBe(1);
+      expect(StrictStore.size()).toBe(1);
 
       StrictStore.remove([keys.stringKey]);
       expect(StrictStore.get(keys.stringKey)).toBe(null);
-      expect(StrictStore.size).toBe(0);
+      expect(StrictStore.size()).toBe(0);
     });
 
     test('should working clear method', () => {
@@ -138,31 +138,15 @@ describe('StrictStore', () => {
       sessionStorage.setItem('1', '231')
       StrictStore.save(keys.stringKey, 'clear value');
 
-      expect(StrictStore.size).toBe(1); // stringKey
+      expect(StrictStore.size()).toBe(1); // stringKey
       expect(localStorage.length).toBe(2); // stringKey, localKey
       expect(sessionStorage.length).toBe(1); // sessionKey
 
       StrictStore.clear(); // only StrictStore keys
 
-      expect(StrictStore.size).toBe(0); // StrictStore keys
+      expect(StrictStore.size()).toBe(0); // StrictStore keys
       expect(localStorage.length).toBe(1);
       expect(sessionStorage.length).toBe(1);
-    });
-
-    test('should working length method', () => {
-      localStorage.setItem('localKey', 'asd')
-      sessionStorage.setItem('sessionKey', 'asd')
-      StrictStore.save(keys.stringKey, 'value');
-
-      expect(localStorage.length).toBe(2); // stringKey, localKey
-      expect(sessionStorage.length).toBe(1); // sessionKey
-      expect(StrictStore.size).toBe(1); // stringKey
-
-      StrictStore.clear();
-
-      expect(StrictStore.size).toBe(0);
-      expect(localStorage.length).toBe(1); // localKey
-      expect(sessionStorage.length).toBe(1); // sessionKey
     });
   });
 
@@ -206,6 +190,72 @@ describe('StrictStore', () => {
     test('does not throw for keys that were never saved', () => {
       expect(() => StrictStore.has(keys.enumKey)).not.toThrow();
       expect(() => StrictStore.has([keys.enumKey, keys.literalKey])).not.toThrow();
+    });
+  });
+
+  describe('StrictStore.size', () => {
+    test('returns 0 when store is empty', () => {
+      expect(StrictStore.size()).toBe(0);
+      expect(StrictStore.size([])).toBe(0);
+      expect(StrictStore.size(['user'])).toBe(0);
+    });
+
+    test('returns correct size for all namespaces', () => {
+      StrictStore.save(keys.stringKey, 'test');
+      StrictStore.save(keys.numberKey, 42);
+      StrictStore.save(keys.booleanKey, true);
+      expect(StrictStore.size()).toBe(3);
+    });
+
+    test('returns correct size for single namespace', () => {
+      const userKey1 = createKey<string>('user', 'name');
+      const userKey2 = createKey<number>('user', 'age');
+      const settingsKey = createKey<string>('settings', 'theme');
+
+      StrictStore.save(userKey1, 'Alice');
+      StrictStore.save(userKey2, 30);
+      StrictStore.save(settingsKey, 'dark');
+
+      expect(StrictStore.size(['user'])).toBe(2);
+      expect(StrictStore.size(['settings'])).toBe(1);
+      expect(StrictStore.size(['user', 'settings'])).toBe(3);
+    });
+
+    test('returns 0 for non-existent namespace', () => {
+      StrictStore.save(keys.stringKey, 'test');
+      expect(StrictStore.size(['nonexistent'])).toBe(0);
+    });
+
+    test('returns correct size for multiple namespaces', () => {
+      const userKey = createKey<string>('user', 'name');
+      const settingsKey = createKey<string>('settings', 'theme');
+      const appKey = createKey<number>('app', 'counter');
+
+      StrictStore.save(userKey, 'Bob');
+      StrictStore.save(settingsKey, 'light');
+      StrictStore.save(appKey, 7);
+
+      expect(StrictStore.size(['user', 'settings'])).toBe(2);
+      expect(StrictStore.size(['user', 'app'])).toBe(2);
+      expect(StrictStore.size(['settings', 'app'])).toBe(2);
+      expect(StrictStore.size(['user', 'settings', 'app'])).toBe(3);
+    });
+
+    test('works with both localStorage and sessionStorage', () => {
+      const localKey = createKey<string>('local', 'foo', 'local');
+      const sessionKey = createKey<string>('session', 'bar', 'session');
+      StrictStore.save(localKey, 'l');
+      StrictStore.save(sessionKey, 's');
+
+      expect(StrictStore.size(['local'])).toBe(1);
+      expect(StrictStore.size(['session'])).toBe(1);
+      expect(StrictStore.size(['local', 'session'])).toBe(2);
+      expect(StrictStore.size()).toBe(2);
+    });
+
+    test('returns 0 for empty ns array', () => {
+      StrictStore.save(keys.stringKey, 'test');
+      expect(StrictStore.size([])).toBe(0);
     });
   });
 
