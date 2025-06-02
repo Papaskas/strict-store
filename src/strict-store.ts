@@ -233,70 +233,99 @@ class StrictStore {
    *
    * @param callback - Function to call when a value changes.
    *   Receives (key: StoreKey<Serializable>, newValue: Serializable, oldValue: Serializable, storageType: 'local' | 'session')
-   * @param keys - (optional) Array of StoreKey objects to listen for changes.
-   *   If provided, callback will only be called for these keys. If omitted, all keys in the namespace (or all strict-store keys) are observed.
-   * @param ns (optional) - Namespace to filter keys. If provided, only keys with the 'strict-store/{ns}:' prefix are observed.
-   *   If both ns and keys are provided, both filters are applied.
+   * @param target - (optional) Array of StoreKeys или array of namespaces (string[]) to filter the observed changes.
+   *   If omitted, all strict-store keys are obeyed.
+   *
    * @returns Unsubscribe function.
    *
    * @example
+   * ```ts
    * // Listen to all changes in the 'user' namespace:
-   * const unsubscribe = strictStore.onChange((key, newValue, oldValue, storageType) => {
+   * const unsubscribe = StrictStore.onChange((key, newValue, oldValue, storageType) => {
    *   console.log(key, newValue, oldValue, storageType);
-   * }, undefined, 'user');
+   * }, ['user']);
    *
    * // Listen only to specific keys:
    * const userKey = createKey<{name: string}>('user', 'profile');
    * const settingsKey = createKey<{theme: string}>('user', 'settings');
    *
-   * strictStore.onChange(
+   * StrictStore.onChange(
    *   (key, newValue, oldValue, storageType) => { ... },
    *   [userKey, settingsKey]
    * );
    *
-   * // Listen to specific keys within a namespace:
-   * strictStore.onChange((key, newValue, oldValue, storageType) => { ... },
-   *   [userKey],
-   *   'user'
-   * );
-   *
    * // Later, to stop listening:
    * unsubscribe();
+   * ```
    *
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event
    */
-  // static onChange(
-  //   callback: (
-  //     key: StoreKey<Serializable>,
-  //     newValue: Serializable,
-  //     oldValue: Serializable,
-  //     storeType: StoreType,
-  //   ) => void,
-  //   keys?: StoreKey<Serializable>[],
-  //   ns?: string[],
-  // ): () => void {
-  //   const prefix = ns ? `strict-store/${ns}:` : 'strict-store/';
-  //   const keyNames = keys?.map(k => getFullName(k.ns, k.name));
-  //
-  //   const handler = (e: StorageEvent) => {
-  //     if (!e.key || !e.key.startsWith(prefix)) return;
-  //     if (keyNames && !keyNames.includes(e.key)) return;
-  //
-  //     const storageType: 'local' | 'session' =
-  //       e.storageArea === localStorage ? 'local' : 'session';
-  //
-  //     const newValue = e.newValue !== null ? strictJson.parse(e.newValue) : null;
-  //     const oldValue = e.oldValue !== null ? strictJson.parse(e.oldValue) : null;
-  //
-  //     callback(e.key, newValue, oldValue, storageType);
-  //   }
-  //
-  //   window.addEventListener('storage', handler);
-  //
-  //   return () => {
-  //     window.removeEventListener('storage', handler);
-  //   };
-  // }
+  static onChange(
+    callback: (
+      key: StoreKey<Serializable>,
+      newValue: Serializable,
+      oldValue: Serializable,
+      storeType: StoreType,
+    ) => void,
+    target?: StoreKey<Serializable>[] | string[],
+  ): () => void {
+    let keyNames: string[] | undefined;
+    let nsPrefixes: string[] | undefined;
+
+    if (target !== undefined) {
+      if (target.length === 0) {
+        // Empty array — we don't listen to anything
+        keyNames = [];
+        nsPrefixes = [];
+      } else if (typeof target[0] === 'string') {
+        // Namespace array
+        nsPrefixes = (target as string[]).map(ns => `strict-store/${ns}:`);
+      } else {
+        // StoreKey array
+        keyNames = (target as StoreKey<Serializable>[]).map(k => getFullName(k.ns, k.name));
+      }
+    }
+
+    const handler = (e: StorageEvent) => {
+      if (!e.key) return;
+      if (!e.key.startsWith('strict-store/')) return;
+
+      // Key filtering
+      if (keyNames) {
+        if (!keyNames.includes(e.key)) return;
+      }
+      // Filtering by namespace
+      else if (nsPrefixes) {
+        if (!nsPrefixes.some(prefix => e.key!.startsWith(prefix))) return;
+      }
+
+      const storageType: StoreType =
+        e.storageArea === localStorage ? 'local' : 'session';
+
+      const newValue = e.newValue !== null ? strictJson.parse(e.newValue) : null;
+      const oldValue = e.oldValue !== null ? strictJson.parse(e.oldValue) : null;
+
+      // Recover StoreKey from string
+      const match = /^strict-store\/([^:]+):(.+)$/.exec(e.key);
+      if (!match) return;
+      const [ , ns, name ] = match;
+
+      const storeKey: StoreKey<Serializable> = {
+        ns,
+        name,
+        storeType: storageType,
+        __type: undefined as any,
+      };
+
+      callback(storeKey, newValue, oldValue, storageType);
+    };
+
+    window.addEventListener('storage', handler);
+
+    return () => {
+      window.removeEventListener('storage', handler);
+    };
+  }
 
   /**
    * Removes a name-value pair from storage.
@@ -320,8 +349,6 @@ class StrictStore {
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  static remove(key: StoreKey<Serializable>): void
-  static remove(key: StoreKey<Serializable>[]): void
   static remove(key: StoreKey<Serializable> | StoreKey<Serializable>[]): void {
     if (Array.isArray(key)) {
       for (const singleKey of key) {
