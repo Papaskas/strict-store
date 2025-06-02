@@ -204,7 +204,7 @@ class StrictStore {
    * ```
    */
   static forEach(
-    callback: (key: StoreKey<Serializable>, value: Serializable, storageType: 'local' | 'session') => void,
+    callback: (key: StoreKey<Serializable>, value: Serializable, storageType: StoreType) => void,
     ns?: string[]
   ): void {
     const prefixes = ns && ns.length > 0
