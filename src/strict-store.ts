@@ -369,7 +369,7 @@ class StrictStore {
    *
    * @example
    * ```ts
-   * if (StrictStore.length > 100) {
+   * if (StrictStore.size > 100) {
    *   StrictStore.clear();
    * }
    * ```
