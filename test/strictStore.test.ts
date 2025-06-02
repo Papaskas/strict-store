@@ -2,6 +2,7 @@ import { strictStore, createKey } from '@src/strict-store';
 import { keys } from '@test/keys';
 import { Theme, User } from '@test/@types';
 import { Serializable, StoreKey } from '@src/types';
+import { getFullName } from '../src/utils';
 
 describe('strictStore', () => {
   beforeEach(() => {
@@ -328,84 +329,277 @@ describe('strictStore', () => {
     });
 
     describe('forEach method', () => {
-      describe('strictStore.forEach', () => {
-        beforeEach(() => {
-          strictStore.clear();
-          localStorage.clear();
-          sessionStorage.clear();
+      test('should iterate over all strictStore-managed keys in both storages', () => {
+        const key1 = createKey<string>('ns1', 'k1', 'local');
+        const key2 = createKey<number>('ns2', 'k2', 'session');
+        const key3 = createKey<boolean>('ns1', 'k3', 'local');
+
+        strictStore.save(key1, 'foo');
+        strictStore.save(key2, 42);
+        strictStore.save(key3, true);
+
+        const seen: Array<{ key: string; value: unknown; storageType: string }> = [];
+        strictStore.forEach((key, value, storageType) => {
+          seen.push({ key, value, storageType });
         });
 
-        test('should iterate over all strictStore-managed keys in both storages', () => {
-          const key1 = createKey<string>('ns1', 'k1', 'local');
-          const key2 = createKey<number>('ns2', 'k2', 'session');
-          const key3 = createKey<boolean>('ns1', 'k3', 'local');
+        // We check that all the keys are found
+        expect(seen).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ key: expect.stringContaining('/ns1:k1'), value: 'foo', storageType: 'local' }),
+            expect.objectContaining({ key: expect.stringContaining('/ns2:k2'), value: 42, storageType: 'session' }),
+            expect.objectContaining({ key: expect.stringContaining('/ns1:k3'), value: true, storageType: 'local' }),
+          ])
+        );
+        expect(seen.length).toBe(3);
+      });
 
-          strictStore.save(key1, 'foo');
-          strictStore.save(key2, 42);
-          strictStore.save(key3, true);
+      test('should filter by namespace if ns is provided', () => {
+        const key1 = createKey<string>('ns1', 'k1', 'local');
+        const key2 = createKey<number>('ns2', 'k2', 'session');
+        const key3 = createKey<boolean>('ns1', 'k3', 'local');
 
-          const seen: Array<{ key: string; value: unknown; storageType: string }> = [];
-          strictStore.forEach((key, value, storageType) => {
-            seen.push({ key, value, storageType });
-          });
+        strictStore.save(key1, 'foo');
+        strictStore.save(key2, 42);
+        strictStore.save(key3, true);
 
-          // We check that all the keys are found
-          expect(seen).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({ key: expect.stringContaining('/ns1:k1'), value: 'foo', storageType: 'local' }),
-              expect.objectContaining({ key: expect.stringContaining('/ns2:k2'), value: 42, storageType: 'session' }),
-              expect.objectContaining({ key: expect.stringContaining('/ns1:k3'), value: true, storageType: 'local' }),
-            ])
-          );
-          expect(seen.length).toBe(3);
+        const seen: Array<{ key: string; value: unknown; storageType: string }> = [];
+        strictStore.forEach((key, value, storageType) => {
+          seen.push({ key, value, storageType });
+        }, 'ns1');
+
+        // There should only be keys with ns1
+        expect(seen.length).toBe(2);
+        expect(seen.every(item => item.key.includes('/ns1:'))).toBe(true);
+      });
+
+      test('should not call callback for non-strictStore keys', () => {
+        localStorage.setItem('randomKey', '123');
+        sessionStorage.setItem('anotherKey', '456');
+
+        const key = createKey<string>('ns', 'k', 'local');
+        strictStore.save(key, 'foo');
+
+        const seen: string[] = [];
+        strictStore.forEach((key) => seen.push(key));
+
+        // only one key needs to be found
+        expect(seen.length).toBe(1);
+        expect(seen[0]).toContain('/ns:k');
+      });
+
+      test('should correctly pass storageType argument', () => {
+        const keyLocal = createKey<string>('ns', 'local', 'local');
+        const keySession = createKey<string>('ns', 'session', 'session');
+        strictStore.save(keyLocal, 'l');
+        strictStore.save(keySession, 's');
+
+        const types: string[] = [];
+        strictStore.forEach((_, __, storageType) => types.push(storageType));
+
+        expect(types).toEqual(expect.arrayContaining(['local', 'session']));
+        expect(types.length).toBe(2);
+      });
+    });
+
+    describe('onChange method', () => {
+      const fireStorageEvent = <T extends Serializable>(
+        key: StoreKey<T>,
+        newValue: T,
+        oldValue: T,
+      ) => {
+        const storageKey = getFullName(key.ns, key.name);
+        const storageArea = key.storeType === 'local' ? localStorage : sessionStorage;
+
+        const serialize = (v: Serializable) =>
+          v === null ? null : typeof v === 'string' ? v : JSON.stringify(v);
+
+        const event = new StorageEvent('storage', {
+          key: storageKey,
+          newValue: serialize(newValue),
+          oldValue: serialize(oldValue),
+          storageArea,
         });
 
-        test('should filter by namespace if ns is provided', () => {
-          const key1 = createKey<string>('ns1', 'k1', 'local');
-          const key2 = createKey<number>('ns2', 'k2', 'session');
-          const key3 = createKey<boolean>('ns1', 'k3', 'local');
+        window.dispatchEvent(event);
+      }
 
-          strictStore.save(key1, 'foo');
-          strictStore.save(key2, 42);
-          strictStore.save(key3, true);
+      test('should call callback on storage event for strict-store key', () => {
+        const key = createKey<{ foo: string }>('ns', 'k', 'local');
+        const oldVal = { foo: 'old' };
+        const newVal = { foo: 'new' };
 
-          const seen: Array<{ key: string; value: unknown; storageType: string }> = [];
-          strictStore.forEach((key, value, storageType) => {
-            seen.push({ key, value, storageType });
-          }, 'ns1');
+        let called = false;
+        strictStore.save(key, oldVal);
 
-          // There should only be keys with ns1
-          expect(seen.length).toBe(2);
-          expect(seen.every(item => item.key.includes('/ns1:'))).toBe(true);
+        const unsubscribe = strictStore.onChange((changedKey, newValue, oldValue, storageType) => {
+          called = true;
+          expect(changedKey).toBe(getFullName(key.ns, key.name));
+          expect(newValue).toEqual(newVal);
+          expect(oldValue).toEqual(oldVal);
+          expect(storageType).toBe('local');
         });
 
-        test('should not call callback for non-strictStore keys', () => {
-          localStorage.setItem('randomKey', '123');
-          sessionStorage.setItem('anotherKey', '456');
+        fireStorageEvent(key, newVal, oldVal);
 
-          const key = createKey<string>('ns', 'k', 'local');
-          strictStore.save(key, 'foo');
+        expect(called).toBe(true);
+        unsubscribe();
+      });
 
-          const seen: string[] = [];
-          strictStore.forEach((key) => seen.push(key));
-
-          // only one key needs to be found
-          expect(seen.length).toBe(1);
-          expect(seen[0]).toContain('/ns:k');
+      test('should not call callback for non-strict-store key', () => {
+        let called = false;
+        const unsubscribe = strictStore.onChange(() => {
+          called = true;
         });
 
-        test('should correctly pass storageType argument', () => {
-          const keyLocal = createKey<string>('ns', 'local', 'local');
-          const keySession = createKey<string>('ns', 'session', 'session');
-          strictStore.save(keyLocal, 'l');
-          strictStore.save(keySession, 's');
-
-          const types: string[] = [];
-          strictStore.forEach((_, __, storageType) => types.push(storageType));
-
-          expect(types).toEqual(expect.arrayContaining(['local', 'session']));
-          expect(types.length).toBe(2);
+        // Используем фиктивный ключ, не относящийся к strict-store
+        const fakeKey = createKey<string>('random', 'key', 'local');
+        // Подменяем getFullName, чтобы получить не-strict-store ключ
+        const event = new StorageEvent('storage', {
+          key: 'randomKey',
+          newValue: '1',
+          oldValue: '2',
+          storageArea: localStorage,
         });
+        window.dispatchEvent(event);
+
+        expect(called).toBe(false);
+        unsubscribe();
+      });
+
+      test('should filter by namespace', () => {
+        const key1 = createKey<string>('ns1', 'k1', 'local');
+        const key2 = createKey<string>('ns2', 'k2', 'local');
+
+        let called = false;
+        const unsubscribe = strictStore.onChange((changedKey) => {
+          expect(changedKey).toBe(getFullName(key1.ns, key1.name));
+          called = true;
+        }, undefined, 'ns1');
+
+        fireStorageEvent(key2, 'foo', 'bar');
+        expect(called).toBe(false);
+
+        fireStorageEvent(key1, 'baz', 'foo');
+        expect(called).toBe(true);
+
+        unsubscribe();
+      });
+
+      test('should pass null for newValue/oldValue if missing', () => {
+        const key = createKey<number>('ns', 'num', 'local');
+
+        let called = false;
+        const unsubscribe = strictStore.onChange((changedKey, newValue, oldValue) => {
+          expect(changedKey).toBe(getFullName(key.ns, key.name));
+          expect(newValue).toBe(null);
+          expect(oldValue).toBe(null);
+          called = true;
+        });
+
+        fireStorageEvent(key, null, null);
+        expect(called).toBe(true);
+
+        unsubscribe();
+      });
+
+      test('should unsubscribe correctly', () => {
+        const key = createKey<string>('ns', 'k', 'local');
+
+        let called = false;
+        const unsubscribe = strictStore.onChange(() => {
+          called = true;
+        });
+
+        unsubscribe();
+
+        fireStorageEvent(key, 'foo', 'bar');
+        expect(called).toBe(false);
+      });
+
+      test('should call callback only for specified keys', () => {
+        const key1 = createKey<string>('ns', 'k1', 'local');
+        const key2 = createKey<string>('ns', 'k2', 'local');
+        const key3 = createKey<string>('ns', 'k3', 'local');
+
+        strictStore.save(key1, 'v1');
+        strictStore.save(key2, 'v2');
+        strictStore.save(key3, 'v3');
+
+        const seen: string[] = [];
+        const unsubscribe = strictStore.onChange(
+          (changedKey) => seen.push(changedKey),
+          [key1, key3]
+        );
+
+        fireStorageEvent(key1, 'new1', 'v1');
+        fireStorageEvent(key2, 'new2', 'v2');
+        fireStorageEvent(key3, 'new3', 'v3');
+
+        expect(seen).toEqual([
+          getFullName(key1.ns, key1.name),
+          getFullName(key3.ns, key3.name),
+        ]);
+        unsubscribe();
+      });
+
+      test('should work with namespace and keys filter together', () => {
+        const key1 = createKey<string>('ns1', 'k1', 'local');
+        const key2 = createKey<string>('ns2', 'k2', 'local');
+
+        strictStore.save(key1, 'v1');
+        strictStore.save(key2, 'v2');
+
+        const seen: string[] = [];
+        const unsubscribe = strictStore.onChange(
+          (changedKey) => seen.push(changedKey),
+          [key1, key2],
+          'ns1'
+        );
+
+        fireStorageEvent(key1, 'new1', 'v1');
+        fireStorageEvent(key2, 'new2', 'v2');
+
+        // Должен сработать только для key1, так как ns='ns1'
+        expect(seen).toEqual([getFullName(key1.ns, key1.name)]);
+        unsubscribe();
+      });
+
+      test('should not call callback for keys not in the filter', () => {
+        const key1 = createKey<string>('ns', 'k1', 'local');
+        const key2 = createKey<string>('ns', 'k2', 'local');
+
+        strictStore.save(key1, 'v1');
+        strictStore.save(key2, 'v2');
+
+        let called = false;
+        const unsubscribe = strictStore.onChange(
+          () => { called = true; },
+          [key1]
+        );
+
+        fireStorageEvent(key2, 'new2', 'v2');
+
+        expect(called).toBe(false);
+        unsubscribe();
+      });
+
+      test('should unsubscribe correctly with keys filter', () => {
+        const key1 = createKey<string>('ns', 'k1', 'local');
+
+        strictStore.save(key1, 'v1');
+
+        let called = false;
+        const unsubscribe = strictStore.onChange(
+          () => { called = true; },
+          [key1]
+        );
+
+        unsubscribe();
+
+        fireStorageEvent(key1, 'new1', 'v1');
+
+        expect(called).toBe(false);
       });
     });
   });
