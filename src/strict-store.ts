@@ -15,6 +15,11 @@ import { DeepPartial } from '@src/iternal-types';
 class StrictStore {
 
   /**
+   * To ignore TypeDoc
+   * */
+  private constructor() {}
+
+  /**
    * Retrieves a value from storage.
    * @public
    *
@@ -523,4 +528,12 @@ const createKey = <T extends Persistable>(
 export {
   StrictStore,
   createKey,
+}
+
+export type {
+  StoreKey,
+  Persistable,
+  StoreType,
+  ExtendedPersistable,
+  BasicPersistable,
 }

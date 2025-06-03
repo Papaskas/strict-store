@@ -1,0 +1,11 @@
+{
+  "entryPoints": ["./src/strict-store.ts"],
+  "tsconfig": "./tsconfig.json",
+  "out": "docs",
+  "plugin": ["typedoc-plugin-markdown"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "hideGenerator": true,
+  "theme": "markdown"
+}

@@ -1,10 +1,7 @@
 /tmp
 /out-tsc
 /dist
-/temp
 /docs
-/etc/*
-!/etc/.gitkeep
 
 /node_modules
 npm-debug.log*
