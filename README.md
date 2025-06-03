@@ -7,13 +7,13 @@
 A **type-safe** wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.
 
 ## ✨ Features
-- 🛡 **Full Type Safety** - Compile-time type checking for all operations
-- 🧠 **Smart Serialization** - Automatic handling of:
+- 🛡 **Full Type Safety** — Compile-time type checking for all operations
+- 🧠 **Smart Serialization** — Automatic handling of:
     - Primitive types
     - Complex types
     - TypedArray
-- 🗂 **Namespace Isolation** - Prevent name collisions with hierarchical organization
-- ⚡ **Dual Storage Support** - Switch between localStorage (persistent) and sessionStorage (session-based)
+- 🗂 **Namespace Isolation** — Prevent name collisions with hierarchical organization
+- ⚡ **Dual Storage Support** — Switch between localStorage (persistent) and sessionStorage (session-based)
 - 🗃 **Batch Operations** — Save, remove, or pick multiple keys at once
 - 🔄 **Merge & Partial Update** — Merge new values into stored objects
 - 🕵️ **Change Listeners** — Subscribe to storage changes
@@ -81,6 +81,7 @@ import { createKey, strictStore } from 'strict-store';
 
 const themeKey = createKey<'light' | 'dark'>('app', 'theme', 'local');
 const langKey = createKey<'en' | 'fr'>('app', 'lang', 'session');
+const userKey = createKey<{ name: string; age: number; }>('app', 'user', 'local');
 
 // Save with type checking
 strictStore.save(themeKey, 'dark');
@@ -202,7 +203,7 @@ strictStore.save(userKey, {
 ## 🚧 Limitations
 
 - Avoid using colons (':') in namespace or name values — this symbol is reserved as a namespace delimiter.
-- The undefined type is not supported — it will be converted to null during JSON serialization.
+- The `undefined` type is not supported — it will be converted to `null` during JSON serialization.
 - Lodash is used under the hood.
 
 ## ⚙️ Requirements
