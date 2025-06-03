@@ -452,28 +452,7 @@ class StrictStore {
    * ```
    */
   static size(ns?: string[]): number {
-    if (Array.isArray(ns) && ns.length === 0)
-      return 0;
-
-    let count = 0;
-    let prefixes: string[];
-
-    if (ns && ns.length > 0)
-      prefixes = ns.map(n => `strict-store/${n}:`);
-    else
-      prefixes = ['strict-store/'];
-
-    [localStorage, sessionStorage].forEach(storage => {
-      for (let i = 0; i < storage.length; i++) {
-        const key = storage.key(i);
-
-        if (!key) continue;
-        if (prefixes.some(prefix => key.startsWith(prefix)))
-          count++;
-      }
-    });
-
-    return count;
+    return StrictStore.getAll(ns).length;
   }
 
   /**
