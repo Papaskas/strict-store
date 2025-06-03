@@ -7,5 +7,6 @@
   "excludeProtected": true,
   "excludeInternal": true,
   "hideGenerator": true,
+  "includeVersion": true,
   "theme": "markdown"
 }
