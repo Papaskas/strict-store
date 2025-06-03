@@ -473,26 +473,10 @@ class StrictStore {
   static clear(ns?: string[]) {
     if (Array.isArray(ns) && ns.length === 0)
       return;
-
-    let prefixes: string[];
-    if (ns && ns.length > 0)
-      prefixes = ns.map(n => `strict-store/${n}:`);
-    else
-      prefixes = ['strict-store/'];
-
-    [localStorage, sessionStorage].forEach(storage => {
-      const keysToRemove: string[] = [];
-
-      for (let i = 0; i < storage.length; i++) {
-        const key = storage.key(i);
-        if (!key) continue;
-
-        if (prefixes.some(prefix => key.startsWith(prefix)))
-          keysToRemove.push(key);
-      }
-
-      keysToRemove.forEach(key => storage.removeItem(key));
-    });
+    
+    const items = StrictStore.getAll(ns);
+    for (const { key } of items)
+      StrictStore.remove([key]);
   }
 }
 
