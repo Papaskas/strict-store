@@ -3,7 +3,8 @@
 /dist
 /temp
 /docs
-/etc
+/etc/*
+!/etc/.gitkeep
 
 /node_modules
 npm-debug.log*

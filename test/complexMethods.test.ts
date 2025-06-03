@@ -1,5 +1,5 @@
 import { StrictStore, createKey } from '@src/strict-store';
-import { StoreKey, Persistable } from '@src/@types';
+import { StoreKey, Persistable } from '@src/types';
 import { getFullName } from '@src/utils';
 
 describe('Complex methods', () => {

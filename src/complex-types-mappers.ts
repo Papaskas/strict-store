@@ -1,4 +1,4 @@
-import { Persistable } from '@src/@types';
+import { Persistable } from '@src/types';
 import { ComplexTypeData, TypedArray } from '@src/iternal-types';
 
 /**

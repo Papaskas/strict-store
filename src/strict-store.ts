@@ -1,6 +1,6 @@
 import { strictJson } from '@src/strict-json';
 import { deepMergeWithCollections, getFullName, getStorage } from '@src/utils';
-import { StoreKey, Persistable, StoreType, ExtendedPersistable, BasicPersistable } from '@src/@types';
+import { StoreKey, Persistable, StoreType, ExtendedPersistable, BasicPersistable } from '@src/types';
 import { DeepPartial } from '@src/iternal-types';
 
 /**
@@ -523,9 +523,4 @@ const createKey = <T extends Persistable>(
 export {
   StrictStore,
   createKey,
-  StoreKey,
-  StoreType,
-  Persistable,
-  ExtendedPersistable,
-  BasicPersistable,
 }

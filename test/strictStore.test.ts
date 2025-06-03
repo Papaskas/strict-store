@@ -1,6 +1,6 @@
 import { StrictStore, createKey } from '@src/strict-store';
 import { keys } from '@test/keys';
-import { Persistable, StoreKey } from '@src/@types';
+import { Persistable, StoreKey } from '@src/types';
 
 describe('StrictStore', () => {
   beforeEach(() => {

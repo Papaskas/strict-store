@@ -1,4 +1,4 @@
-import { Persistable } from '@src/@types';
+import { Persistable } from '@src/types';
 
 /** @private */
 export type TypedArray =
