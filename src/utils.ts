@@ -1,5 +1,6 @@
-import { DeepPartial, Serializable, StoreType, TypedArray } from '@src/types';
 import { mergeWith } from 'lodash';
+import { TypedArray } from '@src/iternal-types';
+import { StoreType } from '@src/@types';
 
 export const getStorage = (type: StoreType): Storage => {
   return type === 'local' ? localStorage : sessionStorage

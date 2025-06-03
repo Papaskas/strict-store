@@ -1,6 +1,6 @@
 import { StrictStore, createKey } from '@src/strict-store';
 import { keys } from '@test/keys';
-import { Serializable, StoreKey } from '@src/types';
+import { Persistable, StoreKey } from '@src/@types';
 
 describe('StrictStore', () => {
   beforeEach(() => {
@@ -574,7 +574,7 @@ describe('StrictStore', () => {
   })
 
   describe('StrictStore supported types', () => {
-    const strictTest = <T extends StoreKey<Serializable>>(key: T, value: T['__type']) => {
+    const strictTest = <T extends StoreKey<Persistable>>(key: T, value: T['__type']) => {
       expect(StrictStore.get(key)).toStrictEqual(null);
       StrictStore.save(key, value);
       const result = StrictStore.get(key);

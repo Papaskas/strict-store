@@ -1,6 +1,7 @@
-import { Serializable, StoreType, StoreKey, DeepPartial, ExtendedSerializable, BasicSerializable } from '@src/types';
 import { strictJson } from '@src/strict-json';
 import { deepMergeWithCollections, getFullName, getStorage } from '@src/utils';
+import { StoreKey, Persistable, StoreType, ExtendedPersistable, BasicPersistable } from '@src/@types';
+import { DeepPartial } from '@src/iternal-types';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -37,7 +38,7 @@ class StrictStore {
    * @remarks
    * - Automatically handles JSON parsing
    */
-  static get<T extends Serializable>(key: StoreKey<T>): T | null {
+  static get<T extends Persistable>(key: StoreKey<T>): T | null {
     const storage = getStorage(key.storeType);
     const storedValue = storage.getItem(getFullName(key.ns, key.name));
 
@@ -62,7 +63,7 @@ class StrictStore {
    * const [theme, lang] = strictStore.pick([themeKey, langKey]);
    * ```
    */
-  static pick<const K extends readonly StoreKey<Serializable>[]>(
+  static pick<const K extends readonly StoreKey<Persistable>[]>(
     keys: K
   ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never } {
     return keys.map(key => StrictStore.get(key)) as {
@@ -96,11 +97,11 @@ class StrictStore {
    * - Scans both localStorage and sessionStorage.
    * - Only includes keys managed by strictStore (those starting with 'strict-store/').
    */
-  static getAll(ns?: string[]): { key: StoreKey<Serializable>, value: Serializable, storageType: StoreType }[] {
+  static getAll(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable, storageType: StoreType }[] {
     if (Array.isArray(ns) && ns.length === 0)
       return [];
 
-    const result: { key: StoreKey<Serializable>, value: Serializable, storageType: StoreType }[] = [];
+    const result: { key: StoreKey<Persistable>, value: Persistable, storageType: StoreType }[] = [];
     const prefixes = ns && ns.length > 0
       ? ns.map(n => `strict-store/${n}:`)
       : ['strict-store/'];
@@ -124,7 +125,7 @@ class StrictStore {
         if (!match) continue;
         const [, nsPart, namePart] = match;
 
-        const storeKey: StoreKey<Serializable> = {
+        const storeKey: StoreKey<Persistable> = {
           ns: nsPart,
           name: namePart,
           storeType: storageType,
@@ -161,7 +162,7 @@ class StrictStore {
    * strictStore.save(themeKey, 'dark');
    * ```
    */
-  static save<T extends StoreKey<Serializable>>(key: T, value: T['__type']): void {
+  static save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void {
     const storage = getStorage(key.storeType);
 
     storage.setItem(getFullName(key.ns, key.name), strictJson.stringify(value));
@@ -182,7 +183,7 @@ class StrictStore {
    * ```
    */
   static saveMany<
-    Pairs extends readonly [StoreKey<Serializable>, Serializable][]
+    Pairs extends readonly [StoreKey<Persistable>, Persistable][]
   >(
     entries: Pairs & {
       [K in keyof Pairs]: Pairs[K] extends [infer Key, unknown]
@@ -218,7 +219,7 @@ class StrictStore {
    * strictStore.merge(userKey, { name: 'Alex' });
    * ```
    */
-  static merge<T extends Record<string, Serializable>>(
+  static merge<T extends Record<string, Persistable>>(
     key: StoreKey<T>,
     partial: DeepPartial<T>
   ): void {
@@ -248,7 +249,7 @@ class StrictStore {
    * @public
    *
    * @param callback - Function to execute for each key-value pair.
-   *   Receives (key: Key<Serializable>, value: Serializable, storageType: 'local' | 'session')
+   *   Receives (key: Key<Persistable>, value: Persistable, storageType: 'local' | 'session')
    * @param ns - Optional namespace to filter keys.
    *
    * @example
@@ -259,7 +260,7 @@ class StrictStore {
    * ```
    */
   static forEach(
-    callback: (key: StoreKey<Serializable>, value: Serializable, storageType: StoreType) => void,
+    callback: (key: StoreKey<Persistable>, value: Persistable, storageType: StoreType) => void,
     ns?: string[]
   ): void {
     StrictStore.getAll(ns).forEach(({ key, value, storageType }) => {
@@ -272,7 +273,7 @@ class StrictStore {
    * @public
    *
    * @param callback - Function to call when a value changes.
-   *   Receives (key: StoreKey<Serializable>, newValue: Serializable, oldValue: Serializable, storageType: 'local' | 'session')
+   *   Receives (key: StoreKey<Persistable>, newValue: Persistable, oldValue: Persistable, storageType: 'local' | 'session')
    * @param target - (optional) Array of StoreKeys или array of namespaces (string[]) to filter the observed changes.
    *   If omitted, all strict-store keys are obeyed.
    *
@@ -302,12 +303,12 @@ class StrictStore {
    */
   static onChange(
     callback: (
-      key: StoreKey<Serializable>,
-      newValue: Serializable,
-      oldValue: Serializable,
+      key: StoreKey<Persistable>,
+      newValue: Persistable,
+      oldValue: Persistable,
       storeType: StoreType,
     ) => void,
-    target?: StoreKey<Serializable>[] | string[],
+    target?: StoreKey<Persistable>[] | string[],
   ): () => void {
     let keyNames: string[] | undefined;
     let nsPrefixes: string[] | undefined;
@@ -322,7 +323,7 @@ class StrictStore {
         nsPrefixes = (target as string[]).map(ns => `strict-store/${ns}:`);
       } else {
         // StoreKey array
-        keyNames = (target as StoreKey<Serializable>[]).map(k => getFullName(k.ns, k.name));
+        keyNames = (target as StoreKey<Persistable>[]).map(k => getFullName(k.ns, k.name));
       }
     }
 
@@ -350,7 +351,7 @@ class StrictStore {
       if (!match) return;
       const [ , ns, name ] = match;
 
-      const storeKey: StoreKey<Serializable> = {
+      const storeKey: StoreKey<Persistable> = {
         ns,
         name,
         storeType: storageType,
@@ -389,7 +390,7 @@ class StrictStore {
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  static remove(keys: StoreKey<Serializable>[]): void {
+  static remove(keys: StoreKey<Persistable>[]): void {
     for (const key of keys) {
       const storage = getStorage(key.storeType);
       storage.removeItem(getFullName(key.ns, key.name));
@@ -417,9 +418,9 @@ class StrictStore {
    * @remarks
    * - If the value is null, it returns false
    */
-  static has(key: StoreKey<Serializable>): boolean;
-  static has(key: StoreKey<Serializable>[]): boolean[];
-  static has(key: StoreKey<Serializable> | StoreKey<Serializable>[]): boolean | boolean[] {
+  static has(key: StoreKey<Persistable>): boolean;
+  static has(key: StoreKey<Persistable>[]): boolean[];
+  static has(key: StoreKey<Persistable> | StoreKey<Persistable>[]): boolean | boolean[] {
     if (Array.isArray(key)) {
       return key.map(storeKey => {
         const storage = getStorage(storeKey.storeType);
@@ -484,7 +485,7 @@ class StrictStore {
  * Creates a type-safe store name object for use with strictStore.
  * @public
  *
- * @typeParam T - Type of the stored value, must extend `Serializable`
+ * @typeParam T - Type of the stored value, must extend `Persistable`
  *
  * @param ns - Namespace to prevent name collisions (e.g., 'app', 'user')
  * @param name - Unique identifier within the ns
@@ -500,7 +501,7 @@ class StrictStore {
  *
  * @see {@link StrictStore} for usage examples with storage methods
  */
-const createKey = <T extends Serializable>(
+const createKey = <T extends Persistable>(
   ns: string,
   name: string,
   storeType: StoreType = 'local',
@@ -524,7 +525,7 @@ export {
   createKey,
   StoreKey,
   StoreType,
-  Serializable,
-  ExtendedSerializable,
-  BasicSerializable
+  Persistable,
+  ExtendedPersistable,
+  BasicPersistable,
 }

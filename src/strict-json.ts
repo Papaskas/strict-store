@@ -1,17 +1,10 @@
-import {
-  ComplexTypeData,
-  ComplexTypeNames,
-  BasicSerializable,
-  Serializable,
-  StoreKey,
-  TYPED_ARRAY_CONSTRUCTORS,
-  TypedArray
-} from '@src/types';
 import { complexTypeMappers } from '@src/complex-types-mappers';
 import { isTypedArray } from '@src/utils';
+import { BasicPersistable, Persistable, StoreKey } from '@src/@types';
+import { ComplexTypeData, ComplexTypeNames, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/iternal-types';
 
 export const strictJson = {
-  parse<T extends Serializable>(value: string): T {
+  parse<T extends Persistable>(value: string): T {
     try {
       return JSON.parse(value, reviver) as T;
     } catch {
@@ -19,15 +12,15 @@ export const strictJson = {
     }
   },
 
-  stringify<T extends StoreKey<Serializable>>(value: T['__type']): string {
+  stringify<T extends StoreKey<Persistable>>(value: T['__type']): string {
     return JSON.stringify(value, replacer);
   },
 }
 
 const replacer = (
   key: string,
-  value: Serializable,
-): Serializable => {
+  value: Persistable,
+): Persistable => {
   if (typeof value === 'bigint')
     return complexTypeMappers.bigint(value)
 
@@ -50,9 +43,9 @@ const replacer = (
 const reviver = (
   key: string,
   value:
-    | BasicSerializable
-    | ComplexTypeData // ExtendedSerializable -> ComplexTypeData
-): Serializable => {
+    | BasicPersistable
+    | ComplexTypeData // ExtendedPersistable -> ComplexTypeData
+): Persistable => {
   if (
     value !== null &&
     typeof value === 'object' &&
@@ -65,9 +58,9 @@ const reviver = (
       case 'bigint':
         return BigInt((value.value) as bigint)
       case 'map':
-        return new Map((value.value) as Map<Serializable, Serializable>)
+        return new Map((value.value) as Map<Persistable, Persistable>)
       case 'set':
-        return new Set((value.value) as Set<Serializable>)
+        return new Set((value.value) as Set<Persistable>)
       case 'typedArray': {
         const Constructor = TYPED_ARRAY_CONSTRUCTORS[(value.subtype) as string]
         if (!Constructor) throw new Error(`Unsupported TypedArray type: ${value.subtype}`)

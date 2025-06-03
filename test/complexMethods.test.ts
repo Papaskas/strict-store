@@ -1,5 +1,5 @@
 import { StrictStore, createKey } from '@src/strict-store';
-import { StoreKey, Serializable } from '@src/types';
+import { StoreKey, Persistable } from '@src/@types';
 import { getFullName } from '@src/utils';
 
 describe('Complex methods', () => {
@@ -130,7 +130,7 @@ describe('Complex methods', () => {
       StrictStore.save(key2, 42);
       StrictStore.save(key3, true);
 
-      const seen: Array<{ key: StoreKey<Serializable>; value: unknown; storageType: string }> = [];
+      const seen: Array<{ key: StoreKey<Persistable>; value: unknown; storageType: string }> = [];
       StrictStore.forEach((key, value, storageType) => {
         seen.push({ key, value, storageType });
       });
@@ -151,7 +151,7 @@ describe('Complex methods', () => {
       StrictStore.save(key1, 'v1');
       StrictStore.save(key2, 2);
 
-      const seen: Array<{ key: StoreKey<Serializable>, value: Serializable, storageType: string }> = [];
+      const seen: Array<{ key: StoreKey<Persistable>, value: Persistable, storageType: string }> = [];
       StrictStore.forEach((key, value, storageType) => {
         seen.push({ key, value, storageType });
       });
@@ -170,7 +170,7 @@ describe('Complex methods', () => {
       StrictStore.save(key2, 42);
       StrictStore.save(key3, true);
 
-      const seen: Array<{ key: StoreKey<Serializable>; value: unknown; storageType: string }> = [];
+      const seen: Array<{ key: StoreKey<Persistable>; value: unknown; storageType: string }> = [];
       StrictStore.forEach((key, value, storageType) => {
         seen.push({ key, value, storageType });
       }, ['ns1']);
@@ -188,7 +188,7 @@ describe('Complex methods', () => {
       StrictStore.save(key2, 42);
       StrictStore.save(key3, true);
 
-      const seen: Array<{ key: StoreKey<Serializable>; value: unknown; storageType: string }> = [];
+      const seen: Array<{ key: StoreKey<Persistable>; value: unknown; storageType: string }> = [];
       StrictStore.forEach((key, value, storageType) => {
         seen.push({ key, value, storageType });
       }, ['ns1', 'ns3']);
@@ -204,7 +204,7 @@ describe('Complex methods', () => {
       const key = createKey<string>('ns', 'k', 'local');
       StrictStore.save(key, 'foo');
 
-      const seen: StoreKey<Serializable>[] = [];
+      const seen: StoreKey<Persistable>[] = [];
       StrictStore.forEach((key) => seen.push(key));
 
       expect(seen.length).toBe(1);
@@ -228,7 +228,7 @@ describe('Complex methods', () => {
 
   describe('StrictStore.onChange', () => {
     // Auxiliary function for simulating StorageEvent
-    const fireStorageEvent = <T extends Serializable>(
+    const fireStorageEvent = <T extends Persistable>(
       key: StoreKey<T>,
       newValue: T,
       oldValue: T,
@@ -236,7 +236,7 @@ describe('Complex methods', () => {
       const storageKey = getFullName(key.ns, key.name);
       const storageArea = key.storeType === 'local' ? localStorage : sessionStorage;
 
-      const serialize = (v: Serializable) =>
+      const serialize = (v: Persistable) =>
         v === null ? null : typeof v === 'string' ? v : JSON.stringify(v);
 
       const event = new StorageEvent('storage', {
