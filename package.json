@@ -52,6 +52,7 @@
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.5",
+    "typedoc-github-wiki-theme": "^2.1.0",
     "typedoc-plugin-markdown": "^4.6.4",
     "typescript": "^5.5.3",
     "vite": "^6.3.4",

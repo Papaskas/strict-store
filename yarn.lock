@@ -3363,6 +3363,11 @@ type-fest@^4.39.1:
   resolved "https://registry.npmjs.org/type-fest/-/type-fest-4.40.0.tgz"
   integrity sha512-ABHZ2/tS2JkvH1PEjxFDTUWC8dB5OsIGZP4IFLhR293GqT5Y5qB1WwL2kMPYhQW9DVgVD8Hd7I8gjwPIf5GFkw==
 
+typedoc-github-wiki-theme@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/typedoc-github-wiki-theme/-/typedoc-github-wiki-theme-2.1.0.tgz#110af9cd8384179d91e8746ef87da2c18020f9ef"
+  integrity sha512-5j4vuoGwLn8PM1HeXocbwUF0Ra2qTFLeqsQwBQsLBPIx7Tl/lxkas1qIPFg/InOYwy9Y3Pn4xSjh+c/KM+jh6Q==
+
 typedoc-plugin-markdown@^4.6.4:
   version "4.6.4"
   resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-4.6.4.tgz#b28ce1a31b93a1e5a31f74b5fcc6f27f0417cbee"
