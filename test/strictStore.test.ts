@@ -320,6 +320,66 @@ describe('StrictStore', () => {
     });
   });
 
+  describe('StrictStore.saveMany', () => {
+    const stringKey = createKey<string>('test', 'str');
+    const numberKey = createKey<number>('test', 'num');
+    const boolKey = createKey<boolean>('test', 'bool');
+    const objKey = createKey<{ a: number; b: string }>('test', 'obj');
+    const ns2Key = createKey<string>('other', 'foo');
+
+    test('saves multiple key-value pairs of different types', () => {
+      StrictStore.saveMany([
+        [stringKey, 'hello'],
+        [numberKey, 42],
+        [boolKey, true],
+        [objKey, { a: 1, b: 'x' }],
+      ]);
+
+      expect(StrictStore.get(stringKey)).toBe('hello');
+      expect(StrictStore.get(numberKey)).toBe(42);
+      expect(StrictStore.get(boolKey)).toBe(true);
+      expect(StrictStore.get(objKey)).toEqual({ a: 1, b: 'x' });
+    });
+
+    test('saves keys from different namespaces', () => {
+      StrictStore.saveMany([
+        [stringKey, 'foo'],
+        [ns2Key, 'bar'],
+      ]);
+      expect(StrictStore.get(stringKey)).toBe('foo');
+      expect(StrictStore.get(ns2Key)).toBe('bar');
+    });
+
+    test('overwrites previous values', () => {
+      StrictStore.save(stringKey, 'old');
+      StrictStore.saveMany([
+        [stringKey, 'new'],
+        [numberKey, 100],
+      ]);
+      expect(StrictStore.get(stringKey)).toBe('new');
+      expect(StrictStore.get(numberKey)).toBe(100);
+    });
+
+    test('works with empty array', () => {
+      expect(() => StrictStore.saveMany([])).not.toThrow();
+      expect(StrictStore.size()).toBe(0);
+    });
+
+    test('type safety: error if value does not match key type', () => {
+      // @ts-expect-error
+      StrictStore.saveMany([[stringKey, 123]]);
+      // @ts-expect-error
+      StrictStore.saveMany([[numberKey, 'not a number']]);
+      // @ts-expect-error
+      StrictStore.saveMany([[objKey, { a: 'wrong', b: 2 }]]);
+    });
+
+    test('type safety: error if key is not StoreKey', () => {
+      // @ts-expect-error
+      StrictStore.saveMany([[{ ns: 'x', name: 'y', storeType: 'local' }, 'foo']]);
+    });
+  });
+
   describe('Namespaces operations', () => {
     test('correct generate ns', () => {
       StrictStore.save(keys.stringKey, 'key1');

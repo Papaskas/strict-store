@@ -143,6 +143,38 @@ class StrictStore {
   }
 
   /**
+   * Saves multiple key-value pairs to storage with automatic serialization.
+   * @public
+   *
+   * @param entries - Array of [StoreKey, value] tuples
+   *
+   * @example
+   * ```ts
+   * StrictStore.saveMany([
+   *   [themeKey, 'dark'],
+   *   [langKey, 'en'],
+   * ]);
+   * ```
+   */
+  static saveMany<
+    Pairs extends readonly [StoreKey<Serializable>, Serializable][]
+  >(
+    entries: Pairs & {
+      [K in keyof Pairs]: Pairs[K] extends [infer Key, unknown]
+        ? Key extends StoreKey<infer T>
+          ? [Key, T]
+          : never
+        : never
+    }
+  ): void {
+    for (const [key, value] of entries) {
+      StrictStore.save(key as any, value);
+    }
+  }
+
+
+
+  /**
    * Merges a partial value into an existing object stored under the specified key.
    * @public
    *
