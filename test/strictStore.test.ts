@@ -1,6 +1,5 @@
 import { StrictStore, createKey } from '@src/strict-store';
 import { keys } from '@test/keys';
-import { Theme, User } from '@test/@types';
 import { Serializable, StoreKey } from '@src/types';
 
 describe('StrictStore', () => {
@@ -10,98 +9,69 @@ describe('StrictStore', () => {
     sessionStorage.clear();
   });
 
-  const strictTest = <T extends StoreKey<Serializable>>(key: T, value: T['__type']) => {
-    expect(StrictStore.get(key)).toStrictEqual(null);
+  const expectType = <const T>(_value: T) => {}
 
-    StrictStore.save(key, value);
-    expect(StrictStore.get(key)).toStrictEqual(value);
-  }
-
-  const expectType = <T>(_value: T) => {}
-
-  describe('Basic operations', () => {
-    test('should return `null` value when empty', () => {
+  describe('StrictStore basic operations', () => {
+    test('returns null for non-existent key', () => {
       expect(StrictStore.get(keys.stringKey)).toBe(null);
     });
 
-    test('should correct save and get this value', () => {
+    test('saves and retrieves a string value', () => {
       StrictStore.save(keys.stringKey, 'save and get test');
       expect(StrictStore.get(keys.stringKey)).toBe('save and get test');
     });
 
-    test('should correct removeAll method', () => {
-      StrictStore.save(keys.stringKey, 'remove test');
-      StrictStore.save(keys.numberKey, 45);
-
-      expect(StrictStore.size()).toBe(2);
-
-      StrictStore.remove([
-        keys.stringKey,
-        keys.numberKey,
-        keys.booleanKey,
-        keys.enumKey,
-        keys.literalKey,
-        keys.setKey,
-      ]);
-
-      expect(StrictStore.size()).toBe(0);
+    test('overwrites existing value', () => {
+      StrictStore.save(keys.stringKey, 'first');
+      StrictStore.save(keys.stringKey, 'second');
+      expect(StrictStore.get(keys.stringKey)).toBe('second');
     });
 
-    test('should correct pick method', () => {
-      const themeKey = createKey<'light' | 'dark'>('app', 'theme');
-      const langKey = createKey<'en' | 'ru'>('app', 'lang');
-
-      StrictStore.save(themeKey, 'dark')
-      StrictStore.save(langKey, 'en')
-
-      const [theme, lang] = StrictStore.pick([themeKey, langKey]);
-
-      expectType<'light' | 'dark' | null>(theme)
-      expectType<'en' | 'ru' | null>(lang)
-
-      expect(theme).toBe('dark');
-      expect(lang).toBe('en');
-    });
-
-    test('should set and get primitive values', () => {
-      new Map<StoreKey<Serializable>, Serializable>([
-        [keys.stringKey, 'test primitive value'],
-        [keys.booleanKey, false],
-        [keys.numberKey, 141],
-        [keys.nullableStringKey, null],
-        [keys.bigIntKey, 98741954896215948924132156489498412315618948941321532156489748915618949484n],
-      ]).forEach((value, key) => {
-        strictTest(
-          key,
-          value,
-        )
-      })
-    });
-
-    test('should remove items and get default value', () => {
-      StrictStore.save(keys.stringKey, 'remove value');
-      expect(StrictStore.get(keys.stringKey)).toBe('remove value');
-      expect(StrictStore.size()).toBe(1);
-
+    test('removes a key and returns null after removal', () => {
+      StrictStore.save(keys.stringKey, 'to be removed');
       StrictStore.remove([keys.stringKey]);
       expect(StrictStore.get(keys.stringKey)).toBe(null);
-      expect(StrictStore.size()).toBe(0);
     });
 
-    test('should working clear method', () => {
-      localStorage.setItem('1', '231')
-      sessionStorage.setItem('1', '231')
-      StrictStore.save(keys.stringKey, 'clear value');
+    test('works with different types: number', () => {
+      StrictStore.save(keys.numberKey, 123);
+      expect(StrictStore.get(keys.numberKey)).toBe(123);
+    });
 
-      expect(StrictStore.size()).toBe(1); // stringKey
-      expect(localStorage.length).toBe(2); // stringKey, localKey
-      expect(sessionStorage.length).toBe(1); // sessionKey
+    test('works with different types: boolean', () => {
+      StrictStore.save(keys.booleanKey, true);
+      expect(StrictStore.get(keys.booleanKey)).toBe(true);
+      StrictStore.save(keys.booleanKey, false);
+      expect(StrictStore.get(keys.booleanKey)).toBe(false);
+    });
 
-      StrictStore.clear(); // only StrictStore keys
+    test('works with null value', () => {
+      const nullKey = createKey<null>('basic', 'null');
+      StrictStore.save(nullKey, null);
+      expect(StrictStore.get(nullKey)).toBe(null);
+    });
 
-      expect(StrictStore.size()).toBe(0); // StrictStore keys
-      expect(localStorage.length).toBe(1);
-      expect(sessionStorage.length).toBe(1);
+    test('does not affect other keys when saving', () => {
+      StrictStore.save(keys.stringKey, 'one');
+      StrictStore.save(keys.numberKey, 2);
+      expect(StrictStore.get(keys.stringKey)).toBe('one');
+      expect(StrictStore.get(keys.numberKey)).toBe(2);
+    });
+
+    test('does not affect other keys when removing', () => {
+      StrictStore.save(keys.stringKey, 'one');
+      StrictStore.save(keys.numberKey, 2);
+      StrictStore.remove([keys.stringKey]);
+      expect(StrictStore.get(keys.stringKey)).toBe(null);
+      expect(StrictStore.get(keys.numberKey)).toBe(2);
+    });
+
+    test('does not throw when removing non-existent key', () => {
+      expect(() => StrictStore.remove([keys.stringKey])).not.toThrow();
+    });
+
+    test('does not throw when getting non-existent key', () => {
+      expect(() => StrictStore.get(keys.stringKey)).not.toThrow();
     });
   });
 
@@ -145,6 +115,65 @@ describe('StrictStore', () => {
     test('does not throw for keys that were never saved', () => {
       expect(() => StrictStore.has(keys.enumKey)).not.toThrow();
       expect(() => StrictStore.has([keys.enumKey, keys.literalKey])).not.toThrow();
+    });
+  });
+
+  describe('StrictStore.remove', () => {
+    const localKey1 = createKey<string>('ns1', 'k1', 'local');
+    const localKey2 = createKey<number>('ns1', 'k2', 'local');
+    const sessionKey1 = createKey<boolean>('ns2', 'k3', 'session');
+    const sessionKey2 = createKey<string>('ns2', 'k4', 'session');
+
+    test('removes a single key from localStorage', () => {
+      StrictStore.save(localKey1, 'foo');
+      expect(StrictStore.get(localKey1)).toBe('foo');
+      StrictStore.remove([localKey1]);
+      expect(StrictStore.get(localKey1)).toBe(null);
+    });
+
+    test('removes a single key from sessionStorage', () => {
+      StrictStore.save(sessionKey1, true);
+      expect(StrictStore.get(sessionKey1)).toBe(true);
+      StrictStore.remove([sessionKey1]);
+      expect(StrictStore.get(sessionKey1)).toBe(null);
+    });
+
+    test('removes multiple keys from both storages', () => {
+      StrictStore.save(localKey1, 'foo');
+      StrictStore.save(localKey2, 123);
+      StrictStore.save(sessionKey1, false);
+      StrictStore.save(sessionKey2, 'bar');
+
+      StrictStore.remove([localKey1, sessionKey2]);
+      expect(StrictStore.get(localKey1)).toBe(null);
+      expect(StrictStore.get(sessionKey2)).toBe(null);
+      expect(StrictStore.get(localKey2)).toBe(123);
+      expect(StrictStore.get(sessionKey1)).toBe(false);
+    });
+
+    test('removing a non-existent key does not throw and is silent', () => {
+      expect(() => StrictStore.remove([localKey1])).not.toThrow();
+      expect(StrictStore.get(localKey1)).toBe(null);
+    });
+
+    test('removing an empty array does nothing', () => {
+      StrictStore.save(localKey1, 'foo');
+      StrictStore.remove([]);
+      expect(StrictStore.get(localKey1)).toBe('foo');
+    });
+
+    test('removing all keys clears the store', () => {
+      StrictStore.save(localKey1, 'foo');
+      StrictStore.save(localKey2, 45);
+      StrictStore.save(sessionKey1, true);
+      StrictStore.save(sessionKey2, 'baz');
+
+      StrictStore.remove([localKey1, localKey2, sessionKey1, sessionKey2]);
+      expect(StrictStore.size()).toBe(0);
+      expect(StrictStore.get(localKey1)).toBe(null);
+      expect(StrictStore.get(localKey2)).toBe(null);
+      expect(StrictStore.get(sessionKey1)).toBe(null);
+      expect(StrictStore.get(sessionKey2)).toBe(null);
     });
   });
 
@@ -272,6 +301,81 @@ describe('StrictStore', () => {
       StrictStore.save(keys.stringKey, 'test');
       StrictStore.clear();
       expect(localStorage.getItem('foreign')).toBe('value');
+    });
+  });
+
+  describe('StrictStore.pick', () => {
+    const stringKey = createKey<string>('ns', 'str');
+    const numberKey = createKey<number>('ns', 'num');
+    const boolKey = createKey<boolean>('ns', 'bool');
+    const sessionKey = createKey<string>('ns', 'session', 'session');
+    const ns2Key = createKey<number>('other', 'foo');
+
+    test('returns correct values for existing keys', () => {
+      StrictStore.save(stringKey, 'hello');
+      StrictStore.save(numberKey, 42);
+      StrictStore.save(boolKey, true);
+
+      const [str, num, bool] = StrictStore.pick([stringKey, numberKey, boolKey]);
+      expect(str).toBe('hello');
+      expect(num).toBe(42);
+      expect(bool).toBe(true);
+    });
+
+    test('returns null for missing keys', () => {
+      StrictStore.save(stringKey, 'hello');
+      const [str, num, bool] = StrictStore.pick([stringKey, numberKey, boolKey]);
+      expect(str).toBe('hello');
+      expect(num).toBe(null);
+      expect(bool).toBe(null);
+    });
+
+    test('works with keys from different namespaces', () => {
+      StrictStore.save(stringKey, 'foo');
+      StrictStore.save(ns2Key, 99);
+
+      const [v1, v2] = StrictStore.pick([stringKey, ns2Key]);
+      expect(v1).toBe('foo');
+      expect(v2).toBe(99);
+    });
+
+    test('works with keys from different storage types', () => {
+      StrictStore.save(stringKey, 'foo');
+      StrictStore.save(sessionKey, 'bar');
+
+      const [localVal, sessionVal] = StrictStore.pick([stringKey, sessionKey]);
+      expect(localVal).toBe('foo');
+      expect(sessionVal).toBe('bar');
+    });
+
+    test('returns empty array for empty input', () => {
+      expect(StrictStore.pick([])).toEqual([]);
+    });
+
+    test('returns all nulls for all missing keys', () => {
+      const [a, b] = StrictStore.pick([stringKey, numberKey]);
+      expect(a).toBe(null);
+      expect(b).toBe(null);
+    });
+
+    test('type safety: tuple preserves types', () => {
+      StrictStore.save(stringKey, 'abc');
+      StrictStore.save(numberKey, 123);
+
+      const result = StrictStore.pick([stringKey, numberKey]);
+      expectType<readonly [string | null, number | null]>(result);
+      // Runtime check
+      expect(result).toEqual(['abc', 123]);
+    });
+
+    test('type safety: error if key is not StoreKey', () => {
+      // @ts-expect-error
+      StrictStore.pick([{ ns: 'x', name: 'y', storeType: 'local' }]);
+    });
+
+    test('type safety: error if array contains non-StoreKey', () => {
+      // @ts-expect-error
+      StrictStore.pick([stringKey, { ns: 'x', name: 'y', storeType: 'local' }]);
     });
   });
 
@@ -443,46 +547,6 @@ describe('StrictStore', () => {
     });
   });
 
-  describe('Namespaces operations', () => {
-    test('correct generate ns', () => {
-      StrictStore.save(keys.stringKey, 'key1');
-
-      const valueLib = StrictStore.get(keys.stringKey)
-      const valueCommon = localStorage.getItem('strict-store/test-ns:string');
-
-      expect(valueCommon).not.toBe(null);
-      expect(valueLib).toBe(JSON.parse(valueCommon!));
-    });
-
-    test('should correct clear one ns', () => {
-      const nsKeys = {
-        key1: createKey<string>(
-          'ns1',
-          'key1',
-        ),
-
-        key2: createKey<string>(
-          'ns1',
-          'key2',
-        ),
-
-        key3: createKey<string>(
-          'ns2',
-          'key3',
-        ),
-      } as const;
-
-      StrictStore.save(nsKeys.key1, 'new value1'); // ns1
-      StrictStore.save(nsKeys.key2, 'new value2'); // ns1
-      StrictStore.save(nsKeys.key3, 'new value3'); // ns2
-      StrictStore.clear(['ns1']);
-
-      expect(StrictStore.get(nsKeys.key1)).toBe(null);
-      expect(StrictStore.get(nsKeys.key2)).toBe(null);
-      expect(StrictStore.get(nsKeys.key3)).toBe('new value3');
-    });
-  });
-
   describe('createKey correct working', () => {
     test('should throw an exception if the name or ns is incorrect.', () => {
       const nsKey = () => createKey('ans:dassda', 'name')
@@ -509,117 +573,379 @@ describe('StrictStore', () => {
     });
   })
 
-  describe('advanced types', () => {
-    test('enum', () => {
-      strictTest(
-        keys.enumKey,
-        Theme.Light
-      )
+  describe('StrictStore supported types', () => {
+    const strictTest = <T extends StoreKey<Serializable>>(key: T, value: T['__type']) => {
+      expect(StrictStore.get(key)).toStrictEqual(null);
+      StrictStore.save(key, value);
+      const result = StrictStore.get(key);
+
+      // For Map/Set/TypedArray, compare by value, not reference
+      if (value instanceof Map) {
+        expect(result instanceof Map).toBe(true);
+        expect(Array.from(result as Map<any, any>)).toEqual(Array.from(value));
+
+      } else if (value instanceof Set) {
+        expect(result instanceof Set).toBe(true);
+        expect(Array.from(result as Set<any>)).toEqual(Array.from(value));
+
+      } else if (
+        ArrayBuffer.isView(value) &&
+        Object.getPrototypeOf(value).constructor !== Array
+
+      ) {
+        expect(result?.constructor).toBe(value.constructor);
+        expect(Array.from(result as any)).toEqual(Array.from(value as any));
+      } else {
+        expect(result).toStrictEqual(value);
+      }
+    };
+
+    test('string', () => {
+      const key = createKey<string>('types', 'string');
+      strictTest(key, 'hello world');
     });
 
-    test('array<number>', () => {
-      strictTest(
-        keys.arrayIntKey,
-        [312, 0.31]
-      )
+    test('number', () => {
+      const key = createKey<number>('types', 'number');
+      strictTest(key, 123.456);
     });
 
-    test('array<User>', () => {
-      const users: User[] = [
-        {
-          first_name: '1',
-          last_name: '1',
-          age: 44,
-          cash: 1000n,
-          hasEmail: true,
-        },
-        {
-          first_name: 'null',
-          last_name: null,
-          age: 55,
-          cash: 10000000n,
-          hasEmail: false,
-        },
-      ]
+    test('boolean', () => {
+      const key = createKey<boolean>('types', 'boolean');
+      strictTest(key, true);
+    });
 
-      strictTest(
-        keys.usersKey,
-        users
-      )
+    test('null', () => {
+      const key = createKey<null>('types', 'null');
+      strictTest(key, null);
+    });
+
+    test('plain object', () => {
+      const key = createKey<{ a: number; b: string }>('types', 'object');
+      strictTest(key, { a: 1, b: 'test' });
+    });
+
+    test('empty object', () => {
+      const key = createKey<{}>('types', 'empty-object');
+      strictTest(key, {});
+    });
+
+    test('array of primitives', () => {
+      const key = createKey<number[]>('types', 'array-num');
+      strictTest(key, [1, 2, 3]);
+    });
+
+    test('empty array', () => {
+      const key = createKey<[]>( 'types', 'empty-array');
+      strictTest(key, []);
+    });
+
+    test('array of objects', () => {
+      const key = createKey<Array<{ x: string }>>('types', 'array-obj');
+      strictTest(key, [{ x: 'a' }, { x: 'b' }]);
+    });
+
+    test('enum (as string)', () => {
+      enum Color { Red = 'red', Blue = 'blue' }
+      const key = createKey<Color>('types', 'enum');
+      strictTest(key, Color.Blue);
     });
 
     test('union', () => {
-      strictTest<StoreKey<'light' | 'dark' | null>>(
-        keys.literalKey,
-        'dark'
-      )
-    });
+      const key = createKey<'a' | 'b' | null>('types', 'union');
+      strictTest(key, 'a');
 
-    test('object', () => {
-      const user: User = {
-        first_name: 'Pavel',
-        last_name: 'Dev',
-        age: 46,
-        cash: 900n,
-        hasEmail: true,
-      }
-
-      strictTest(
-        keys.objectKey,
-        user
-      )
+      expectType<'a' | 'b' | null>(StrictStore.get(key))
     });
 
     test('bigint', () => {
-      strictTest(
-        keys.bigIntKey,
-        8641975320864197532085418919512894521652189189232156486484318163498451654894894119753208641975321n
-      )
+      const key = createKey<bigint>('types', 'bigint');
+      strictTest(key, 12345678901234567890n);
     });
 
-    test('map', () => {
-      const map = new Map([
-        ["key1", 123],
-        ["key2", 321],
-      ]);
-
-      strictTest(
-        keys.mapKey,
-        map,
-      )
+    test('Map<string, number>', () => {
+      const key = createKey<Map<string, number>>('types', 'map');
+      strictTest(key, new Map([['a', 1], ['b', 2]]));
     });
 
-    test('set', () => {
-      strictTest(
-        keys.setKey,
-        new Set(['third', 'Fourth']),
-      )
+    test('empty Map', () => {
+      const key = createKey<Map<any, any>>('types', 'empty-map');
+      strictTest(key, new Map());
     });
 
-    test('TypedArray', () => {
-      [
-        new Int8Array([3, -2, 1]),
-        new Uint8Array([1, 2, 3]),
-        new Uint8ClampedArray([1, 2, 256]),
-        new Int16Array([3000, 1000, -2000]),
-        new Uint16Array([3000, 1000, 2000]),
-        new Int32Array([300000, 100000, -200000]),
-        new Uint32Array([300000, 100000, 200000]),
-        new Float32Array([1.5, -2.5, 3.5]),
-        new Float64Array([-2.987654321, 1.123456789]),
-        new BigInt64Array([3n, 1n, -2n]),
-        new BigUint64Array([3n, 1n, 2n]),
-      ].forEach((value, index) => {
-        const key = createKey<typeof value>(
-          'test-ns',
-          `typedArray${index}`,
-        )
-
-        strictTest(
-          key,
-          value
-        )
-      })
+    test('Set<string>', () => {
+      const key = createKey<Set<string>>('types', 'set');
+      strictTest(key, new Set(['x', 'y']));
     });
-  })
+
+    test('empty Set', () => {
+      const key = createKey<Set<any>>('types', 'empty-set');
+      strictTest(key, new Set());
+    });
+
+    test('TypedArray: Int8Array', () => {
+      const key = createKey<Int8Array>('types', 'int8');
+      strictTest(key, new Int8Array([-128, 0, 127]));
+    });
+
+    test('TypedArray: Uint8Array', () => {
+      const key = createKey<Uint8Array>('types', 'uint8');
+      strictTest(key, new Uint8Array([0, 255]));
+    });
+
+    test('TypedArray: Uint8ClampedArray', () => {
+      const key = createKey<Uint8ClampedArray>('types', 'clamped');
+      strictTest(key, new Uint8ClampedArray([0, 128, 255]));
+    });
+
+    test('TypedArray: Int16Array', () => {
+      const key = createKey<Int16Array>('types', 'int16');
+      strictTest(key, new Int16Array([-32768, 0, 32767]));
+    });
+
+    test('TypedArray: Uint16Array', () => {
+      const key = createKey<Uint16Array>('types', 'uint16');
+      strictTest(key, new Uint16Array([0, 65535]));
+    });
+
+    test('TypedArray: Int32Array', () => {
+      const key = createKey<Int32Array>('types', 'int32');
+      strictTest(key, new Int32Array([-2147483648, 0, 2147483647]));
+    });
+
+    test('TypedArray: Uint32Array', () => {
+      const key = createKey<Uint32Array>('types', 'uint32');
+      strictTest(key, new Uint32Array([0, 4294967295]));
+    });
+
+    test('TypedArray: Float32Array', () => {
+      const key = createKey<Float32Array>('types', 'float32');
+      strictTest(key, new Float32Array([1.5, -2.5, 3.5]));
+    });
+
+    test('TypedArray: Float64Array', () => {
+      const key = createKey<Float64Array>('types', 'float64');
+      strictTest(key, new Float64Array([-2.987654321, 1.123456789]));
+    });
+
+    test('TypedArray: BigInt64Array', () => {
+      const key = createKey<BigInt64Array>('types', 'bigint64');
+      strictTest(key, new BigInt64Array([3n, 1n, -2n]));
+    });
+
+    test('TypedArray: BigUint64Array', () => {
+      const key = createKey<BigUint64Array>('types', 'biguint64');
+      strictTest(key, new BigUint64Array([3n, 1n, 2n]));
+    });
+
+    test('nested: Map inside object', () => {
+      const key = createKey<{ m: Map<string, number> }>('types', 'obj-map');
+      strictTest(key, { m: new Map([['a', 1]]) });
+    });
+
+    test('nested: Set inside array', () => {
+      const key = createKey<Array<Set<number>>>('types', 'arr-set');
+      strictTest(key, [new Set([1, 2]), new Set([3])]);
+    });
+
+    test('nested: Map with Set values', () => {
+      const key = createKey<Map<string, Set<number>>>('types', 'map-set');
+      strictTest(key, new Map([['a', new Set([1, 2])]]));
+    });
+
+    test('nested: Set with Map values', () => {
+      const key = createKey<Set<Map<string, number>>>('types', 'set-map');
+      strictTest(key, new Set([new Map([['x', 1]])]));
+    });
+
+    test('deeply nested structure', () => {
+      const key = createKey<any>('types', 'deep-nested');
+      const value = {
+        arr: [new Set([1, 2]), new Map([['a', 1]])],
+        obj: { map: new Map([['k', new Set([3, 4])]]) },
+        big: 123n,
+        typed: new Float32Array([1.1, 2.2]),
+      };
+      strictTest(key, value);
+    });
+  });
+
+  describe('StrictStore JSON compatibility', () => {
+    test('plain object: StrictStore matches JSON.stringify/parse', () => {
+      const obj = { a: 1, b: 'test', c: true, d: null };
+      const key = createKey<typeof obj>('json', 'plain-object');
+      StrictStore.save(key, obj);
+
+      const storeValue = StrictStore.get(key);
+      const jsonValue = JSON.parse(JSON.stringify(obj));
+
+      expect(storeValue).toEqual(jsonValue);
+    });
+
+    test('array: StrictStore matches JSON.stringify/parse', () => {
+      const arr = [1, 'a', false, null, { x: 2 }];
+      const key = createKey<typeof arr>('json', 'array');
+      StrictStore.save(key, arr);
+
+      const storeValue = StrictStore.get(key);
+      const jsonValue = JSON.parse(JSON.stringify(arr));
+
+      expect(storeValue).toEqual(jsonValue);
+    });
+
+    test('nested object: StrictStore matches JSON.stringify/parse', () => {
+      const nested = {
+        foo: [1, 2, { bar: 'baz', arr: [true, false] }],
+        obj: { a: 1, b: { c: 2 } },
+        empty: {},
+        nil: null
+      };
+      const key = createKey<typeof nested>('json', 'nested');
+      StrictStore.save(key, nested);
+
+      const storeValue = StrictStore.get(key);
+      const jsonValue = JSON.parse(JSON.stringify(nested));
+
+      expect(storeValue).toEqual(jsonValue);
+    });
+
+    test('JSON-incompatible types are not strictly equal after JSON parse', () => {
+      const map = new Map([['a', 1]]);
+      const set = new Set([1, 2, 3]);
+      const keyMap = createKey<Map<string, number>>('json', 'map');
+      const keySet = createKey<Set<number>>('json', 'set');
+
+      StrictStore.save(keyMap, map);
+      StrictStore.save(keySet, set);
+
+      const storeMap = StrictStore.get(keyMap);
+      const storeSet = StrictStore.get(keySet);
+
+      const jsonMap = JSON.parse(JSON.stringify(map));
+      const jsonSet = JSON.parse(JSON.stringify(set));
+
+      expect(storeMap).not.toEqual(jsonMap);
+      expect(storeSet).not.toEqual(jsonSet);
+      expect(storeMap instanceof Map).toBe(true);
+      expect(storeSet instanceof Set).toBe(true);
+    });
+
+    test('StrictStore preserves types for JSON-compatible and incompatible values', () => {
+      const obj = { a: 1, b: [2, 3], c: { d: 'x' } };
+      const arr = [1, 2, 3];
+      const map = new Map([['k', 42]]);
+      const set = new Set(['a', 'b']);
+
+      const keyObj = createKey<typeof obj>('json', 'obj');
+      const keyArr = createKey<typeof arr>('json', 'arr');
+      const keyMap = createKey<Map<string, number>>('json', 'map2');
+      const keySet = createKey<Set<string>>('json', 'set2');
+
+      StrictStore.save(keyObj, obj);
+      StrictStore.save(keyArr, arr);
+      StrictStore.save(keyMap, map);
+      StrictStore.save(keySet, set);
+
+      expect(StrictStore.get(keyObj)).toEqual(obj);
+      expect(StrictStore.get(keyArr)).toEqual(arr);
+      expect(StrictStore.get(keyMap)).toBeInstanceOf(Map);
+      expect(StrictStore.get(keySet)).toBeInstanceOf(Set);
+    });
+  });
+
+  describe('StrictStore namespaces operations', () => {
+    beforeEach(() => {
+      StrictStore.clear();
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+
+    test('saves and retrieves value with correct namespace', () => {
+      const key = createKey<string>('test-ns', 'string');
+      StrictStore.save(key, 'key1');
+
+      const valueFromStore = StrictStore.get(key);
+      const valueFromStorage = localStorage.getItem('strict-store/test-ns:string');
+
+      expect(valueFromStorage).not.toBe(null);
+      expect(valueFromStore).toBe(JSON.parse(valueFromStorage!));
+    });
+
+    test('clear removes only keys from specified namespace', () => {
+      const ns1Key1 = createKey<string>('ns1', 'key1');
+      const ns1Key2 = createKey<string>('ns1', 'key2');
+      const ns2Key = createKey<string>('ns2', 'key3');
+
+      StrictStore.save(ns1Key1, 'value1');
+      StrictStore.save(ns1Key2, 'value2');
+      StrictStore.save(ns2Key, 'value3');
+
+      StrictStore.clear(['ns1']);
+
+      expect(StrictStore.get(ns1Key1)).toBe(null);
+      expect(StrictStore.get(ns1Key2)).toBe(null);
+      expect(StrictStore.get(ns2Key)).toBe('value3');
+    });
+
+    test('clear removes keys from multiple namespaces', () => {
+      const ns1Key = createKey<string>('ns1', 'k1');
+      const ns2Key = createKey<string>('ns2', 'k2');
+      const ns3Key = createKey<string>('ns3', 'k3');
+
+      StrictStore.save(ns1Key, 'v1');
+      StrictStore.save(ns2Key, 'v2');
+      StrictStore.save(ns3Key, 'v3');
+
+      StrictStore.clear(['ns1', 'ns3']);
+
+      expect(StrictStore.get(ns1Key)).toBe(null);
+      expect(StrictStore.get(ns2Key)).toBe('v2');
+      expect(StrictStore.get(ns3Key)).toBe(null);
+    });
+
+    test('clear does not remove keys from other namespaces', () => {
+      const ns1Key = createKey<string>('ns1', 'k1');
+      const ns2Key = createKey<string>('ns2', 'k2');
+
+      StrictStore.save(ns1Key, 'v1');
+      StrictStore.save(ns2Key, 'v2');
+
+      StrictStore.clear(['ns1']);
+
+      expect(StrictStore.get(ns1Key)).toBe(null);
+      expect(StrictStore.get(ns2Key)).toBe('v2');
+    });
+
+    test('clear with empty array does nothing', () => {
+      const ns1Key = createKey<string>('ns1', 'k1');
+      StrictStore.save(ns1Key, 'v1');
+      StrictStore.clear([]);
+      expect(StrictStore.get(ns1Key)).toBe('v1');
+    });
+
+    test('clear with non-existent namespace does nothing', () => {
+      const ns1Key = createKey<string>('ns1', 'k1');
+      StrictStore.save(ns1Key, 'v1');
+      StrictStore.clear(['doesnotexist']);
+      expect(StrictStore.get(ns1Key)).toBe('v1');
+    });
+
+    test('clear with no arguments removes all strict-store keys', () => {
+      const ns1Key = createKey<string>('ns1', 'k1');
+      const ns2Key = createKey<string>('ns2', 'k2');
+      StrictStore.save(ns1Key, 'v1');
+      StrictStore.save(ns2Key, 'v2');
+      StrictStore.clear();
+      expect(StrictStore.get(ns1Key)).toBe(null);
+      expect(StrictStore.get(ns2Key)).toBe(null);
+    });
+
+    test('does not remove non-strict-store keys from storage', () => {
+      localStorage.setItem('foreign', 'value');
+      const nsKey = createKey<string>('ns', 'k');
+      StrictStore.save(nsKey, 'test');
+      StrictStore.clear();
+      expect(localStorage.getItem('foreign')).toBe('value');
+    });
+  });
 });

@@ -145,6 +145,22 @@ describe('Complex methods', () => {
       expect(seen.length).toBe(3);
     });
 
+    test('forEach iterates over all items and passes correct arguments', () => {
+      const key1 = createKey<string>('ns', 'k1');
+      const key2 = createKey<number>('ns', 'k2', 'session');
+      StrictStore.save(key1, 'v1');
+      StrictStore.save(key2, 2);
+
+      const seen: Array<{ key: StoreKey<Serializable>, value: Serializable, storageType: string }> = [];
+      StrictStore.forEach((key, value, storageType) => {
+        seen.push({ key, value, storageType });
+      });
+
+      expect(seen.length).toBe(2);
+      expect(seen.some(e => e.key.name === 'k1' && e.value === 'v1' && e.storageType === 'local')).toBe(true);
+      expect(seen.some(e => e.key.name === 'k2' && e.value === 2 && e.storageType === 'session')).toBe(true);
+    });
+
     test('should filter by namespace if ns is provided as array', () => {
       const key1 = createKey<string>('ns1', 'k1', 'local');
       const key2 = createKey<number>('ns2', 'k2', 'session');
