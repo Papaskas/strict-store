@@ -1,7 +1,7 @@
 import {
   ComplexTypeData,
   ComplexTypeNames,
-  Primitives,
+  BasicSerializable,
   Serializable,
   StoreKey,
   TYPED_ARRAY_CONSTRUCTORS,
@@ -50,8 +50,8 @@ const replacer = (
 const reviver = (
   key: string,
   value:
-    | Primitives
-    | ComplexTypeData // ComplexTypes -> ComplexTypeData
+    | BasicSerializable
+    | ComplexTypeData // ExtendedSerializable -> ComplexTypeData
 ): Serializable => {
   if (
     value !== null &&

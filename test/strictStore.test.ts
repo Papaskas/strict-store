@@ -47,51 +47,6 @@ describe('StrictStore', () => {
       expect(StrictStore.size()).toBe(0);
     });
 
-    test('should correct getAll method', () => {
-      StrictStore.save(keys.stringKey, 'remove test');
-      StrictStore.save(keys.numberKey, 45);
-
-      const all = StrictStore.getAll()
-
-      expect(all.length).toBe(2);
-
-      const stringEntry = all.find(entry => entry.key.endsWith('/test-ns:string'));
-      const numberEntry = all.find(entry => entry.key.endsWith('/test-ns:number'));
-
-      expect(stringEntry).toBeDefined();
-      expect(stringEntry?.value).toBe('remove test');
-
-      expect(numberEntry).toBeDefined();
-      expect(numberEntry?.value).toBe(45);
-    });
-
-    test('should correct getAllByNamespace method', () => {
-      StrictStore.save(keys.stringKey, 'remove test');
-      StrictStore.save(keys.numberKey, 45);
-      StrictStore.save(createKey<number>(
-        'ns-2',
-        'name-2',
-      ), 45);
-
-      expect(StrictStore.size()).toBe(3);
-
-      const all = StrictStore.getAll("test-ns")
-
-      expect(all.length).toBe(2);
-
-      const stringEntry = all.find(entry => entry.key.endsWith('/test-ns:string'));
-      const numberEntry = all.find(entry => entry.key.endsWith('/test-ns:number'));
-      const unknownEntry = all.find(entry => entry.key.endsWith('/ns-2:name-2'));
-
-      expect(stringEntry).toBeDefined();
-      expect(stringEntry?.value).toBe('remove test');
-
-      expect(numberEntry).toBeDefined();
-      expect(numberEntry?.value).toBe(45);
-
-      expect(unknownEntry).toBe(undefined);
-    });
-
     test('should correct pick method', () => {
       const themeKey = createKey<'light' | 'dark'>('app', 'theme');
       const langKey = createKey<'en' | 'ru'>('app', 'lang');
@@ -377,6 +332,114 @@ describe('StrictStore', () => {
     test('type safety: error if key is not StoreKey', () => {
       // @ts-expect-error
       StrictStore.saveMany([[{ ns: 'x', name: 'y', storeType: 'local' }, 'foo']]);
+    });
+  });
+
+  describe('StrictStore.getAll', () => {
+    const localKey = createKey<string>('ns1', 'local', 'local');
+    const sessionKey = createKey<number>('ns1', 'session', 'session');
+    const ns2Key = createKey<boolean>('ns2', 'flag', 'local');
+
+    it('returns empty array when store is empty', () => {
+      expect(StrictStore.getAll()).toEqual([]);
+    });
+
+    it('returns all stored items with correct structure', () => {
+      StrictStore.save(localKey, 'foo');
+      StrictStore.save(sessionKey, 42);
+      StrictStore.save(ns2Key, true);
+
+      const all = StrictStore.getAll();
+
+      expect(Array.isArray(all)).toBe(true);
+      expect(all.length).toBe(3);
+
+      const localEntry = all.find(e => e.key.ns === 'ns1' && e.key.name === 'local');
+      const sessionEntry = all.find(e => e.key.ns === 'ns1' && e.key.name === 'session');
+      const ns2Entry = all.find(e => e.key.ns === 'ns2' && e.key.name === 'flag');
+
+      expect(localEntry).toMatchObject({
+        key: expect.objectContaining({ ns: 'ns1', name: 'local', storeType: 'local' }),
+        value: 'foo',
+        storageType: 'local'
+      });
+      expect(sessionEntry).toMatchObject({
+        key: expect.objectContaining({ ns: 'ns1', name: 'session', storeType: 'session' }),
+        value: 42,
+        storageType: 'session'
+      });
+      expect(ns2Entry).toMatchObject({
+        key: expect.objectContaining({ ns: 'ns2', name: 'flag', storeType: 'local' }),
+        value: true,
+        storageType: 'local'
+      });
+    });
+
+    it('filters by namespace', () => {
+      StrictStore.save(localKey, 'foo');
+      StrictStore.save(sessionKey, 42);
+      StrictStore.save(ns2Key, true);
+
+      const ns1 = StrictStore.getAll(['ns1']);
+      expect(ns1.length).toBe(2);
+      expect(ns1.every(e => e.key.ns === 'ns1')).toBe(true);
+
+      const ns2 = StrictStore.getAll(['ns2']);
+      expect(ns2.length).toBe(1);
+      expect(ns2[0].key.ns).toBe('ns2');
+      expect(ns2[0].value).toBe(true);
+    });
+
+    it('returns correct storageType for each entry', () => {
+      StrictStore.save(localKey, 'foo');
+      StrictStore.save(sessionKey, 42);
+
+      const all = StrictStore.getAll();
+      const local = all.find(e => e.key.name === 'local');
+      const session = all.find(e => e.key.name === 'session');
+
+      expect(local?.storageType).toBe('local');
+      expect(session?.storageType).toBe('session');
+    });
+
+    it('returns only items from specified namespaces', () => {
+      StrictStore.save(localKey, 'foo');
+      StrictStore.save(sessionKey, 42);
+      StrictStore.save(ns2Key, true);
+
+      const filtered = StrictStore.getAll(['ns2']);
+      expect(filtered.length).toBe(1);
+      expect(filtered[0].key.ns).toBe('ns2');
+      expect(filtered[0].value).toBe(true);
+    });
+
+    it('returns empty array for non-existent namespace', () => {
+      StrictStore.save(localKey, 'foo');
+      StrictStore.save(sessionKey, 42);
+
+      const result = StrictStore.getAll(['doesnotexist']);
+      expect(result).toEqual([]);
+    });
+
+    it('returns empty array for empty namespace array', () => {
+      StrictStore.save(localKey, 'foo');
+      StrictStore.save(sessionKey, 42);
+
+      const result = StrictStore.getAll([]);
+      expect(result).toEqual([]);
+    });
+
+    it('correctly handles multiple namespaces', () => {
+      StrictStore.save(localKey, 'foo');
+      StrictStore.save(sessionKey, 42);
+      StrictStore.save(ns2Key, true);
+
+      const result = StrictStore.getAll(['ns1', 'ns2']);
+      expect(result.length).toBe(3);
+      const ns1Count = result.filter(e => e.key.ns === 'ns1').length;
+      const ns2Count = result.filter(e => e.key.ns === 'ns2').length;
+      expect(ns1Count).toBe(2);
+      expect(ns2Count).toBe(1);
     });
   });
 

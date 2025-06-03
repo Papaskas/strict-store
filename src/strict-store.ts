@@ -1,4 +1,4 @@
-import { Serializable, StoreType, StoreKey, DeepPartial } from '@src/types';
+import { Serializable, StoreType, StoreKey, DeepPartial, ExtendedSerializable, BasicSerializable } from '@src/types';
 import { strictJson } from '@src/strict-json';
 import { deepMergeWithCollections, getFullName, getStorage } from '@src/utils';
 
@@ -96,23 +96,48 @@ class StrictStore {
    * - Scans both localStorage and sessionStorage.
    * - Only includes keys managed by strictStore (those starting with 'strict-store/').
    */
-  static getAll(ns?: string) {
-    const result: { key: string, value: Serializable }[] = [];
-    const prefix = ns ? `strict-store/${ns}:` : 'strict-store/';
+  static getAll(ns?: string[]): { key: StoreKey<Serializable>, value: Serializable, storageType: StoreType }[] {
+    if (Array.isArray(ns) && ns.length === 0)
+      return [];
 
-    [localStorage, sessionStorage].forEach((storage) => {
+    const result: { key: StoreKey<Serializable>, value: Serializable, storageType: StoreType }[] = [];
+    const prefixes = ns && ns.length > 0
+      ? ns.map(n => `strict-store/${n}:`)
+      : ['strict-store/'];
+
+    const storages: [Storage, StoreType][] = [
+      [localStorage, 'local'],
+      [sessionStorage, 'session']
+    ];
+
+    for (const [storage, storageType] of storages) {
       for (let i = 0; i < storage.length; i++) {
-        const key = storage.key(i);
+        const keyStr = storage.key(i);
+        if (!keyStr) continue;
+        if (!prefixes.some(prefix => keyStr.startsWith(prefix))) continue;
 
-        if (key && key.startsWith(prefix)) {
-          const value = storage.getItem(key);
+        const valueStr = storage.getItem(keyStr);
+        if (valueStr === null) continue;
 
-          if (value !== null) {
-            result.push({ key, value: strictJson.parse(value) });
-          }
-        }
+        // Parse key string: strict-store/ns:name
+        const match = /^strict-store\/([^:]+):(.+)$/.exec(keyStr);
+        if (!match) continue;
+        const [, nsPart, namePart] = match;
+
+        const storeKey: StoreKey<Serializable> = {
+          ns: nsPart,
+          name: namePart,
+          storeType: storageType,
+          __type: undefined as any,
+        };
+
+        result.push({
+          key: storeKey,
+          value: strictJson.parse(valueStr),
+          storageType
+        });
       }
-    });
+    }
 
     return result;
   }
@@ -171,8 +196,6 @@ class StrictStore {
       StrictStore.save(key as any, value);
     }
   }
-
-
 
   /**
    * Merges a partial value into an existing object stored under the specified key.
@@ -564,5 +587,10 @@ const createKey = <T extends Serializable>(
 
 export {
   StrictStore,
-  createKey
+  createKey,
+  StoreKey,
+  StoreType,
+  Serializable,
+  ExtendedSerializable,
+  BasicSerializable
 }
