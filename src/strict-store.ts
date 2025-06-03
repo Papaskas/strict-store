@@ -1,36 +1,38 @@
-import { Serializable, StoreType, StoreKey, DeepPartial } from '@src/types';
 import { strictJson } from '@src/strict-json';
 import { deepMergeWithCollections, getFullName, getStorage } from '@src/utils';
+import { StoreKey, Persistable, StoreType, ExtendedPersistable, BasicPersistable } from '@src/types';
+import { DeepPartial } from '@src/iternal-types';
 
 /**
- * A type-safe wrapper around localStorage and sessionStorage that provides:
- * - Automatic JSON serialization/deserialization
- * - Namespace support to prevent name collisions
- * - Strict typing for all operations
+ * A type-safe wrapper around localStorage and sessionStorage
+ * @public
  *
- * @example
- * ```ts
- * const name = createKey<'light', 'dark'>(
- *  'app',
- *  'theme',
- * );
- *
- * strictStore.save(name, 'dark'); // Only the literal type is allowed
+ * ```
+ * StrictStore.save(name, 'dark'); // Only the literal type is allowed
  * const theme: 'light' | 'dark' | null = StrictStore.get(name); // Return the literal type
  * ```
  */
-const strictStore = {
+class StrictStore {
+
+  /**
+   * To ignore TypeDoc
+   * */
+  private constructor() {}
 
   /**
    * Retrieves a value from storage.
+   * @public
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key StoreKey object containing ns, name and default value
-   * @returns The stored value
+   * @param key - StoreKey object containing ns, name and default value
+   * @returns The stored value that provides:
+   * - Automatic JSON serialization/deserialization
+   * - Namespace support to prevent name collisions
+   * - Strict typing for all operations
    *
    * @example
    * ```ts
-   * const themeKey = createKey<'light', 'dark'>(
+   * const name = createKey<'light', 'dark'>(
    *  'app',
    *  'theme',
    * );
@@ -41,20 +43,21 @@ const strictStore = {
    * @remarks
    * - Automatically handles JSON parsing
    */
-  get<T extends Serializable>(key: StoreKey<T>): T | null {
+  static get<T extends Persistable>(key: StoreKey<T>): T | null {
     const storage = getStorage(key.storeType);
     const storedValue = storage.getItem(getFullName(key.ns, key.name));
 
     if(storedValue === null) return storedValue;
 
     return strictJson.parse<T>(storedValue)
-  },
+  }
 
   /**
    * Retrieves values from storage for a tuple of keys, preserving the type for each key.
+   * @public
    *
-   * @typeParam K A tuple of StoreKey objects with different value types
-   * @param keys A tuple of StoreKey objects
+   * @typeParam K - A tuple of StoreKey objects with different value types
+   * @param keys - A tuple of StoreKey objects
    * @returns A tuple of values (or null), corresponding to each key
    *
    * @example
@@ -65,20 +68,21 @@ const strictStore = {
    * const [theme, lang] = strictStore.pick([themeKey, langKey]);
    * ```
    */
-  pick<const K extends readonly StoreKey<Serializable>[]>(
+  static pick<const K extends readonly StoreKey<Persistable>[]>(
     keys: K
   ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never } {
-    return keys.map(key => strictStore.get(key)) as {
+    return keys.map(key => StrictStore.get(key)) as {
       [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never
     };
-  },
+  }
 
   /**
    * Retrieves all stored key-value pairs from both localStorage and sessionStorage that belong to strictStore.
-   * If a namespace is provided, only keys with the 'strict-store/{ns}:' prefix are included.
+   * If a namespace is provided, only keys with the 'strict-store/[ns]:' prefix are included.
    * Otherwise, all keys with the 'strict-store/' prefix are returned.
+   * @public
    *
-   * @param ns (optional) Namespace to filter keys (e.g., 'user' will return all 'user:*' keys)
+   * @param ns - (optional) Namespace to filter keys (e.g., 'user' will return all 'user:*' keys)
    * @returns An array of objects, each containing the storage key and its parsed value.
    *
    * @example
@@ -98,33 +102,59 @@ const strictStore = {
    * - Scans both localStorage and sessionStorage.
    * - Only includes keys managed by strictStore (those starting with 'strict-store/').
    */
-  getAll(ns?: string) {
-    const result: { key: string, value: Serializable }[] = [];
-    const prefix = ns ? `strict-store/${ns}:` : 'strict-store/';
+  static getAll(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable, storageType: StoreType }[] {
+    if (Array.isArray(ns) && ns.length === 0)
+      return [];
 
-    [localStorage, sessionStorage].forEach((storage) => {
+    const result: { key: StoreKey<Persistable>, value: Persistable, storageType: StoreType }[] = [];
+    const prefixes = ns && ns.length > 0
+      ? ns.map(n => `strict-store/${n}:`)
+      : ['strict-store/'];
+
+    const storages: [Storage, StoreType][] = [
+      [localStorage, 'local'],
+      [sessionStorage, 'session']
+    ];
+
+    for (const [storage, storageType] of storages) {
       for (let i = 0; i < storage.length; i++) {
-        const key = storage.key(i);
+        const keyStr = storage.key(i);
+        if (!keyStr) continue;
+        if (!prefixes.some(prefix => keyStr.startsWith(prefix))) continue;
 
-        if (key && key.startsWith(prefix)) {
-          const value = storage.getItem(key);
+        const valueStr = storage.getItem(keyStr);
+        if (valueStr === null) continue;
 
-          if (value !== null) {
-            result.push({ key, value: strictJson.parse(value) });
-          }
-        }
+        // Parse key string: strict-store/ns:name
+        const match = /^strict-store\/([^:]+):(.+)$/.exec(keyStr);
+        if (!match) continue;
+        const [, nsPart, namePart] = match;
+
+        const storeKey: StoreKey<Persistable> = {
+          ns: nsPart,
+          name: namePart,
+          storeType: storageType,
+          __type: undefined as any,
+        };
+
+        result.push({
+          key: storeKey,
+          value: strictJson.parse(valueStr),
+          storageType
+        });
       }
-    });
+    }
 
     return result;
-  },
+  }
 
   /**
    * Saves a value to storage with automatic serialization.
+   * @public
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key StoreKey object containing ns and name
-   * @param value Value to store (will be JSON.stringified)
+   * @param key - StoreKey object containing ns and name
+   * @param value - Value to store (will be JSON.stringified)
    *
    * @example
    * ```ts
@@ -137,20 +167,51 @@ const strictStore = {
    * strictStore.save(themeKey, 'dark');
    * ```
    */
-  save<T extends StoreKey<Serializable>>(key: T, value: T['__type']): void {
+  static save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void {
     const storage = getStorage(key.storeType);
 
     storage.setItem(getFullName(key.ns, key.name), strictJson.stringify(value));
-  },
+  }
+
+  /**
+   * Saves multiple key-value pairs to storage with automatic serialization.
+   * @public
+   *
+   * @param entries - Array of [StoreKey, value] tuples
+   *
+   * @example
+   * ```ts
+   * StrictStore.saveMany([
+   *   [themeKey, 'dark'],
+   *   [langKey, 'en'],
+   * ]);
+   * ```
+   */
+  static saveMany<
+    Pairs extends readonly [StoreKey<Persistable>, Persistable][]
+  >(
+    entries: Pairs & {
+      [K in keyof Pairs]: Pairs[K] extends [infer Key, unknown]
+        ? Key extends StoreKey<infer T>
+          ? [Key, T]
+          : never
+        : never
+    }
+  ): void {
+    for (const [key, value] of entries) {
+      StrictStore.save(key as any, value);
+    }
+  }
 
   /**
    * Merges a partial value into an existing object stored under the specified key.
+   * @public
    *
    * **Lodash is used under the hood. For all the features of merge, see the Lodash documentation.**
    *
    * @typeParam T - Type of the stored value (must be an object)
-   * @param key StoreKey object identifying the item to merge into
-   * @param partial Partial object to merge
+   * @param key - StoreKey object identifying the item to merge into
+   * @param partial - Partial object to merge
    *
    * @example
    * ```ts
@@ -163,7 +224,7 @@ const strictStore = {
    * strictStore.merge(userKey, { name: 'Alex' });
    * ```
    */
-  merge<T extends Record<string, Serializable>>(
+  static merge<T extends Record<string, Persistable>>(
     key: StoreKey<T>,
     partial: DeepPartial<T>
   ): void {
@@ -177,58 +238,147 @@ const strictStore = {
     }
 
     if (current === null) {
-      throw new Error('strictStore.merge: Cannot initialize the object. Use strictStore.save for initial value.');
+      throw new Error('StrictStore.merge: Cannot initialize the object. Use StrictStore.save for initial value.');
     }
 
     if (typeof current !== 'object' || Array.isArray(current)) {
-      throw new Error('strictStore.merge: Can only merge into plain objects');
+      throw new Error('StrictStore.merge: Can only merge into plain objects');
     }
 
     const merged = deepMergeWithCollections(current, partial);
     storage.setItem(fullKey, strictJson.stringify(merged));
-  },
+  }
 
   /**
    * Iterates over all strictStore-managed key-value pairs and executes a callback for each.
+   * @public
    *
    * @param callback - Function to execute for each key-value pair.
-   *   Receives (key: string, value: Serializable, storageType: 'local' | 'session')
+   *   Receives (key: Key<Persistable>, value: Persistable, storageType: 'local' | 'session')
    * @param ns - Optional namespace to filter keys.
    *
    * @example
+   * ```ts
    * strictStore.forEach((key, value, storageType) => {
    *   console.log(key, value, storageType);
-   * });
+   * }, ["namespace1", "namespace2"]);
+   * ```
    */
-  forEach(
-    callback: (key: string, value: Serializable, storageType: 'local' | 'session') => void,
-    ns?: string
+  static forEach(
+    callback: (key: StoreKey<Persistable>, value: Persistable, storageType: StoreType) => void,
+    ns?: string[]
   ): void {
-    const prefix = ns ? `strict-store/${ns}:` : 'strict-store/';
-
-    [localStorage, sessionStorage].forEach((storage, idx) => {
-      const storageType = idx === 0 ? 'local' : 'session';
-
-      for (let i = 0; i < storage.length; i++) {
-        const key = storage.key(i);
-
-        if (key && key.startsWith(prefix)) {
-          const valueStr = storage.getItem(key);
-
-          if (valueStr !== null) {
-            const value = strictJson.parse(valueStr);
-            callback(key, value, storageType);
-          }
-        }
-      }
+    StrictStore.getAll(ns).forEach(({ key, value, storageType }) => {
+      callback(key, value, storageType);
     });
-  },
+  }
+
+  /**
+   * Subscribes to changes of strictStore-managed keys in localStorage/sessionStorage.
+   * @public
+   *
+   * @param callback - Function to call when a value changes.
+   *   Receives (key: StoreKey<Persistable>, newValue: Persistable, oldValue: Persistable, storageType: 'local' | 'session')
+   * @param target - (optional) Array of StoreKeys или array of namespaces (string[]) to filter the observed changes.
+   *   If omitted, all strict-store keys are obeyed.
+   *
+   * @returns Unsubscribe function.
+   *
+   * @example
+   * ```ts
+   * // Listen to all changes in the 'user' namespace:
+   * const unsubscribe = StrictStore.onChange((key, newValue, oldValue, storageType) => {
+   *   console.log(key, newValue, oldValue, storageType);
+   * }, ['user']);
+   *
+   * // Listen only to specific keys:
+   * const userKey = createKey<{name: string}>('user', 'profile');
+   * const settingsKey = createKey<{theme: string}>('user', 'settings');
+   *
+   * StrictStore.onChange(
+   *   (key, newValue, oldValue, storageType) => { ... },
+   *   [userKey, settingsKey]
+   * );
+   *
+   * // Later, to stop listening:
+   * unsubscribe();
+   * ```
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event
+   */
+  static onChange(
+    callback: (
+      key: StoreKey<Persistable>,
+      newValue: Persistable,
+      oldValue: Persistable,
+      storeType: StoreType,
+    ) => void,
+    target?: StoreKey<Persistable>[] | string[],
+  ): () => void {
+    let keyNames: string[] | undefined;
+    let nsPrefixes: string[] | undefined;
+
+    if (target !== undefined) {
+      if (target.length === 0) {
+        // Empty array — we don't listen to anything
+        keyNames = [];
+        nsPrefixes = [];
+      } else if (typeof target[0] === 'string') {
+        // Namespace array
+        nsPrefixes = (target as string[]).map(ns => `strict-store/${ns}:`);
+      } else {
+        // StoreKey array
+        keyNames = (target as StoreKey<Persistable>[]).map(k => getFullName(k.ns, k.name));
+      }
+    }
+
+    const handler = (e: StorageEvent) => {
+      if (!e.key) return;
+      if (!e.key.startsWith('strict-store/')) return;
+
+      // Key filtering
+      if (keyNames) {
+        if (!keyNames.includes(e.key)) return;
+      }
+      // Filtering by namespace
+      else if (nsPrefixes) {
+        if (!nsPrefixes.some(prefix => e.key!.startsWith(prefix))) return;
+      }
+
+      const storageType: StoreType =
+        e.storageArea === localStorage ? 'local' : 'session';
+
+      const newValue = e.newValue !== null ? strictJson.parse(e.newValue) : null;
+      const oldValue = e.oldValue !== null ? strictJson.parse(e.oldValue) : null;
+
+      // Recover StoreKey from string
+      const match = /^strict-store\/([^:]+):(.+)$/.exec(e.key);
+      if (!match) return;
+      const [ , ns, name ] = match;
+
+      const storeKey: StoreKey<Persistable> = {
+        ns,
+        name,
+        storeType: storageType,
+        __type: undefined as any,
+      };
+
+      callback(storeKey, newValue, oldValue, storageType);
+    };
+
+    window.addEventListener('storage', handler);
+
+    return () => {
+      window.removeEventListener('storage', handler);
+    };
+  }
 
   /**
    * Removes a name-value pair from storage.
+   * @public
    *
    * @typeParam T - Type parameter for StoreKey consistency
-   * @param key StoreKey object identifying item to remove
+   * @param keys - StoreKey object identifying item to remove
    *
    * @example
    * ```ts
@@ -238,28 +388,25 @@ const strictStore = {
    * );
    *
    * strictStore.remove(themeKey);
+   * strictStore.remove([themeKey, ...]);
    * ```
    *
    * @remarks
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  remove(key: StoreKey<Serializable> | StoreKey<Serializable>[]): void {
-    if (Array.isArray(key)) {
-      for (const singleKey of key) {
-        strictStore.remove(singleKey);
-      }
-      return
+  static remove(keys: StoreKey<Persistable>[]): void {
+    for (const key of keys) {
+      const storage = getStorage(key.storeType);
+      storage.removeItem(getFullName(key.ns, key.name));
     }
-
-    const storage = getStorage(key.storeType);
-    storage.removeItem(getFullName(key.ns, key.name));
-  },
+  }
 
   /**
    * Checks if a name exists in storage.
+   * @public
    *
-   * @param key StoreKey object containing ns and name identifier
+   * @param key - StoreKey object containing ns and name identifier
    * @returns `true` if the name exists, `false` otherwise
    *
    * @example
@@ -270,96 +417,84 @@ const strictStore = {
    * );
    *
    * const exists: boolean = strictStore.has(themeKey);
+   * const exists: boolean[] = strictStore.has([themeKey, anotherKey]);
    * ```
    *
    * @remarks
-   * - Does not validate the stored value, only checks name presence
    * - If the value is null, it returns false
    */
-  has(key: StoreKey<Serializable>): boolean {
-    const storage = getStorage(key.storeType);
+  static has(key: StoreKey<Persistable>): boolean;
+  static has(key: StoreKey<Persistable>[]): boolean[];
+  static has(key: StoreKey<Persistable> | StoreKey<Persistable>[]): boolean | boolean[] {
+    if (Array.isArray(key)) {
+      return key.map(storeKey => {
+        const storage = getStorage(storeKey.storeType);
+        return storage.getItem(getFullName(storeKey.ns, storeKey.name)) !== null;
+      })
 
-    return storage.getItem(getFullName(key.ns, key.name)) !== null;
-  },
+    } else {
+      const storage = getStorage(key.storeType);
+      return storage.getItem(getFullName(key.ns, key.name)) !== null;
+    }
+  }
 
   /**
    * Gets the total number of items in localStorage + sessionStorage, but **only from strict-store**.
+   * If ns is provided, counts only items from the specified namespaces.
+   * @public
    *
-   * @returns Count of all items from strict-store
+   * @param ns - (optional) Array of namespaces to filter by
+   * @returns Count of all items from strict-store or from the specified namespaces
    *
    * @example
    * ```ts
-   * if (strictStore.length > 100) {
-   *   strictStore.clear();
+   * if (StrictStore.size() > 100) {
+   *   StrictStore.clear();
+   * }
+   *
+   * if (StrictStore.size(['user', 'settings']) > 10) {
+   *   StrictStore.clear(['user', 'settings']);
    * }
    * ```
-   *
-   * @remarks
-   * it only works in strictStore
    */
-  get length(): number {
-    let count = 0;
-
-    [localStorage, sessionStorage].forEach(storage => {
-      const keys: string[] = [];
-
-      Object.keys(storage).forEach(key => {
-        if (key !== null && key.startsWith('strict-store/'))
-          keys.push(key);
-      })
-
-      count += keys.length;
-    });
-
-    return count;
-  },
+  static size(ns?: string[]): number {
+    return StrictStore.getAll(ns).length;
+  }
 
   /**
    * Clears all **strict-store managed** items from localStorage and sessionStorage.
+   * @public
    *
-   * @param ns Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
+   * @param ns - Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
    *
    * @example
    * ```ts
-   * strictStore.clear(); // Remove only strict-store keys
-   * strictStore.clear('auth'); // Removes all strict-store 'auth:*' keys
+   * StrictStore.clear(); // Remove only strict-store keys
+   * StrictStore.clear(['auth']); // Removes all strict-store 'auth:*' keys
    * ```
    *
    * @remarks
-   * it only works in strictStore
+   * it only works in StrictStore
    */
-  clear(ns?: string) {
-    [localStorage, sessionStorage].forEach(storage => {
-      const keysToRemove: string[] = [];
+  static clear(ns?: string[]) {
+    if (Array.isArray(ns) && ns.length === 0)
+      return;
 
-      for (let i = 0; i < storage.length; i++) {
-        const key = storage.key(i);
-        if (!key) continue;
-
-        if (ns !== undefined) {
-          if (key.startsWith(`strict-store/${ns}:`)) {
-            keysToRemove.push(key);
-          }
-        } else {
-          if (key.startsWith('strict-store/')) {
-            keysToRemove.push(key);
-          }
-        }
-      }
-
-      keysToRemove.forEach(key => storage.removeItem(key));
-    })
-  },
-} as const
+    const items = StrictStore.getAll(ns);
+    for (const { key } of items)
+      StrictStore.remove([key]);
+  }
+}
 
 /**
  * Creates a type-safe store name object for use with strictStore.
+ * @public
  *
- * @typeParam T - Type of the stored value, must extend `Serializable`
+ * @typeParam T - Type of the stored value, must extend `Persistable`
  *
  * @param ns - Namespace to prevent name collisions (e.g., 'app', 'user')
  * @param name - Unique identifier within the ns
- * @param [storeType] - Determines which Web Storage API to use:
+ * @param storeType - Determines which Web Storage API to use:
  *                  - 'local': Uses `localStorage`
  *                  - 'session': Uses `sessionStorage`
  *
@@ -369,10 +504,9 @@ const strictStore = {
  * - The returned object is frozen with `as const` for type safety
  * - Namespace and name are combined to form the final storage name (e.g., 'app:counter')
  *
- * @see {@link StoreKey} for the interface definition
- * @see {@link strictStore} for usage examples with storage methods
+ * @see {@link StrictStore} for usage examples with storage methods
  */
-const createKey = <T extends Serializable>(
+const createKey = <T extends Persistable>(
   ns: string,
   name: string,
   storeType: StoreType = 'local',
@@ -392,6 +526,14 @@ const createKey = <T extends Serializable>(
 }
 
 export {
-  strictStore,
-  createKey
+  StrictStore,
+  createKey,
+}
+
+export type {
+  StoreKey,
+  Persistable,
+  StoreType,
+  ExtendedPersistable,
+  BasicPersistable,
 }

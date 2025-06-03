@@ -1,9 +1,10 @@
-import { ComplexTypeData, Serializable, TypedArray } from '@src/types';
+import { Persistable } from '@src/types';
+import { ComplexTypeData, TypedArray } from '@src/iternal-types';
 
 /**
  * Converts a bigint value to ComplexTypeData.
  *
- * @param value The bigint value to convert.
+ * @param value - The bigint value to convert.
  * @returns ComplexTypeData object representing the bigint value.
  */
 const BigIntMapper = (value: bigint): ComplexTypeData => ({
@@ -14,10 +15,10 @@ const BigIntMapper = (value: bigint): ComplexTypeData => ({
 /**
  * Converts a Map value to ComplexTypeData.
  *
- * @param value The Map value to convert.
+ * @param value - The Map value to convert.
  * @returns ComplexTypeData object representing the Map value.
  */
-const MapMapper = (value: Map<Serializable, Serializable>): ComplexTypeData => ({
+const MapMapper = (value: Map<Persistable, Persistable>): ComplexTypeData => ({
   __type: 'map',
   value: Array.from(value.entries()),
 });
@@ -25,10 +26,10 @@ const MapMapper = (value: Map<Serializable, Serializable>): ComplexTypeData => (
 /**
  * Converts a Set value to ComplexTypeData.
  *
- * @param value The Set value to convert.
+ * @param value - The Set value to convert.
  * @returns ComplexTypeData object representing the Set value.
  */
-const SetMapper = (value: Set<Serializable>): ComplexTypeData => ({
+const SetMapper = (value: Set<Persistable>): ComplexTypeData => ({
   __type: 'set',
   value: Array.from(value),
 });
@@ -36,7 +37,7 @@ const SetMapper = (value: Set<Serializable>): ComplexTypeData => ({
 /**
  * Converts a TypedArray value to ComplexTypeData.
  *
- * @param value The TypedArray value to convert.
+ * @param value - The TypedArray value to convert.
  * @returns ComplexTypeData object representing the TypedArray value.
  */
 const TypedArrayMapper = (value: TypedArray): ComplexTypeData => {
@@ -49,12 +50,12 @@ const TypedArrayMapper = (value: TypedArray): ComplexTypeData => {
 };
 
 /**
- * Processes a TypedArray value and converts it to an array of Serializable.
+ * Processes a TypedArray value and converts it to an array of Persistable.
  *
- * @param value The TypedArray value to process.
- * @returns An array of Serializable representing the processed TypedArray value.
+ * @param value - The TypedArray value to process.
+ * @returns An array of Persistable representing the processed TypedArray value.
  */
-const processTypedArray = (value: TypedArray): Serializable[] => {
+const processTypedArray = (value: TypedArray): Persistable[] => {
   if (value instanceof BigInt64Array || value instanceof BigUint64Array)
     return Array.from(value).map(n => n.toString());
 
@@ -66,7 +67,7 @@ const processTypedArray = (value: TypedArray): Serializable[] => {
  */
 export const complexTypeMappers = {
   bigint: (val: bigint) => BigIntMapper(val),
-  map: (val: Map<Serializable, Serializable>) => MapMapper(val),
-  set: (val: Set<Serializable>) => SetMapper(val),
+  map: (val: Map<Persistable, Persistable>) => MapMapper(val),
+  set: (val: Set<Persistable>) => SetMapper(val),
   typedArray: (val: TypedArray) => TypedArrayMapper(val),
 }

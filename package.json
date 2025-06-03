@@ -33,11 +33,12 @@
     }
   },
   "license": "MIT",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "A type-safe wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.",
   "scripts": {
     "build": "vite build",
-    "test": "jest"
+    "test": "jest",
+    "docs": "typedoc"
   },
   "dependencies": {
     "lodash": "^4.17.21"
@@ -50,6 +51,8 @@
     "jest-environment-jsdom": "^29.7.0",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.5",
+    "typedoc-plugin-markdown": "^4.6.4",
     "typescript": "^5.5.3",
     "vite": "^6.3.4",
     "vite-plugin-dts": "^4.5.3"

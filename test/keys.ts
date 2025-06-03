@@ -1,5 +1,5 @@
 import { createKey } from '@src/strict-store';
-import { Theme, User } from '@test/@types';
+import { Theme, User } from '@test/types';
 
 export const keys = {
   stringKey: createKey<string>(
