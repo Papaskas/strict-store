@@ -133,7 +133,7 @@ const unsubscribe = strictStore.onChange((event) => {
 ## 📦 API Reference
 
 > Below is a summary of the main methods.  
-> See the [Wiki](https://github.com/Papaskas/strict-store/wiki) for detailed usage, types, and advanced examples.
+> See the [Wiki](https://github.com/Papaskas/strict-store/wiki/global) for detailed usage, types, and advanced examples.
 
 ### 🗝️ createKey
 ```typescript
@@ -211,4 +211,4 @@ strictStore.save(userKey, {
 
 ## 📚 Full documentation
 
-Full API documentation is available in the [GitHub Wiki](https://github.com/Papaskas/strict-store/wiki).
+Full API documentation is available in the [GitHub Wiki](https://github.com/Papaskas/strict-store/wiki/global).
