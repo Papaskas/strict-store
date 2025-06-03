@@ -6,7 +6,7 @@
 
 A **type-safe** wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.
 
-## Features
+## ✨ Features
 - 🛡 **Full Type Safety** - Compile-time type checking for all operations
 - 🧠 **Smart Serialization** - Automatic handling of:
     - Primitive types
@@ -14,8 +14,12 @@ A **type-safe** wrapper around localStorage and sessionStorage with TypeScript s
     - TypedArray
 - 🗂 **Namespace Isolation** - Prevent name collisions with hierarchical organization
 - ⚡ **Dual Storage Support** - Switch between localStorage (persistent) and sessionStorage (session-based)
+- 🗃 **Batch Operations** — Save, remove, or pick multiple keys at once
+- 🔄 **Merge & Partial Update** — Merge new values into stored objects
+- 🕵️ **Change Listeners** — Subscribe to storage changes
+- 🔍 **forEach & getByNamespace** — Iterate and filter by namespace
 
-### Supported types:
+### 🗃️ Supported types:
 
 > - string
 > - number
@@ -40,7 +44,7 @@ A **type-safe** wrapper around localStorage and sessionStorage with TypeScript s
 > - BigInt64Array
 > - BigUint64Array
 
-## Installation
+## 📦 Installation
 
 ```bash
 npm install strict-store
@@ -50,7 +54,7 @@ yarn add strict-store
 pnpm add strict-store
 ```
 
-## Type Safety
+## 🛡️ Type Safety
 
 The library enforces type safety at compile time:
 
@@ -61,7 +65,7 @@ strictStore.save(counterKey, 'string value'); // Error: Type 'string' is not ass
 strictStore.save(counterKey, 42); // OK
 ```
 
-## Storage type selection
+## 🗄️ Storage type selection
 
 Choose between localStorage (persistent) and sessionStorage (tab-specific):
 
@@ -70,54 +74,67 @@ const localKey = createKey(..., 'local');
 const sessionKey = createKey(..., 'session');
 ```
 
-## Quick start
+##  🚀 Quick start
 
 ```typescript
 import { createKey, strictStore } from 'strict-store';
 
-const themeKey = createKey<'light' | 'dark'>(
-  'app',
-  'theme',
-  'local'
-);
-
-const langKey = createKey<'en' | 'fr'>(
-  'app',
-  'lang',
-  'session'
-);
+const themeKey = createKey<'light' | 'dark'>('app', 'theme', 'local');
+const langKey = createKey<'en' | 'fr'>('app', 'lang', 'session');
 
 // Save with type checking
-strictStore.save(themeKey, 'dark'); // Only 'light' or 'dark' allowed
+strictStore.save(themeKey, 'dark');
 
 // Retrieve with correct type inference
-const themeValue: 'light' | 'dark' | null = strictStore.get(themeKey); // Type: 'light' | 'dark' | null
+const themeValue: 'light' | 'dark' | null = strictStore.get(themeKey);
 
-// Retrieves values from storage for a tuple of keys, preserving the type for each key.
+// Batch operations
+strictStore.saveMany([
+  [themeKey, 'light'],
+  [langKey, 'en']
+]);
+strictStore.remove([themeKey, langKey]);
 const [theme, lang] = strictStore.pick([themeKey, langKey]);
 
-// Returns all strictStore-managed items, optionally filtered by namespace
-strictStore.getAll();
-strictStore.getAll('app'); // app is namespace
+// Merge (partial update)
+strictStore.merge(userKey, { name: 'New Name' });
 
-// Remove when done
-strictStore.remove(themeKey);
-strictStore.remove([themeKey, langKey]);
+// Get all items or by namespace
+strictStore.getAll();
+strictStore.getAll(['app']);
+
+// Remove
+strictStore.remove([themeKey]);
 
 // Check key
 const hasKey: boolean = strictStore.has(themeKey);
+const hasKeys: boolean[] = strictStore.has([themeKey, langKey]);
 
 // Get the count of all strictStore-managed items
-const count: number = strictStore.length;
+const count: number = strictStore.size();
+const countsByNs: number = strictStore.size(['namespace']);
 
-// Clear all strictStore-managed keys, or only those in a specific namespace, from storage
-strictStore.clear(); // all keys
-strictStore.clear('app'); // only `app` namespace keys
+// Clear all or by namespace
+strictStore.clear();
+strictStore.clear('app');
+
+// Iterate over all items
+strictStore.forEach((key, value) => {
+  console.log(key, value);
+});
+
+// Listen for changes
+const unsubscribe = strictStore.onChange((event) => {
+  console.log('Storage changed:', event);
+});
 ```
 
-## API Reference
+## 📦 API Reference
 
-### createKey
+> Below is a summary of the main methods.  
+> See the [Wiki](https://github.com/Papaskas/strict-store/wiki) for detailed usage, types, and advanced examples.
+
+### 🗝️ createKey
 ```typescript
   createKey<T>(
     namespace: string, // namespace for key
@@ -126,20 +143,28 @@ strictStore.clear('app'); // only `app` namespace keys
   ): StoreKey<T>
 ```
 
-### strictStore methods
+### 🛠️ strictStore methods
 ```typescript
 strictStore
-  .get<T>(key: StoreKey<T>): T | null // Get a value by key
-  .save<T>(key: StoreKey<T>, value: T): void // Save a value by key
-  .remove<T>(key: StoreKey<T> | StoreKey<T>[]): void // Remove one or multiple keys
-  .has<T>(key: StoreKey<T>): boolean // Check if a key exists
-  .length: number // Get the count of all strictStore-managed items
-  .clear(namespace?: string): void // Clear all strictStore-managed keys, or only those in a namespace
-  .getAll<T>(namespace?: string): { key: string, value: T }[] // Returns all strictStore-managed items, optionally filtered by namespace
-  .pick<T>(keys: StoreKey<T>[]): (T | null)[] // Get multiple values by keys
+  .get<T>(key: StoreKey<T>): T | null; // Retrieve a value by key.
+  .pick<T>(keys: StoreKey<T>[]): (T | null)[]; // Retrieve multiple values by keys.
+  .getAll<T>(namespace?: string): { key: string, value: T }[]; // Retrieve all items or by namespace
+  .save<T>(key: StoreKey<T>, value: T): void; // Save a value by key
+  .saveMany<T>(entries: [StoreKey<T>, T][]): void; // Save multiple key-value pairs at once
+  .remove<T>(key: StoreKey<T>[]): void; // Remove one or more keys.
+  .has<T>(key: StoreKey<T>): boolean; // Check if key(s) exist
+  .has<T>(key: StoreKey<T>[]): boolean[]; // Check if key(s) exist
+  .size(ns?: string[]): number; // Get the number of items, optionally filtered by namespace
+  .clear(namespace?: string[]): void; // Remove all items, optionally filtered by namespace
+  .merge<T>(key: StoreKey<T>, partial: DeepPartial<T>): void; // Merge a partial object into an existing stored object
+  .forEach<T>(callback: (key: string, value: T) => void): void; // Iterate over all key-value pairs, optionally filtered by namespace
+  .onChange(
+    callback: (event) => void,
+    target?: StoreKey<unknown>[] | string[],
+  ): () => void; // Subscribe to storage changes. Returns an unsubscribe function.
 ```
 
-### Complex type examples
+### 🧩 Complex type examples
 
 **Arrays:**
 
@@ -174,11 +199,15 @@ strictStore.save(userKey, {
 }); // Structure is type-checked
 ```
 
-## Limitations
+## 🚧 Limitations
 
 - Avoid using colons (':') in namespace or name values — this symbol is reserved as a namespace delimiter.
 - The undefined type is not supported — it will be converted to null during JSON serialization.
 - Lodash is used under the hood.
 
-## Requirements
+## ⚙️ Requirements
 - TypeScript >= 4.9.0
+
+## 📚 Full documentation
+
+Full API documentation is available in the [GitHub Wiki](https://github.com/Papaskas/strict-store/wiki).
