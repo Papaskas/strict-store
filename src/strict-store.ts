@@ -262,37 +262,8 @@ class StrictStore {
     callback: (key: StoreKey<Serializable>, value: Serializable, storageType: StoreType) => void,
     ns?: string[]
   ): void {
-    const prefixes = ns && ns.length > 0
-      ? ns.map(n => `strict-store/${n}:`)
-      : ['strict-store/'];
-
-    [localStorage, sessionStorage].forEach((storage, idx) => {
-      const storageType = idx === 0 ? 'local' : 'session';
-
-      for (let i = 0; i < storage.length; i++) {
-        const key = storage.key(i);
-
-        if (key && prefixes.some(prefix => key.startsWith(prefix))) {
-          const valueStr = storage.getItem(key);
-
-          if (valueStr !== null) {
-            const value = strictJson.parse(valueStr);
-
-            const match = /^strict-store\/([^:]+):(.+)$/.exec(key);
-            if (!match) continue;
-            const [ , ns, name ] = match;
-
-            const storeKey: StoreKey<Serializable> = {
-              ns,
-              name,
-              storeType: storageType,
-              __type: undefined as any,
-            };
-
-            callback(storeKey, value, storageType);
-          }
-        }
-      }
+    StrictStore.getAll(ns).forEach(({ key, value, storageType }) => {
+      callback(key, value, storageType);
     });
   }
 
