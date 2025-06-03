@@ -473,7 +473,7 @@ class StrictStore {
   static clear(ns?: string[]) {
     if (Array.isArray(ns) && ns.length === 0)
       return;
-    
+
     const items = StrictStore.getAll(ns);
     for (const { key } of items)
       StrictStore.remove([key]);

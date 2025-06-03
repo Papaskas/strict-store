@@ -1,6 +1,6 @@
 # Update
 - [ ] Added Date type
-- [ ] Added saveSeveral method
+- [X] Added saveSeveral method
 - [X] Added pick method
 - [X] Added getAll method
 - [X] Added removeSeveral method
