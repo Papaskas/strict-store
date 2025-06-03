@@ -1,6 +1,5 @@
 import { Persistable } from '@src/types';
 
-/** @private */
 export type TypedArray =
   | Int8Array
   | Uint8Array
@@ -14,7 +13,6 @@ export type TypedArray =
   | BigInt64Array
   | BigUint64Array
 
-/** @private */
 type TypedArrayConstructor =
   | Int8ArrayConstructor
   | Uint8ArrayConstructor
@@ -28,7 +26,6 @@ type TypedArrayConstructor =
   | BigInt64ArrayConstructor
   | BigUint64ArrayConstructor;
 
-/** @private */
 export const TYPED_ARRAY_CONSTRUCTORS: Record<string, TypedArrayConstructor> = {
   'Int8Array': Int8Array,
   'Uint8Array': Uint8Array,
@@ -44,7 +41,6 @@ export const TYPED_ARRAY_CONSTRUCTORS: Record<string, TypedArrayConstructor> = {
 }
 
 /**
- * @private
  * DeepPartial<T> makes all fields of the object (and nested objects) optional.
  */
 export type DeepPartial<T> = {
@@ -55,10 +51,8 @@ export type DeepPartial<T> = {
     : T[P];
 };
 
-/** @private */
 export type ComplexTypeNames = 'bigint' |'set' | 'map' |'typedArray';
 
-/** @private */
 export type ComplexTypeData = {
   __type: ComplexTypeNames,
   value: Persistable,
