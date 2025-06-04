@@ -379,7 +379,7 @@ describe('StrictStore', () => {
     });
   });
 
-  describe('StrictStore.saveMany', () => {
+  describe('StrictStore.saveBatch', () => {
     const stringKey = createKey<string>('test', 'str');
     const numberKey = createKey<number>('test', 'num');
     const boolKey = createKey<boolean>('test', 'bool');
@@ -387,7 +387,7 @@ describe('StrictStore', () => {
     const ns2Key = createKey<string>('other', 'foo');
 
     test('saves multiple key-value pairs of different types', () => {
-      StrictStore.saveMany([
+      StrictStore.saveBatch([
         [stringKey, 'hello'],
         [numberKey, 42],
         [boolKey, true],
@@ -401,7 +401,7 @@ describe('StrictStore', () => {
     });
 
     test('saves keys from different namespaces', () => {
-      StrictStore.saveMany([
+      StrictStore.saveBatch([
         [stringKey, 'foo'],
         [ns2Key, 'bar'],
       ]);
@@ -411,7 +411,7 @@ describe('StrictStore', () => {
 
     test('overwrites previous values', () => {
       StrictStore.save(stringKey, 'old');
-      StrictStore.saveMany([
+      StrictStore.saveBatch([
         [stringKey, 'new'],
         [numberKey, 100],
       ]);
@@ -420,22 +420,22 @@ describe('StrictStore', () => {
     });
 
     test('works with empty array', () => {
-      expect(() => StrictStore.saveMany([])).not.toThrow();
+      expect(() => StrictStore.saveBatch([])).not.toThrow();
       expect(StrictStore.size()).toBe(0);
     });
 
     test('type safety: error if value does not match key type', () => {
       // @ts-expect-error
-      StrictStore.saveMany([[stringKey, 123]]);
+      StrictStore.saveBatch([[stringKey, 123]]);
       // @ts-expect-error
-      StrictStore.saveMany([[numberKey, 'not a number']]);
+      StrictStore.saveBatch([[numberKey, 'not a number']]);
       // @ts-expect-error
-      StrictStore.saveMany([[objKey, { a: 'wrong', b: 2 }]]);
+      StrictStore.saveBatch([[objKey, { a: 'wrong', b: 2 }]]);
     });
 
     test('type safety: error if key is not StoreKey', () => {
       // @ts-expect-error
-      StrictStore.saveMany([[{ ns: 'x', name: 'y', storeType: 'local' }, 'foo']]);
+      StrictStore.saveBatch([[{ ns: 'x', name: 'y', storeType: 'local' }, 'foo']]);
     });
   });
 

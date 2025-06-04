@@ -184,13 +184,13 @@ class StrictStore {
    *
    * @example
    * ```ts
-   * StrictStore.saveMany([
+   * StrictStore.saveBatch([
    *   [themeKey, 'dark'],
    *   [langKey, 'en'],
    * ]);
    * ```
    */
-  static saveMany<
+  static saveBatch<
     Pairs extends readonly [StoreKey<Persistable>, Persistable][]
   >(
     entries: Pairs & {

@@ -90,7 +90,7 @@ strictStore.save(themeKey, 'dark');
 const themeValue: 'light' | 'dark' | null = strictStore.get(themeKey);
 
 // Batch operations
-strictStore.saveMany([
+strictStore.saveBatch([
   [themeKey, 'light'],
   [langKey, 'en']
 ]);
@@ -151,7 +151,7 @@ strictStore
   .pick<T>(keys: StoreKey<T>[]): (T | null)[]; // Retrieve multiple values by keys.
   .entries<T>(namespace?: string): { key: string, value: T }[]; // Retrieve all items or by namespace
   .save<T>(key: StoreKey<T>, value: T): void; // Save a value by key
-  .saveMany<T>(entries: [StoreKey<T>, T][]): void; // Save multiple key-value pairs at once
+  .saveBatch<T>(entries: [StoreKey<T>, T][]): void; // Save multiple key-value pairs at once
   .remove<T>(key: StoreKey<T>[]): void; // Remove one or more keys.
   .has<T>(key: StoreKey<T>): boolean; // Check if key(s) exist
   .has<T>(key: StoreKey<T>[]): boolean[]; // Check if key(s) exist
