@@ -462,6 +462,36 @@ class StrictStore {
   }
 
   /**
+   * Returns all StoreKey objects managed by strictStore, optionally filtered by namespaces.
+   * Scans both localStorage and sessionStorage for keys with the 'strict-store/' prefix.
+   *
+   * @public
+   * @param ns - (optional) Array of namespaces to filter keys (e.g., ['user', 'settings']).
+   *             If omitted, returns keys from all namespaces.
+   * @returns Array of StoreKey objects for all stored items matching the filter.
+   *
+   * @example
+   * // Get all keys managed by strictStore:
+   * const allKeys = StrictStore.keys();
+   *
+   * // Get only keys for the 'user' namespace:
+   * const userKeys = StrictStore.keys(['user']);
+   *
+   * userKeys.forEach(key => {
+   *   console.log(key.ns, key.name, key.storeType);
+   * });
+   *
+   * @remarks
+   * - Only includes keys managed by strictStore (those starting with 'strict-store/').
+   * - The returned StoreKey objects include ns, name, storeType, and __type.
+   */
+  static keys(ns?: string[]): StoreKey<Persistable>[] {
+    return StrictStore.entries(ns).map(({ key } ) =>
+      key
+    )
+  }
+
+  /**
    * Clears all **strict-store managed** items from localStorage and sessionStorage.
    * @public
    *

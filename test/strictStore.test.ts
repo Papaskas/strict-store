@@ -544,6 +544,72 @@ describe('StrictStore', () => {
     });
   });
 
+  describe('StrictStore.keys', () => {
+    test('returns empty array when storage is empty', () => {
+      expect(StrictStore.keys()).toEqual([]);
+    });
+
+    test('returns all keys from both storages', () => {
+      const key1 = createKey<string>('ns1', 'k1', 'local');
+      const key2 = createKey<number>('ns2', 'k2', 'session');
+      const key3 = createKey<boolean>('ns1', 'k3', 'local');
+
+      StrictStore.save(key1, 'foo');
+      StrictStore.save(key2, 42);
+      StrictStore.save(key3, true);
+
+      const keys = StrictStore.keys();
+      expect(keys).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ns: 'ns1', name: 'k1', storeType: 'local' }),
+          expect.objectContaining({ ns: 'ns2', name: 'k2', storeType: 'session' }),
+          expect.objectContaining({ ns: 'ns1', name: 'k3', storeType: 'local' }),
+        ])
+      );
+      expect(keys.length).toBe(3);
+    });
+
+    test('filters keys by namespace', () => {
+      const key1 = createKey<string>('user', 'profile', 'local');
+      const key2 = createKey<number>('settings', 'theme', 'session');
+      const key3 = createKey<boolean>('user', 'flag', 'session');
+
+      StrictStore.save(key1, 'alex');
+      StrictStore.save(key2, 1);
+      StrictStore.save(key3, false);
+
+      const userKeys = StrictStore.keys(['user']);
+      expect(userKeys).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ns: 'user', name: 'profile' }),
+          expect.objectContaining({ ns: 'user', name: 'flag' }),
+        ])
+      );
+      expect(userKeys.length).toBe(2);
+
+      const settingsKeys = StrictStore.keys(['settings']);
+      expect(settingsKeys).toEqual([
+        expect.objectContaining({ ns: 'settings', name: 'theme' }),
+      ]);
+    });
+
+    test('returns empty array for non-existent namespace', () => {
+      const key1 = createKey<string>('ns1', 'k1', 'local');
+      StrictStore.save(key1, 'foo');
+      expect(StrictStore.keys(['doesnotexist'])).toEqual([]);
+    });
+
+    test('returned StoreKey objects have correct structure', () => {
+      const key = createKey<{ a: number }>('ns', 'obj', 'local');
+      StrictStore.save(key, { a: 123 });
+      const keys = StrictStore.keys();
+      expect(keys[0]).toHaveProperty('ns', 'ns');
+      expect(keys[0]).toHaveProperty('name', 'obj');
+      expect(keys[0]).toHaveProperty('storeType', 'local');
+      expect(keys[0]).toHaveProperty('__type');
+    });
+  });
+
   describe('createKey correct working', () => {
     test('should throw an exception if the name or ns is incorrect.', () => {
       const nsKey = () => createKey('ans:dassda', 'name')

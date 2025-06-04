@@ -77,7 +77,7 @@ const sessionKey = createKey(..., 'session');
 ##  🚀 Quick start
 
 ```typescript
-import { createKey, strictStore } from 'strict-store';
+import { createKey, StrictStore } from 'strict-store';
 
 // Create keys for different namespaces and storage types
 const themeKey = createKey<'light' | 'dark'>('app', 'theme', 'local');
@@ -85,51 +85,53 @@ const langKey = createKey<'en' | 'fr'>('app', 'lang', 'session');
 const userKey = createKey<{ name: string; age: number; }>('app', 'user', 'local');
 
 // Save with type checking
-strictStore.save(themeKey, 'dark');
+StrictStore.save(themeKey, 'dark');
 
 // Batch operations
-strictStore.saveBatch([
+StrictStore.saveBatch([
   [themeKey, 'light'],
   [langKey, 'en']
 ]);
 
 // Merge (partial update)
-strictStore.merge(userKey, { name: 'New Name' });
+StrictStore.merge(userKey, { name: 'New Name' });
 
 // Retrieve with correct type inference
-const themeValue: 'light' | 'dark' | null = strictStore.get(themeKey);
+const themeValue: 'light' | 'dark' | null = StrictStore.get(themeKey);
 
 // Retrieve batch of values
-const [theme, lang] = strictStore.pick([themeKey, langKey]);
+const [theme, lang] = StrictStore.pick([themeKey, langKey]);
 
 // Get all items or by namespace
-const entries: { key, value }[] = strictStore.entries();
-const appEntries: { key, value }[] = strictStore.entries(['app']);
+const entries: { key, value }[] = StrictStore.entries();
+const appEntries: { key, value }[] = StrictStore.entries(['app']);
+
+const keys = 
 
 // Remove
-strictStore.remove([themeKey]);
+StrictStore.remove([themeKey]);
 
 // Check key
-const hasKey: boolean = strictStore.has(themeKey);
-const hasKeys: boolean[] = strictStore.has([themeKey, langKey]);
+const hasKey: boolean = StrictStore.has(themeKey);
+const hasKeys: boolean[] = StrictStore.has([themeKey, langKey]);
 
-// Get the count of all strictStore-managed items
-const count: number = strictStore.size();
-const countsByNs: number = strictStore.size(['namespace']);
+// Get the count of all StrictStore-managed items
+const count: number = StrictStore.size();
+const countsByNs: number = StrictStore.size(['namespace']);
 
 // Clear all or by namespace
-strictStore.clear();
-strictStore.clear('app');
+StrictStore.clear();
+StrictStore.clear('app');
 
 // Iterate over all items
-strictStore.forEach((key, value) => {
+StrictStore.forEach((key, value) => {
   console.log(key, value);
 });
 
 // Listen for changes
-const unsubscribe = strictStore.onChange((key, oldValue, newValue) => {
-  console.log('Storage changed:', event);
-}, [themeKey]);
+const unsubscribe = StrictStore.onChange((key, oldValue, newValue) => {
+  // ...
+}, [themeKey]); // keys or ns
 
 // Unsubscribe from changes
 unsubscribe();
@@ -155,6 +157,7 @@ strictStore
   .get<T>(key: StoreKey<T>): T | null; // Retrieve a value by key.
   .pick<T>(keys: StoreKey<T>[]): (T | null)[]; // Retrieve multiple values by keys.
   .entries<T>(namespace?: string): { key: string, value: T }[]; // Retrieve all items or by namespace
+  .keys(ns?: string[]): keys[]; // Get all keys or by a namespace
   .save<T>(key: StoreKey<T>, value: T): void; // Save a value by key
   .saveBatch<T>(entries: [StoreKey<T>, T][]): void; // Save multiple key-value pairs at once
   .remove<T>(key: StoreKey<T>[]): void; // Remove one or more keys.
