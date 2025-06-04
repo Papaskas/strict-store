@@ -7,9 +7,12 @@ import { DeepPartial } from '@src/iternal-types';
  * A type-safe wrapper around localStorage and sessionStorage
  * @public
  *
- * ```
- * StrictStore.save(name, 'dark'); // Only the literal type is allowed
- * const theme: 'light' | 'dark' | null = StrictStore.get(name); // Return the literal type
+ * @example
+ * ```typescript
+ * const themeKey = createKey<'light', 'dark'>('app', 'theme');
+ *
+ * StrictStore.save(themeKey, 'dark'); // Only the literal type is allowed
+ * const theme: 'light' | 'dark' | null = StrictStore.get(themeKey); // Return the literal type
  * ```
  */
 class StrictStore {
