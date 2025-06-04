@@ -79,6 +79,7 @@ const sessionKey = createKey(..., 'session');
 ```typescript
 import { createKey, strictStore } from 'strict-store';
 
+// Create keys for different namespaces and storage types
 const themeKey = createKey<'light' | 'dark'>('app', 'theme', 'local');
 const langKey = createKey<'en' | 'fr'>('app', 'lang', 'session');
 const userKey = createKey<{ name: string; age: number; }>('app', 'user', 'local');
@@ -86,23 +87,24 @@ const userKey = createKey<{ name: string; age: number; }>('app', 'user', 'local'
 // Save with type checking
 strictStore.save(themeKey, 'dark');
 
-// Retrieve with correct type inference
-const themeValue: 'light' | 'dark' | null = strictStore.get(themeKey);
-
 // Batch operations
 strictStore.saveBatch([
   [themeKey, 'light'],
   [langKey, 'en']
 ]);
-strictStore.remove([themeKey, langKey]);
-const [theme, lang] = strictStore.pick([themeKey, langKey]);
 
 // Merge (partial update)
 strictStore.merge(userKey, { name: 'New Name' });
 
+// Retrieve with correct type inference
+const themeValue: 'light' | 'dark' | null = strictStore.get(themeKey);
+
+// Retrieve batch of values
+const [theme, lang] = strictStore.pick([themeKey, langKey]);
+
 // Get all items or by namespace
-strictStore.entries();
-strictStore.entries(['app']);
+const entries: { key, value }[] = strictStore.entries();
+const appEntries: { key, value }[] = strictStore.entries(['app']);
 
 // Remove
 strictStore.remove([themeKey]);
@@ -125,9 +127,12 @@ strictStore.forEach((key, value) => {
 });
 
 // Listen for changes
-const unsubscribe = strictStore.onChange((event) => {
+const unsubscribe = strictStore.onChange((key, oldValue, newValue) => {
   console.log('Storage changed:', event);
-});
+}, [themeKey]);
+
+// Unsubscribe from changes
+unsubscribe();
 ```
 
 ## 📦 API Reference
@@ -153,14 +158,14 @@ strictStore
   .save<T>(key: StoreKey<T>, value: T): void; // Save a value by key
   .saveBatch<T>(entries: [StoreKey<T>, T][]): void; // Save multiple key-value pairs at once
   .remove<T>(key: StoreKey<T>[]): void; // Remove one or more keys.
-  .has<T>(key: StoreKey<T>): boolean; // Check if key(s) exist
-  .has<T>(key: StoreKey<T>[]): boolean[]; // Check if key(s) exist
+  .has<T>(key: StoreKey<T>): boolean; // Check if key exist
+  .has<T>(key: StoreKey<T>[]): boolean[]; // Check if keys exist
   .size(ns?: string[]): number; // Get the number of items, optionally filtered by namespace
   .clear(namespace?: string[]): void; // Remove all items, optionally filtered by namespace
   .merge<T>(key: StoreKey<T>, partial: DeepPartial<T>): void; // Merge a partial object into an existing stored object
   .forEach<T>(callback: (key: string, value: T) => void): void; // Iterate over all key-value pairs, optionally filtered by namespace
   .onChange(
-    callback: (event) => void,
+    callback: (key, oldValue, newValue) => void,
     target?: StoreKey<unknown>[] | string[],
   ): () => void; // Subscribe to storage changes. Returns an unsubscribe function.
 ```
