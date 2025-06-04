@@ -105,11 +105,11 @@ class StrictStore {
    * - Scans both localStorage and sessionStorage.
    * - Only includes keys managed by strictStore (those starting with 'strict-store/').
    */
-  static entries(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable, storageType: StoreType }[] {
+  static entries(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable }[] {
     if (Array.isArray(ns) && ns.length === 0)
       return [];
 
-    const result: { key: StoreKey<Persistable>, value: Persistable, storageType: StoreType }[] = [];
+    const result: { key: StoreKey<Persistable>, value: Persistable }[] = [];
     const prefixes = ns && ns.length > 0
       ? ns.map(n => `strict-store/${n}:`)
       : ['strict-store/'];
@@ -128,7 +128,6 @@ class StrictStore {
         const valueStr = storage.getItem(keyStr);
         if (valueStr === null) continue;
 
-        // Parse key string: strict-store/ns:name
         const match = /^strict-store\/([^:]+):(.+)$/.exec(keyStr);
         if (!match) continue;
         const [, nsPart, namePart] = match;
@@ -142,8 +141,7 @@ class StrictStore {
 
         result.push({
           key: storeKey,
-          value: strictJson.parse(valueStr),
-          storageType
+          value: strictJson.parse(valueStr)
         });
       }
     }
@@ -268,11 +266,11 @@ class StrictStore {
    * ```
    */
   static forEach(
-    callback: (key: StoreKey<Persistable>, value: Persistable, storageType: StoreType) => void,
+    callback: (key: StoreKey<Persistable>, value: Persistable) => void,
     ns?: string[]
   ): void {
-    StrictStore.entries(ns).forEach(({ key, value, storageType }) => {
-      callback(key, value, storageType);
+    StrictStore.entries(ns).forEach(({ key, value }) => {
+      callback(key, value);
     });
   }
 
@@ -290,8 +288,8 @@ class StrictStore {
    * @example
    * ```ts
    * // Listen to all changes in the 'user' namespace:
-   * const unsubscribe = StrictStore.onChange((key, newValue, oldValue, storageType) => {
-   *   console.log(key, newValue, oldValue, storageType);
+   * const unsubscribe = StrictStore.onChange((key, newValue, oldValue) => {
+   *   console.log(key, newValue, oldValue);
    * }, ['user']);
    *
    * // Listen only to specific keys:
@@ -299,7 +297,7 @@ class StrictStore {
    * const settingsKey = createKey<{theme: string}>('user', 'settings');
    *
    * StrictStore.onChange(
-   *   (key, newValue, oldValue, storageType) => { ... },
+   *   (key, newValue, oldValue) => { ... },
    *   [userKey, settingsKey]
    * );
    *
@@ -314,7 +312,6 @@ class StrictStore {
       key: StoreKey<Persistable>,
       newValue: Persistable,
       oldValue: Persistable,
-      storeType: StoreType,
     ) => void,
     target?: StoreKey<Persistable>[] | string[],
   ): () => void {
@@ -366,7 +363,7 @@ class StrictStore {
         __type: undefined as any,
       };
 
-      callback(storeKey, newValue, oldValue, storageType);
+      callback(storeKey, newValue, oldValue);
     };
 
     window.addEventListener('storage', handler);

@@ -130,16 +130,16 @@ describe('Complex methods', () => {
       StrictStore.save(key2, 42);
       StrictStore.save(key3, true);
 
-      const seen: Array<{ key: StoreKey<Persistable>; value: unknown; storageType: string }> = [];
-      StrictStore.forEach((key, value, storageType) => {
-        seen.push({ key, value, storageType });
+      const seen: Array<{ key: StoreKey<Persistable>; value: unknown; }> = [];
+      StrictStore.forEach((key, value) => {
+        seen.push({ key, value });
       });
 
       expect(seen).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns1', name: 'k1' }), value: 'foo', storageType: 'local' }),
-          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns2', name: 'k2' }), value: 42, storageType: 'session' }),
-          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns1', name: 'k3' }), value: true, storageType: 'local' }),
+          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns1', name: 'k1' }), value: 'foo' }),
+          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns2', name: 'k2' }), value: 42 }),
+          expect.objectContaining({ key: expect.objectContaining({ ns: 'ns1', name: 'k3' }), value: true }),
         ])
       );
       expect(seen.length).toBe(3);
@@ -151,14 +151,14 @@ describe('Complex methods', () => {
       StrictStore.save(key1, 'v1');
       StrictStore.save(key2, 2);
 
-      const seen: Array<{ key: StoreKey<Persistable>, value: Persistable, storageType: string }> = [];
-      StrictStore.forEach((key, value, storageType) => {
-        seen.push({ key, value, storageType });
+      const seen: Array<{ key: StoreKey<Persistable>, value: Persistable }> = [];
+      StrictStore.forEach((key, value) => {
+        seen.push({ key, value });
       });
 
       expect(seen.length).toBe(2);
-      expect(seen.some(e => e.key.name === 'k1' && e.value === 'v1' && e.storageType === 'local')).toBe(true);
-      expect(seen.some(e => e.key.name === 'k2' && e.value === 2 && e.storageType === 'session')).toBe(true);
+      expect(seen.some(e => e.key.name === 'k1' && e.value === 'v1' && e.key.storeType === 'local')).toBe(true);
+      expect(seen.some(e => e.key.name === 'k2' && e.value === 2 && e.key.storeType === 'session')).toBe(true);
     });
 
     test('should filter by namespace if ns is provided as array', () => {
@@ -170,9 +170,9 @@ describe('Complex methods', () => {
       StrictStore.save(key2, 42);
       StrictStore.save(key3, true);
 
-      const seen: Array<{ key: StoreKey<Persistable>; value: unknown; storageType: string }> = [];
-      StrictStore.forEach((key, value, storageType) => {
-        seen.push({ key, value, storageType });
+      const seen: Array<{ key: StoreKey<Persistable>; value: unknown }> = [];
+      StrictStore.forEach((key, value) => {
+        seen.push({ key, value });
       }, ['ns1']);
 
       expect(seen.length).toBe(2);
@@ -188,9 +188,9 @@ describe('Complex methods', () => {
       StrictStore.save(key2, 42);
       StrictStore.save(key3, true);
 
-      const seen: Array<{ key: StoreKey<Persistable>; value: unknown; storageType: string }> = [];
-      StrictStore.forEach((key, value, storageType) => {
-        seen.push({ key, value, storageType });
+      const seen: Array<{ key: StoreKey<Persistable>; value: unknown; }> = [];
+      StrictStore.forEach((key, value) => {
+        seen.push({ key, value });
       }, ['ns1', 'ns3']);
 
       expect(seen.length).toBe(2);
@@ -210,19 +210,6 @@ describe('Complex methods', () => {
       expect(seen.length).toBe(1);
       expect(seen[0].ns).toBe('ns');
       expect(seen[0].name).toBe('k');
-    });
-
-    test('should correctly pass storageType argument', () => {
-      const keyLocal = createKey<string>('ns', 'local', 'local');
-      const keySession = createKey<string>('ns', 'session', 'session');
-      StrictStore.save(keyLocal, 'l');
-      StrictStore.save(keySession, 's');
-
-      const types: string[] = [];
-      StrictStore.forEach((_, __, storageType) => types.push(storageType));
-
-      expect(types).toEqual(expect.arrayContaining(['local', 'session']));
-      expect(types.length).toBe(2);
     });
   });
 
@@ -257,7 +244,7 @@ describe('Complex methods', () => {
       let called = false;
       StrictStore.save(key, oldVal);
 
-      const unsubscribe = StrictStore.onChange((changedKey, newValue, oldValue, storageType) => {
+      const unsubscribe = StrictStore.onChange((changedKey, newValue, oldValue) => {
         called = true;
         expect(changedKey).toEqual({
           ns: key.ns,
@@ -267,7 +254,7 @@ describe('Complex methods', () => {
         });
         expect(newValue).toEqual(newVal);
         expect(oldValue).toEqual(oldVal);
-        expect(storageType).toBe('local');
+        expect(changedKey.storeType).toBe('local');
       });
 
       fireStorageEvent(key, newVal, oldVal);

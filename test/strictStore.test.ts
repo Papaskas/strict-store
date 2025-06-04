@@ -465,17 +465,14 @@ describe('StrictStore', () => {
       expect(localEntry).toMatchObject({
         key: expect.objectContaining({ ns: 'ns1', name: 'local', storeType: 'local' }),
         value: 'foo',
-        storageType: 'local'
       });
       expect(sessionEntry).toMatchObject({
         key: expect.objectContaining({ ns: 'ns1', name: 'session', storeType: 'session' }),
         value: 42,
-        storageType: 'session'
       });
       expect(ns2Entry).toMatchObject({
         key: expect.objectContaining({ ns: 'ns2', name: 'flag', storeType: 'local' }),
         value: true,
-        storageType: 'local'
       });
     });
 
@@ -502,8 +499,8 @@ describe('StrictStore', () => {
       const local = all.find(e => e.key.name === 'local');
       const session = all.find(e => e.key.name === 'session');
 
-      expect(local?.storageType).toBe('local');
-      expect(session?.storageType).toBe('session');
+      expect(local?.key?.storeType).toBe('local');
+      expect(session?.key?.storeType).toBe('session');
     });
 
     it('returns only items from specified namespaces', () => {

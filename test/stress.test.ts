@@ -75,10 +75,10 @@ describe('StrictStore stress tests', () => {
       StrictStore.save(createKey<number>('stress', `g-${i}`, 'session'), i);
     }
     let count = 0;
-    StrictStore.forEach((key, value, storageType) => {
+    StrictStore.forEach((key, value) => {
       expect(key.ns).toBe('stress');
       expect(typeof value).toBe('number');
-      expect(['local', 'session']).toContain(storageType);
+      expect(['local', 'session']).toContain(key.storeType);
       count++;
     }, ['stress']);
     expect(count).toBe(600);
