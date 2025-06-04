@@ -35,7 +35,7 @@ class StrictStore {
    *
    * @example
    * ```ts
-   * const name = createKey<'light', 'dark'>(
+   * const themeKey = createKey<'light', 'dark'>(
    *  'app',
    *  'theme',
    * );
@@ -91,10 +91,10 @@ class StrictStore {
    * @example
    * ```ts
    * // Get all items stored by strictStore
-   * const allItems = strictStore.getAll();
+   * const allItems = strictStore.entries();
    *
    * // Get only items for the 'user' namespace
-   * const userItems = strictStore.getAll('user');
+   * const userItems = strictStore.entries('user');
    *
    * userItems.forEach(({ key, value }) => {
    *   console.log(key, value);
@@ -105,7 +105,7 @@ class StrictStore {
    * - Scans both localStorage and sessionStorage.
    * - Only includes keys managed by strictStore (those starting with 'strict-store/').
    */
-  static getAll(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable, storageType: StoreType }[] {
+  static entries(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable, storageType: StoreType }[] {
     if (Array.isArray(ns) && ns.length === 0)
       return [];
 
@@ -271,7 +271,7 @@ class StrictStore {
     callback: (key: StoreKey<Persistable>, value: Persistable, storageType: StoreType) => void,
     ns?: string[]
   ): void {
-    StrictStore.getAll(ns).forEach(({ key, value, storageType }) => {
+    StrictStore.entries(ns).forEach(({ key, value, storageType }) => {
       callback(key, value, storageType);
     });
   }
@@ -461,7 +461,7 @@ class StrictStore {
    * ```
    */
   static size(ns?: string[]): number {
-    return StrictStore.getAll(ns).length;
+    return StrictStore.entries(ns).length;
   }
 
   /**
@@ -483,7 +483,7 @@ class StrictStore {
     if (Array.isArray(ns) && ns.length === 0)
       return;
 
-    const items = StrictStore.getAll(ns);
+    const items = StrictStore.entries(ns);
     for (const { key } of items)
       StrictStore.remove([key]);
   }

@@ -439,13 +439,13 @@ describe('StrictStore', () => {
     });
   });
 
-  describe('StrictStore.getAll', () => {
+  describe('StrictStore.entries', () => {
     const localKey = createKey<string>('ns1', 'local', 'local');
     const sessionKey = createKey<number>('ns1', 'session', 'session');
     const ns2Key = createKey<boolean>('ns2', 'flag', 'local');
 
     it('returns empty array when store is empty', () => {
-      expect(StrictStore.getAll()).toEqual([]);
+      expect(StrictStore.entries()).toEqual([]);
     });
 
     it('returns all stored items with correct structure', () => {
@@ -453,7 +453,7 @@ describe('StrictStore', () => {
       StrictStore.save(sessionKey, 42);
       StrictStore.save(ns2Key, true);
 
-      const all = StrictStore.getAll();
+      const all = StrictStore.entries();
 
       expect(Array.isArray(all)).toBe(true);
       expect(all.length).toBe(3);
@@ -484,11 +484,11 @@ describe('StrictStore', () => {
       StrictStore.save(sessionKey, 42);
       StrictStore.save(ns2Key, true);
 
-      const ns1 = StrictStore.getAll(['ns1']);
+      const ns1 = StrictStore.entries(['ns1']);
       expect(ns1.length).toBe(2);
       expect(ns1.every(e => e.key.ns === 'ns1')).toBe(true);
 
-      const ns2 = StrictStore.getAll(['ns2']);
+      const ns2 = StrictStore.entries(['ns2']);
       expect(ns2.length).toBe(1);
       expect(ns2[0].key.ns).toBe('ns2');
       expect(ns2[0].value).toBe(true);
@@ -498,7 +498,7 @@ describe('StrictStore', () => {
       StrictStore.save(localKey, 'foo');
       StrictStore.save(sessionKey, 42);
 
-      const all = StrictStore.getAll();
+      const all = StrictStore.entries();
       const local = all.find(e => e.key.name === 'local');
       const session = all.find(e => e.key.name === 'session');
 
@@ -511,7 +511,7 @@ describe('StrictStore', () => {
       StrictStore.save(sessionKey, 42);
       StrictStore.save(ns2Key, true);
 
-      const filtered = StrictStore.getAll(['ns2']);
+      const filtered = StrictStore.entries(['ns2']);
       expect(filtered.length).toBe(1);
       expect(filtered[0].key.ns).toBe('ns2');
       expect(filtered[0].value).toBe(true);
@@ -521,7 +521,7 @@ describe('StrictStore', () => {
       StrictStore.save(localKey, 'foo');
       StrictStore.save(sessionKey, 42);
 
-      const result = StrictStore.getAll(['doesnotexist']);
+      const result = StrictStore.entries(['doesnotexist']);
       expect(result).toEqual([]);
     });
 
@@ -529,7 +529,7 @@ describe('StrictStore', () => {
       StrictStore.save(localKey, 'foo');
       StrictStore.save(sessionKey, 42);
 
-      const result = StrictStore.getAll([]);
+      const result = StrictStore.entries([]);
       expect(result).toEqual([]);
     });
 
@@ -538,7 +538,7 @@ describe('StrictStore', () => {
       StrictStore.save(sessionKey, 42);
       StrictStore.save(ns2Key, true);
 
-      const result = StrictStore.getAll(['ns1', 'ns2']);
+      const result = StrictStore.entries(['ns1', 'ns2']);
       expect(result.length).toBe(3);
       const ns1Count = result.filter(e => e.key.ns === 'ns1').length;
       const ns2Count = result.filter(e => e.key.ns === 'ns2').length;

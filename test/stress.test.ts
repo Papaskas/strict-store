@@ -33,12 +33,12 @@ describe('StrictStore stress tests', () => {
     expect(StrictStore.size(['stress'])).toBe(1000);
   });
 
-  test('getAll returns all items for large datasets', () => {
+  test('entries returns all items for large datasets', () => {
     for (let i = 0; i < 500; i++) {
       StrictStore.save(createKey<number>('stress', `a-${i}`, 'local'), i);
       StrictStore.save(createKey<number>('stress', `b-${i}`, 'session'), i);
     }
-    const all = StrictStore.getAll(['stress']);
+    const all = StrictStore.entries(['stress']);
     expect(all.length).toBe(1000);
 
     const names = new Set(all.map(e => e.key.name));
@@ -52,7 +52,7 @@ describe('StrictStore stress tests', () => {
     }
     StrictStore.clear(['stress']);
     expect(StrictStore.size(['stress'])).toBe(0);
-    expect(StrictStore.getAll(['stress'])).toEqual([]);
+    expect(StrictStore.entries(['stress'])).toEqual([]);
   });
 
   test('remove works for large batch', () => {

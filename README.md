@@ -101,8 +101,8 @@ const [theme, lang] = strictStore.pick([themeKey, langKey]);
 strictStore.merge(userKey, { name: 'New Name' });
 
 // Get all items or by namespace
-strictStore.getAll();
-strictStore.getAll(['app']);
+strictStore.entries();
+strictStore.entries(['app']);
 
 // Remove
 strictStore.remove([themeKey]);
@@ -149,7 +149,7 @@ const unsubscribe = strictStore.onChange((event) => {
 strictStore
   .get<T>(key: StoreKey<T>): T | null; // Retrieve a value by key.
   .pick<T>(keys: StoreKey<T>[]): (T | null)[]; // Retrieve multiple values by keys.
-  .getAll<T>(namespace?: string): { key: string, value: T }[]; // Retrieve all items or by namespace
+  .entries<T>(namespace?: string): { key: string, value: T }[]; // Retrieve all items or by namespace
   .save<T>(key: StoreKey<T>, value: T): void; // Save a value by key
   .saveMany<T>(entries: [StoreKey<T>, T][]): void; // Save multiple key-value pairs at once
   .remove<T>(key: StoreKey<T>[]): void; // Remove one or more keys.
