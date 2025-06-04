@@ -84,11 +84,8 @@ const themeKey = createKey<'light' | 'dark'>('app', 'theme', 'local');
 const langKey = createKey<'en' | 'fr'>('app', 'lang', 'session');
 const userKey = createKey<{ name: string; age: number; }>('app', 'user', 'local');
 
-// Save with type checking
-StrictStore.save(themeKey, 'dark');
-
-// Batch operations
-StrictStore.saveBatch([
+StrictStore.save(themeKey, 'dark'); // Save with type checking
+StrictStore.saveBatch([ // Batch operations
   [themeKey, 'light'],
   [langKey, 'en']
 ]);
@@ -96,19 +93,18 @@ StrictStore.saveBatch([
 // Merge (partial update)
 StrictStore.merge(userKey, { name: 'New Name' });
 
-// Retrieve with correct type inference
-const themeValue: 'light' | 'dark' | null = StrictStore.get(themeKey);
-
-// Retrieve batch of values
-const [theme, lang] = StrictStore.pick([themeKey, langKey]);
+const themeValue: 'light' | 'dark' | null = StrictStore.get(themeKey); // Retrieve with correct type inference
+const [theme, lang] = StrictStore.pick([themeKey, langKey]); // Retrieve batch of values
 
 // Get all items or by namespace
 const entries: { key, value }[] = StrictStore.entries();
 const appEntries: { key, value }[] = StrictStore.entries(['app']);
 
-const keys = 
+// Get all keys or by namespace
+const keys = StrictStore.keys();
+const appKeys = StrictStore.keys(['app']);
 
-// Remove
+// Remove item
 StrictStore.remove([themeKey]);
 
 // Check key
@@ -117,7 +113,7 @@ const hasKeys: boolean[] = StrictStore.has([themeKey, langKey]);
 
 // Get the count of all StrictStore-managed items
 const count: number = StrictStore.size();
-const countsByNs: number = StrictStore.size(['namespace']);
+const appCount: number = StrictStore.size(['app']);
 
 // Clear all or by namespace
 StrictStore.clear();
@@ -128,7 +124,7 @@ StrictStore.forEach((key, value) => {
   console.log(key, value);
 });
 
-// Listen for changes
+// Listen for changes keys or ns
 const unsubscribe = StrictStore.onChange((key, oldValue, newValue) => {
   // ...
 }, [themeKey]); // keys or ns
