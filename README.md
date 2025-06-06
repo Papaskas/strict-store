@@ -204,6 +204,15 @@ strictStore.save(userKey, {
 }); // Structure is type-checked
 ```
 
+## ⚠️ Key Isolation
+
+Strict Store **only works with keys created via the `createKey` function**.  
+Each key is automatically prefixed with a unique namespace, and the library only interacts with keys that have this prefix in `localStorage` or `sessionStorage`.
+
+Keys created outside of Strict Store, or without the appropriate prefix, are **not visible** to the library and will not be processed.
+
+This ensures data isolation and prevents accidental conflicts with other libraries or custom code that uses storage directly.
+
 ## 🚧 Limitations
 
 - Avoid using colons (':') in namespace or name values — this symbol is reserved as a namespace delimiter.
