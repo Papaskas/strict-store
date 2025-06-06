@@ -119,10 +119,10 @@ const appCount: number = StrictStore.size(['app']);
 StrictStore.clear();
 StrictStore.clear('app');
 
-// Iterate over all items
+// Iterate over all items or by namespace
 StrictStore.forEach((key, value) => {
   console.log(key, value);
-});
+}, ['app']);
 
 // Listen for changes keys or ns
 const unsubscribe = StrictStore.onChange((key, oldValue, newValue) => {
@@ -162,7 +162,7 @@ strictStore
   .size(ns?: string[]): number; // Get the number of items, optionally filtered by namespace
   .clear(namespace?: string[]): void; // Remove all items, optionally filtered by namespace
   .merge<T>(key: StoreKey<T>, partial: DeepPartial<T>): void; // Merge a partial object into an existing stored object
-  .forEach<T>(callback: (key: string, value: T) => void): void; // Iterate over all key-value pairs, optionally filtered by namespace
+  .forEach<T>(callback: (key: string, value: T) => void, ns?: string[]): void; // Iterate over all key-value pairs, optionally filtered by namespace
   .onChange(
     callback: (key, oldValue, newValue) => void,
     target?: StoreKey<unknown>[] | string[],
