@@ -1,5 +1,5 @@
 import { strictJson } from '@src/strict-json';
-import { deepMergeWithCollections, getFullName, getStorage } from '@src/utils';
+import { deepMerge, getFullName, getStorage } from '@src/utils';
 import { StoreKey, Persistable, StoreType, ExtendedPersistable, BasicPersistable } from '@src/types';
 import { DeepPartial } from '@src/iternal-types';
 
@@ -246,7 +246,7 @@ class StrictStore {
       throw new Error('StrictStore.merge: Can only merge into plain objects');
     }
 
-    const merged = deepMergeWithCollections(current, partial);
+    const merged = deepMerge(current, partial);
     storage.setItem(fullKey, strictJson.stringify(merged));
   }
 

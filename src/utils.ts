@@ -14,20 +14,20 @@ export function isTypedArray(val: unknown): val is TypedArray {
   return ArrayBuffer.isView(val) && !(val instanceof DataView);
 }
 
-export function deepMergeWithCollections<T, S>(target: T, source: S): T & S {
+export function deepMerge<T, S>(target: T, source: S): T & S {
   return mergeWith({}, target, source, (objValue, srcValue) => {
-    if (Array.isArray(objValue) && Array.isArray(srcValue)) {
+    if (Array.isArray(objValue) && Array.isArray(srcValue))
       return srcValue;
-    }
-    if (objValue instanceof Set && srcValue instanceof Set) {
+
+    else if (objValue instanceof Set && srcValue instanceof Set)
       return srcValue;
-    }
-    if (objValue instanceof Map && srcValue instanceof Map) {
+
+    else if (objValue instanceof Map && srcValue instanceof Map)
       return srcValue;
-    }
-    if (isTypedArray(objValue) && isTypedArray(srcValue)) {
+
+    else if (isTypedArray(objValue) && isTypedArray(srcValue))
       return srcValue;
-    }
+
     return undefined; // default merge
   });
 }
