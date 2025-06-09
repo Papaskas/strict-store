@@ -61,8 +61,8 @@ The library enforces type safety at compile time:
 ```typescript
 const counterKey = createKey<number>('app', 'counter');
 
-strictStore.save(counterKey, 'string value'); // Error: Type 'string' is not assignable to type 'number'
-strictStore.save(counterKey, 42); // OK
+StrictStore.save(counterKey, 'string value'); // Error: Type 'string' is not assignable to type 'number'
+StrictStore.save(counterKey, 42); // OK
 ```
 
 ## 🗄️ Storage type selection
