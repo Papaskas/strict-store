@@ -1,7 +1,7 @@
 import { strictJson } from '@src/strict-json';
 import { deepMerge, getFullName, getStorage } from '@src/utils';
 import { StoreKey, Persistable, StoreType, ExtendedPersistable, BasicPersistable } from '@src/types';
-import { DeepPartial } from '@src/iternal-types';
+import { DeepPartial } from '@src/internal-types';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage

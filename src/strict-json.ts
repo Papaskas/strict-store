@@ -1,7 +1,7 @@
 import { complexTypeMappers } from '@src/complex-types-mappers';
 import { isTypedArray } from '@src/utils';
 import { BasicPersistable, Persistable, StoreKey } from '@src/types';
-import { ComplexTypeData, ComplexTypeNames, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/iternal-types';
+import { ComplexTypeData, ComplexTypeNames, TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/internal-types';
 
 export const strictJson = {
   parse<T extends Persistable>(value: string): T {

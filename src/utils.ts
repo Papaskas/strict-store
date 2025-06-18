@@ -1,5 +1,5 @@
 import { mergeWith } from 'lodash';
-import { TypedArray } from '@src/iternal-types';
+import { TypedArray } from '@src/internal-types';
 import { StoreType } from '@src/types';
 
 export const getStorage = (type: StoreType): Storage => {

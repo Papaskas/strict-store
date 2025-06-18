@@ -1,4 +1,4 @@
-import { TypedArray } from '@src/iternal-types';
+import { TypedArray } from '@src/internal-types';
 
 /**
  * Represents all value types that can be safely stored in StrictStore.

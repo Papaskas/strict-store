@@ -33,7 +33,7 @@
     }
   },
   "license": "MIT",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "description": "A type-safe wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.",
   "scripts": {
     "build": "vite build",

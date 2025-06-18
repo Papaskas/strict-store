@@ -117,7 +117,7 @@ const appCount: number = StrictStore.size(['app']);
 
 // Clear all or by namespace
 StrictStore.clear();
-StrictStore.clear('app');
+StrictStore.clear(['app']);
 
 // Iterate over all items or by namespace
 StrictStore.forEach((key, value) => {

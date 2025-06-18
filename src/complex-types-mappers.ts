@@ -1,5 +1,5 @@
 import { Persistable } from '@src/types';
-import { ComplexTypeData, TypedArray } from '@src/iternal-types';
+import { ComplexTypeData, TypedArray } from '@src/internal-types';
 
 /**
  * Converts a bigint value to ComplexTypeData.
