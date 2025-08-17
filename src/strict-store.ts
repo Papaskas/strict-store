@@ -103,7 +103,7 @@ class StrictStore {
    * const allItems = StrictStore.entries();
    *
    * // Get only items for the 'user' namespace
-   * const userItems = StrictStore.entries('user');
+   * const userItems = StrictStore.entries(['user']);
    *
    * userItems.forEach(({ key, value }) => {
    *   console.log(key, value);
@@ -213,8 +213,6 @@ class StrictStore {
    * Merges a partial value into an existing object stored under the specified key.
    * @public
    *
-   * **Lodash is used under the hood. For all the features of merge, see the Lodash documentation.**
-   *
    * @typeParam T - Type of the stored value (must be an object)
    * @param key - StoreKey object identifying the item to merge into
    * @param partial - Partial object to merge
@@ -227,10 +225,19 @@ class StrictStore {
    * }
    * const userKey = createKey<User>('app', 'user');
    *
+   * StrictStore.save(userKey, { name: 'Tom', age: 42 });
    * StrictStore.merge(userKey, { name: 'Alex' });
    * ```
    *
    * @throws Error if no value exists for the key.
+   *
+   * @remarks
+   * - Internally uses {@link https://lodash.com/docs/#merge | lodash.merge}.
+   * - ⚠️ Unlike lodash's default behavior, arrays in StrictStore **are replaced entirely**,
+   *   not merged by index.
+   *   - Example: merging `{ tags: ['a', 'b'] }` with `{ tags: ['x'] }` results in `{ tags: ['x'] }`.
+   * - Use {@link StrictStore.save} if you need to completely overwrite the object
+   *   rather than partially merging.
    * */
   static merge<T extends Record<string, Persistable>>(
     key: StoreKey<T>,
