@@ -40,7 +40,7 @@ class StrictStore {
    *  'theme',
    * );
    *
-   * const theme: 'light' | 'dark' | null = strictStore.get(themeKey);
+   * const theme: 'light' | 'dark' | null = StrictStore.get(themeKey);
    * ```
    *
    * @remarks
@@ -68,7 +68,7 @@ class StrictStore {
    * const themeKey = createKey<'light' | 'dark'>('app', 'theme');
    * const langKey = createKey<'en' | 'ru'>('app', 'lang');
    *
-   * const [theme, lang] = strictStore.pick([themeKey, langKey]);
+   * const [theme, lang] = StrictStore.pick([themeKey, langKey]);
    * ```
    */
   static pick<const K extends readonly StoreKey<Persistable>[]>(
@@ -80,7 +80,7 @@ class StrictStore {
   }
 
   /**
-   * Retrieves all stored key-value pairs from both localStorage and sessionStorage that belong to strictStore.
+   * Retrieves all stored key-value pairs from both localStorage and sessionStorage that belong to StrictStore.
    * If a namespace is provided, only keys with the 'strict-store/[ns]:' prefix are included.
    * Otherwise, all keys with the 'strict-store/' prefix are returned.
    * @public
@@ -90,11 +90,11 @@ class StrictStore {
    *
    * @example
    * ```ts
-   * // Get all items stored by strictStore
-   * const allItems = strictStore.entries();
+   * // Get all items stored by StrictStore
+   * const allItems = StrictStore.entries();
    *
    * // Get only items for the 'user' namespace
-   * const userItems = strictStore.entries('user');
+   * const userItems = StrictStore.entries('user');
    *
    * userItems.forEach(({ key, value }) => {
    *   console.log(key, value);
@@ -103,7 +103,7 @@ class StrictStore {
    *
    * @remarks
    * - Scans both localStorage and sessionStorage.
-   * - Only includes keys managed by strictStore (those starting with 'strict-store/').
+   * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    */
   static entries(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable }[] {
     if (Array.isArray(ns) && ns.length === 0)
@@ -165,7 +165,7 @@ class StrictStore {
    * );
    *
    * // Only the literal type is allowed
-   * strictStore.save(themeKey, 'dark');
+   * StrictStore.save(themeKey, 'dark');
    * ```
    */
   static save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void {
@@ -222,12 +222,11 @@ class StrictStore {
    * }
    * const userKey = createKey<User>('app', 'user');
    *
-   * strictStore.merge(userKey, { name: 'Alex' });
+   * StrictStore.merge(userKey, { name: 'Alex' });
    * ```
    *
-   * @remarks
-   * - StrictStore.merge: Cannot initialize the object. Use StrictStore.save for initial value
-   */
+   * @throws Error if no value exists for the key.
+   * */
   static merge<T extends Record<string, Persistable>>(
     key: StoreKey<T>,
     partial: DeepPartial<T>
@@ -254,7 +253,7 @@ class StrictStore {
   }
 
   /**
-   * Iterates over all strictStore-managed key-value pairs and executes a callback for each.
+   * Iterates over all StrictStore-managed key-value pairs and executes a callback for each.
    * @public
    *
    * @param callback - Function to execute for each key-value pair.
@@ -263,7 +262,7 @@ class StrictStore {
    *
    * @example
    * ```ts
-   * strictStore.forEach((key, value) => {
+   * StrictStore.forEach((key, value) => {
    *   console.log(key, value, storageType);
    * }, ['namespace1', 'namespace2']);
    * ```
@@ -281,7 +280,7 @@ class StrictStore {
   }
 
   /**
-   * Subscribes to changes of strictStore-managed keys in localStorage/sessionStorage.
+   * Subscribes to changes of StrictStore-managed keys in localStorage/sessionStorage.
    * @public
    *
    * @param callback - Function to call when a value changes.
@@ -393,7 +392,7 @@ class StrictStore {
    *  'theme',
    * );
    *
-   * strictStore.remove([themeKey]);
+   * StrictStore.remove([themeKey]);
    * ```
    *
    * @remarks
@@ -421,8 +420,8 @@ class StrictStore {
    *  'theme',
    * );
    *
-   * const exists: boolean = strictStore.has(themeKey);
-   * const exists: boolean[] = strictStore.has([themeKey, anotherKey]);
+   * const exists: boolean = StrictStore.has(themeKey);
+   * const exists: boolean[] = StrictStore.has([themeKey, anotherKey]);
    * ```
    *
    * @remarks
@@ -467,7 +466,7 @@ class StrictStore {
   }
 
   /**
-   * Returns all StoreKey objects managed by strictStore, optionally filtered by namespaces.
+   * Returns all StoreKey objects managed by StrictStore, optionally filtered by namespaces.
    * Scans both localStorage and sessionStorage for keys with the 'strict-store/' prefix.
    *
    * @public
@@ -476,7 +475,7 @@ class StrictStore {
    * @returns Array of StoreKey objects for all stored items matching the filter.
    *
    * @example
-   * // Get all keys managed by strictStore:
+   * // Get all keys managed by StrictStore:
    * const allKeys = StrictStore.keys();
    *
    * // Get only keys for the 'user' namespace:
@@ -487,7 +486,7 @@ class StrictStore {
    * });
    *
    * @remarks
-   * - Only includes keys managed by strictStore (those starting with 'strict-store/').
+   * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    * - The returned StoreKey objects include ns, name, storeType, and __type.
    */
   static keys(ns?: string[]): StoreKey<Persistable>[] {
@@ -519,7 +518,7 @@ class StrictStore {
 }
 
 /**
- * Creates a type-safe store name object for use with strictStore.
+ * Creates a type-safe store name object for use with StrictStore.
  * @public
  *
  * @typeParam T - Type of the stored value, must extend `Persistable`
