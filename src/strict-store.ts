@@ -16,6 +16,7 @@ import { DeepPartial } from '@src/internal-types';
  * ```
  */
 class StrictStore {
+  private static readonly KEY_PATTERN = /^strict-store\/([^:]+):(.+)$/;
 
   /**
    * To ignore TypeDoc
@@ -107,48 +108,44 @@ class StrictStore {
    * - Scans both localStorage and sessionStorage.
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    */
-  static entries(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable }[] {
+  static entries(
+    ns?: string[]
+  ): { key: StoreKey<Persistable>, value: Persistable }[] {
     if (Array.isArray(ns) && ns.length === 0)
-      return [];
+      return []
 
-    const result: { key: StoreKey<Persistable>, value: Persistable }[] = [];
-    const prefixes = ns && ns.length > 0
-      ? ns.map(n => `strict-store/${n}:`)
-      : ['strict-store/'];
+    const prefixes: readonly string[] =
+      ns && ns.length > 0 ? ns.map(n => `strict-store/${n}:`) : ['strict-store/']
 
     const storages: [Storage, StoreType][] = [
       [localStorage, 'local'],
-      [sessionStorage, 'session']
-    ];
+      [sessionStorage, 'session'],
+    ]
 
-    for (const [storage, storageType] of storages) {
+    const result: { key: StoreKey<Persistable>; value: Persistable }[] = []
+
+    for (let s = 0; s < storages.length; s++) {
+      const [storage, storageType] = storages[s]
+
       for (let i = 0; i < storage.length; i++) {
-        const keyStr = storage.key(i);
-        if (!keyStr) continue;
-        if (!prefixes.some(prefix => keyStr.startsWith(prefix))) continue;
+        const rawKey = storage.key(i);
+        if (!rawKey) continue
+        if (!StrictStore.isStoreKey(rawKey, prefixes)) continue
 
-        const valueStr = storage.getItem(keyStr);
-        if (valueStr === null) continue;
+        const valueStr = storage.getItem(rawKey);
+        if (valueStr === null) continue
 
-        const match = /^strict-store\/([^:]+):(.+)$/.exec(keyStr);
-        if (!match) continue;
-        const [, nsPart, namePart] = match;
-
-        const storeKey: StoreKey<Persistable> = {
-          ns: nsPart,
-          name: namePart,
-          storeType: storageType,
-          __type: undefined as any,
-        };
+        const storeKey = StrictStore.parseStoreKey(rawKey, storageType)
+        if (!storeKey) continue
 
         result.push({
           key: storeKey,
-          value: strictJson.parse(valueStr)
-        });
+          value: strictJson.parse(valueStr),
+        })
       }
     }
 
-    return result;
+    return result
   }
 
   /**
@@ -516,6 +513,71 @@ class StrictStore {
     const items = StrictStore.entries(ns);
     for (const { key } of items)
       StrictStore.remove([key]);
+  }
+
+  /**
+   * Checks whether a raw storage key is managed by {@link StrictStore}.
+   *
+   * The method validates that the given key starts with at least one of the allowed
+   * StrictStore prefixes (e.g. `"strict-store/user:"`).
+   *
+   * @internal
+   *
+   * @param raw - Raw storage key string as retrieved from `localStorage.key()` or `sessionStorage.key()`.
+   * @param prefixes - One or more allowed StrictStore prefixes to match against.
+   * @returns `true` if the key belongs to StrictStore and matches any prefix, otherwise `false`.
+   *
+   * @example
+   * ```ts
+   * const isValid = StrictStore.isStoreKey('strict-store/user:123', ['strict-store/user:']);
+   * // → true
+   * ```
+   */
+  private static isStoreKey(raw: string, prefixes: readonly string[]): boolean {
+    for (let i = 0; i < prefixes.length; i++)
+      if (raw.startsWith(prefixes[i])) return true;
+
+    return false;
+  }
+
+  /**
+   * Parses a raw storage key into a strongly typed {@link StoreKey} structure.
+   *
+   * The key must conform to the StrictStore naming convention:
+   * `"strict-store/{namespace}:{name}"`.
+   * If the format does not match, the function returns `null`.
+   *
+   * @internal
+   *
+   * @param raw - Raw storage key string (e.g. `"strict-store/user:profile"`).
+   * @param storeType - Storage type (`'local'` or `'session'`) associated with the key.
+   * @returns A {@link StoreKey} object if the raw key matches the expected format, otherwise `null`.
+   *
+   * @example
+   * ```ts
+   * const parsed = StrictStore.parseStoreKey('strict-store/app:theme', 'local');
+   * // parsed = {
+   * //   ns: 'app',
+   * //   name: 'theme',
+   * //   storeType: 'local',
+   * //   __type: undefined
+   * // }
+   * ```
+   */
+  private static parseStoreKey(
+    raw: string,
+    storeType: StoreType
+  ): StoreKey<Persistable> | null {
+    const m = StrictStore.KEY_PATTERN.exec(raw)
+    if (!m) return null
+
+    const [, nsPart, namePart] = m
+    return {
+      ns: nsPart,
+      name: namePart,
+      storeType,
+      __type: undefined as any,
+    }
   }
 }
 
