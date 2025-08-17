@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/npm/l/strict-store?v=2)](https://github.com/Papaskas/strict-store/blob/main/LICENSE)
 [![Bundle Size](https://img.shields.io/bundlephobia/min/strict-store)](https://bundlephobia.com/package/strict-store)
 
-A **type-safe** wrapper around localStorage and sessionStorage with TypeScript support, namespace isolation, and automatic serialization.
+> 📝 **Strict Store** — Strongly typed wrapper for localStorage and sessionStorage with namespace isolation and automatic serialization.
 
 ## ✨ Features
 - 🛡 **Full Type Safety** — Compile-time type checking for all operations
