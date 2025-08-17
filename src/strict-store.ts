@@ -511,10 +511,7 @@ class StrictStore {
    * @remarks
    * it only works in StrictStore
    */
-  static clear(ns?: string[]) {
-    if (Array.isArray(ns) && ns.length === 0)
-      return;
-
+  static clear(ns?: string[]): void {
     const items = StrictStore.entries(ns);
     for (const { key } of items)
       StrictStore.remove([key]);
