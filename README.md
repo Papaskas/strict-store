@@ -70,8 +70,8 @@ StrictStore.save(counterKey, 42); // OK
 Choose between localStorage (persistent) and sessionStorage (tab-specific):
 
 ```typescript
-const localKey = createKey(..., 'local');
-const sessionKey = createKey(..., 'session');
+const localKey = createKey( , , 'local');
+const sessionKey = createKey( , , 'session');
 ```
 
 ##  🚀 Quick start
@@ -90,8 +90,7 @@ StrictStore.saveBatch([ // Batch operations
   [langKey, 'en']
 ]);
 
-// Merge (partial update)
-// Cannot initialize the object, use `save` method for initial value
+// Merge partial object (⚠️ cannot initialize, only update existing object)
 StrictStore.merge(userKey, { name: 'New Name' });
 
 const themeValue: 'light' | 'dark' | null = StrictStore.get(themeKey); // Retrieve with correct type inference
@@ -126,7 +125,7 @@ StrictStore.forEach((key, value) => {
 }, ['app']);
 
 // Listen for changes keys or ns
-const unsubscribe = StrictStore.onChange((key, oldValue, newValue) => {
+const unsubscribe = StrictStore.onChange((key, newValue, oldValue) => {
   // ...
 }, [themeKey]); // keys or ns
 
@@ -151,23 +150,50 @@ unsubscribe();
 ### 🛠️ StrictStore methods
 ```typescript
 StrictStore
-  .get<T extends Persistable>(key: StoreKey<T>): T | null; // Retrieve a value by key.
-  .pick<T extends Persistable>(keys: StoreKey<T>[]): (T | null)[]; // Retrieve multiple values by keys.
-  .entries(namespace?: string[]): { key: StoreKey<Persistable>, value: Persistable }[]; // Retrieve all items or by namespace
-  .keys(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable }[]; // Get all keys or by a namespace
-  .save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void; // Save a value by key
-  .saveBatch<T>(entries: [StoreKey<T>, T][]): void; // Save multiple key-value pairs at once
-  .remove(key: StoreKey<Persistable>[]): void; // Remove one or more keys.
-  .has(key: StoreKey<Persistable>): boolean; // Check if key exist
-  .has(key: StoreKey<Persistable>[]): boolean[]; // Check if keys exist
-  .size(ns?: string[]): number; // Get the number of items, optionally filtered by namespace
-  .clear(namespace?: string[]): void; // Remove all items, optionally filtered by namespace
-  .merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void; // Merge a partial object into an existing stored object
-  .forEach(callback: (key: StoreKey<Persistable>, value: Persistable) => void, ns?: string[]): void; // Iterate over all key-value pairs, optionally filtered by namespace
+  .get<T extends Persistable>(key: StoreKey<T>): T | null
+  // Retrieve a value by key
+  
+  .pick<const K extends readonly StoreKey<Persistable>[]>(
+    keys: K
+  ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never }
+  // Retrieve multiple values, preserving tuple typing
+
+  .entries(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable }[]
+  // Retrieve all items or filter by namespaces
+
+  .keys(ns?: string[]): StoreKey<Persistable>[]
+  // Get all keys as StoreKey objects
+
+  .save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void
+  // Save a value
+
+  .saveBatch(entries: [StoreKey<Persistable>, Persistable][]): void
+  // Save multiple pairs
+
+  .remove(keys: StoreKey<Persistable>[]): void
+  // Remove keys
+
+  .has(key: StoreKey<Persistable>): boolean
+  .has(keys: StoreKey<Persistable>[]): boolean[]
+  // Check existence
+
+  .size(ns?: string[]): number
+  // Count items
+
+  .clear(ns?: string[]): void
+  // Clear items (empty array = NO-OP)
+
+  .merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void
+  // Merge partial object (⚠️ cannot initialize, only update existing object)
+
+  .forEach(callback: (key: StoreKey<Persistable>, value: Persistable) => void, ns?: string[]): void
+  // Iterate over pairs
+
   .onChange(
-    callback: (key, newValue, oldValue) => void,
+    callback: (key: StoreKey<Persistable>, newValue: Persistable, oldValue: Persistable) => void,
     target?: StoreKey<Persistable>[] | string[],
-  ): () => void; // Subscribe to storage changes. Returns an unsubscribe function.
+  ): () => void
+  // Subscribe to storage changes (returns unsubscribe)
 ```
 
 ### 🧩 Complex type examples
