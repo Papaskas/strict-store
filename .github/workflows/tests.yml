@@ -2,6 +2,10 @@ name: Test
 
 on:
   push:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+  workflow_dispatch:
 
 jobs:
   test:
@@ -12,5 +16,5 @@ jobs:
         with:
           node-version: '20'
           cache: 'yarn'
-      - run: yarn install
+      - run: yarn install --frozen-lockfile
       - run: yarn test
