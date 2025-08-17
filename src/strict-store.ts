@@ -74,9 +74,11 @@ class StrictStore {
   static pick<const K extends readonly StoreKey<Persistable>[]>(
     keys: K
   ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never } {
-    return keys.map(key => StrictStore.get(key)) as {
-      [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never
-    };
+    const out: unknown[] = new Array(keys.length)
+    for (let i = 0; i < keys.length; i++)
+      out[i] = StrictStore.get(keys[i]);
+
+    return out as { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never }
   }
 
   /**
