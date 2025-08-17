@@ -1,7 +1,6 @@
 import { mergeWith } from 'lodash';
 import { TypedArray } from '@src/internal-types';
-import { StoreType } from '@src/types';
-import { Persistable, StoreKey } from '../index';
+import { StoreType, Persistable, StoreKey } from '@src/types';
 
 export const KEY_PATTERN = /^strict-store\/([^:]+):(.+)$/
 
