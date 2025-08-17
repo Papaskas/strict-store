@@ -91,6 +91,7 @@ StrictStore.saveBatch([ // Batch operations
 ]);
 
 // Merge (partial update)
+// Cannot initialize the object, use `save` method for initial value
 StrictStore.merge(userKey, { name: 'New Name' });
 
 const themeValue: 'light' | 'dark' | null = StrictStore.get(themeKey); // Retrieve with correct type inference
@@ -147,25 +148,25 @@ unsubscribe();
   ): StoreKey<T>
 ```
 
-### 🛠️ strictStore methods
+### 🛠️ StrictStore methods
 ```typescript
-strictStore
-  .get<T>(key: StoreKey<T>): T | null; // Retrieve a value by key.
-  .pick<T>(keys: StoreKey<T>[]): (T | null)[]; // Retrieve multiple values by keys.
-  .entries<T>(namespace?: string): { key: string, value: T }[]; // Retrieve all items or by namespace
-  .keys(ns?: string[]): keys[]; // Get all keys or by a namespace
-  .save<T>(key: StoreKey<T>, value: T): void; // Save a value by key
+StrictStore
+  .get<T extends Persistable>(key: StoreKey<T>): T | null; // Retrieve a value by key.
+  .pick<T extends Persistable>(keys: StoreKey<T>[]): (T | null)[]; // Retrieve multiple values by keys.
+  .entries(namespace?: string[]): { key: StoreKey<Persistable>, value: Persistable }[]; // Retrieve all items or by namespace
+  .keys(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable }[]; // Get all keys or by a namespace
+  .save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void; // Save a value by key
   .saveBatch<T>(entries: [StoreKey<T>, T][]): void; // Save multiple key-value pairs at once
-  .remove<T>(key: StoreKey<T>[]): void; // Remove one or more keys.
-  .has<T>(key: StoreKey<T>): boolean; // Check if key exist
-  .has<T>(key: StoreKey<T>[]): boolean[]; // Check if keys exist
+  .remove(key: StoreKey<Persistable>[]): void; // Remove one or more keys.
+  .has(key: StoreKey<Persistable>): boolean; // Check if key exist
+  .has(key: StoreKey<Persistable>[]): boolean[]; // Check if keys exist
   .size(ns?: string[]): number; // Get the number of items, optionally filtered by namespace
   .clear(namespace?: string[]): void; // Remove all items, optionally filtered by namespace
-  .merge<T>(key: StoreKey<T>, partial: DeepPartial<T>): void; // Merge a partial object into an existing stored object
-  .forEach<T>(callback: (key: string, value: T) => void, ns?: string[]): void; // Iterate over all key-value pairs, optionally filtered by namespace
+  .merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void; // Merge a partial object into an existing stored object
+  .forEach(callback: (key: StoreKey<Persistable>, value: Persistable) => void, ns?: string[]): void; // Iterate over all key-value pairs, optionally filtered by namespace
   .onChange(
-    callback: (key, oldValue, newValue) => void,
-    target?: StoreKey<unknown>[] | string[],
+    callback: (key, newValue, oldValue) => void,
+    target?: StoreKey<Persistable>[] | string[],
   ): () => void; // Subscribe to storage changes. Returns an unsubscribe function.
 ```
 
@@ -179,7 +180,7 @@ const tagsKey = createKey<string[]>(
   'tags',
 );
 
-strictStore.save(tagsKey, ['ts', 'storage', 'util']); // string[] preserved
+StrictStore.save(tagsKey, ['ts', 'storage', 'util']); // string[] preserved
 ```
 
 **Objects:**
@@ -197,7 +198,7 @@ const userKey = createKey<User>(
   'user',
 );
 
-strictStore.save(userKey, {
+StrictStore.save(userKey, {
   id: 1,
   name: 'Alex',
   settings: { darkMode: true }
@@ -209,7 +210,7 @@ strictStore.save(userKey, {
 Strict Store **only works with keys created via the `createKey` function**.  
 Each key is automatically prefixed with a unique namespace, and the library only interacts with keys that have this prefix in `localStorage` or `sessionStorage`.
 
-Keys created outside of Strict Store, or without the appropriate prefix, are **not visible** to the library and will not be processed.
+Keys created outside Strict Store, or without the appropriate prefix, are **not visible** to the library and will not be processed.
 
 This ensures data isolation and prevents accidental conflicts with other libraries or custom code that uses storage directly.
 
