@@ -224,6 +224,9 @@ class StrictStore {
    *
    * strictStore.merge(userKey, { name: 'Alex' });
    * ```
+   *
+   * @remarks
+   * - StrictStore.merge: Cannot initialize the object. Use StrictStore.save for initial value
    */
   static merge<T extends Record<string, Persistable>>(
     key: StoreKey<T>,
@@ -255,18 +258,21 @@ class StrictStore {
    * @public
    *
    * @param callback - Function to execute for each key-value pair.
-   *   Receives (key: Key<Persistable>, value: Persistable, storageType: 'local' | 'session')
+   *   Receives (key, value)
    * @param ns - Optional namespace to filter keys.
    *
    * @example
    * ```ts
-   * strictStore.forEach((key, value, storageType) => {
+   * strictStore.forEach((key, value) => {
    *   console.log(key, value, storageType);
-   * }, ["namespace1", "namespace2"]);
+   * }, ['namespace1', 'namespace2']);
    * ```
    */
   static forEach(
-    callback: (key: StoreKey<Persistable>, value: Persistable) => void,
+    callback: (
+      key: StoreKey<Persistable>,
+      value: Persistable,
+    ) => void,
     ns?: string[]
   ): void {
     StrictStore.entries(ns).forEach(({ key, value }) => {
@@ -279,8 +285,8 @@ class StrictStore {
    * @public
    *
    * @param callback - Function to call when a value changes.
-   *   Receives (key: StoreKey<Persistable>, newValue: Persistable, oldValue: Persistable, storageType: 'local' | 'session')
-   * @param target - (optional) Array of StoreKeys или array of namespaces (string[]) to filter the observed changes.
+   *   Receives (key, newValue, oldValue)
+   * @param target - (optional) Array of StoreKey or array of namespaces (string[]) to filter the observed changes.
    *   If omitted, all strict-store keys are obeyed.
    *
    * @returns Unsubscribe function.
@@ -387,8 +393,7 @@ class StrictStore {
    *  'theme',
    * );
    *
-   * strictStore.remove(themeKey);
-   * strictStore.remove([themeKey, ...]);
+   * strictStore.remove([themeKey]);
    * ```
    *
    * @remarks
