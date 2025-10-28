@@ -1,13 +1,13 @@
 # Update
-- [ ] Added Date type
-- [X] Added saveSeveral method
-- [X] Added pick method
-- [X] Added entries method
-- [X] Added removeSeveral method
-- [X] Added merge method - Merges a value into an existing object stored under the specified key
-- [X] Added getByNamespace method - Retrieves all key-value pairs within a specific namespace
-- [X] Added forEach method - Iterates over all key-value pairs in the storage and executes a callback for each
-- [X] Added onChange method - Allows you to listen for changes to the storage (this may require additional implementation for event handling) 
+- [ ] Add `Date` type
+- [X] Add `saveBatch` method
+- [X] Add `pick` method
+- [X] Add `entries` method
+- [X] Add `remove` method
+- [X] Add `merge` method - Merges a value into an existing object stored under the specified key
+- [X] Add `forEach` method - Iterates over all key-value pairs in the storage and executes a callback for each
+- [X] Add `onChange` method - Allows you to listen for changes to the storage (this may require additional implementation for event handling) 
 - [X] Add a void check for name and ns
-- [X] clear и length - all keys are affected, not just those related to strictStore.
+- [X] Add `Clear` and `Length` methods
+- [ ] Add custom `Function` for key (key themeKey has method toggle() -> StrictStore(themeKey).toggle())
 
