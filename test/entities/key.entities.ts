@@ -1,6 +1,6 @@
 import { createKey } from '../../src/interface';
 
-export const Keys = {
+export const keys = {
   stringKey: createKey<string>(
     'test-ns',
     'string',
@@ -16,5 +16,11 @@ export const Keys = {
     'test-ns',
     'number',
     'session'
+  ),
+
+  nullKey: createKey<null>(
+    'test-ns',
+    'null',
+    'local'
   ),
 } as const;
