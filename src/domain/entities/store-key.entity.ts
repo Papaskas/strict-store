@@ -1,5 +1,5 @@
-import { Persistable } from '@src/domain/entities/persistable';
-import { StoreType } from '@src/domain/entities/store-type';
+import { Persistable } from '@src/domain/entities/persistable.entity';
+import { StoreType } from '@src/domain/entities/store-type.entity';
 
 /**
  * Defines a type-safe storage name structure for `StrictStore` operations.

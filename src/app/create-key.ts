@@ -1,6 +1,6 @@
-import { Persistable } from '@src/domain/entities/persistable';
-import { StoreKey } from '@src/domain/entities/store-keys';
-import { StoreType } from '@src/domain/entities/store-type';
+import { Persistable } from '@src/domain/entities/persistable.entity';
+import { StoreKey } from '@src/domain/entities/store-key.entity';
+import { StoreType } from '@src/domain/entities/store-type.entity';
 
 /**
  * Creates a type-safe store name object for use with StrictStore.

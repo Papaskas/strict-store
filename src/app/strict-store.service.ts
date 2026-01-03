@@ -1,13 +1,14 @@
-import { isStrictStoreEvent, isStrictStoreKey, makeFullName, parseStoreKey, resolveTargets } from '@src/domain/key.format';
-import { Persistable } from '@src/domain/entities/persistable';
-import { StoreKey } from '@src/domain/entities/store-keys';
+import { keyPolicy } from '@src/domain/policies/key.policy';
+import { Persistable } from '@src/domain/entities/persistable.entity';
+import { StoreKey } from '@src/domain/entities/store-key.entity';
 import { SerializerPort } from '@src/app/ports/serializer.port';
 import { StorageProviderPort } from '@src/app/ports/storage-provider.port';
-import { StoreType } from '@src/domain/entities/store-type';
+import { StoreType } from '@src/domain/entities/store-type.entity';
 import { StrictStore } from '@src/interface';
-import { DeepPartial } from '@src/domain/entities/deep-partial';
+import { DeepPartial } from '@src/domain/entities/deep-partial.entity';
 import { strictJson } from '@src/infrastructure/adapters/serialization/serialization.adapter';
 import { deepMerge } from '@src/domain/policies/merge.policy';
+import { onChangePolicy } from '../domain/policies/on-change.policy';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -50,7 +51,7 @@ export class StrictStoreService {
    */
   get<T extends Persistable>(key: StoreKey<T>): T | null {
     const storage = this.storageProvider.get(key.storeType);
-    const raw = storage.get(makeFullName(key.ns, key.name));
+    const raw = storage.get(keyPolicy.makeFullName(key.ns, key.name));
 
     if (raw === null) return null;
     return this.serializer.parse<T>(raw);
@@ -100,7 +101,7 @@ export class StrictStoreService {
    */
   save<T extends StoreKey<Persistable>>(key: T, value: T["__type"]): void {
     const storage = this.storageProvider.get(key.storeType);
-    storage.set(makeFullName(key.ns, key.name), this.serializer.stringify(value));
+    storage.set(keyPolicy.makeFullName(key.ns, key.name), this.serializer.stringify(value));
   }
 
   /**
@@ -168,7 +169,7 @@ export class StrictStoreService {
     partial: DeepPartial<T>
   ): void {
     const storage = this.storageProvider.get(key.storeType);
-    const fullKey = makeFullName(key.ns, key.name);
+    const fullKey = keyPolicy.makeFullName(key.ns, key.name);
     const storedValue = storage.get(fullKey);
 
     let current: T | null = null;
@@ -253,12 +254,12 @@ export class StrictStoreService {
     ) => void,
     target?: StoreKey<Persistable>[] | string[],
   ) {
-    const { keyNames, nsPrefixes } = resolveTargets(target)
+    const { keyNames, nsPrefixes } = onChangePolicy.resolveTargets(target)
 
     const handler = (e: StorageEvent) => {
-      if (!isStrictStoreEvent(e, keyNames, nsPrefixes)) return
+      if (!onChangePolicy.isStrictStoreEvent(e, keyNames, nsPrefixes)) return
 
-      const storeKey = parseStoreKey(e.key!, e.storageArea === localStorage ? 'local' : 'session')
+      const storeKey = keyPolicy.parseStoreKey(e.key!, e.storageArea === localStorage ? 'local' : 'session')
       if (!storeKey) return
 
       callback(
@@ -299,12 +300,12 @@ export class StrictStoreService {
     if (Array.isArray(key)) {
       return key.map(storeKey => {
         const storage = this.storageProvider.get(storeKey.storeType);
-        return storage.get(makeFullName(storeKey.ns, storeKey.name)) !== null;
+        return storage.get(keyPolicy.makeFullName(storeKey.ns, storeKey.name)) !== null;
       })
 
     } else {
       const storage = this.storageProvider.get(key.storeType);
-      return storage.get(makeFullName(key.ns, key.name)) !== null;
+      return storage.get(keyPolicy.makeFullName(key.ns, key.name)) !== null;
     }
   }
 
@@ -332,7 +333,7 @@ export class StrictStoreService {
   remove(keys: StoreKey<Persistable>[]): void {
     for (const key of keys) {
       const storage = this.storageProvider.get(key.storeType);
-      storage.remove(makeFullName(key.ns, key.name));
+      storage.remove(keyPolicy.makeFullName(key.ns, key.name));
     }
   }
 
@@ -384,12 +385,12 @@ export class StrictStoreService {
       for (let i = 0; i < storage.length; i++) {
         const rawKey = storage.key(i);
         if (!rawKey) continue
-        if (!isStrictStoreKey(rawKey, prefixes)) continue
+        if (!keyPolicy.isStrictStoreKey(rawKey, prefixes)) continue
 
         const valueStr = storage.getItem(rawKey);
         if (valueStr === null) continue
 
-        const storeKey = parseStoreKey(rawKey, storageType)
+        const storeKey = keyPolicy.parseStoreKey(rawKey, storageType)
         if (!storeKey) continue
 
         result.push({

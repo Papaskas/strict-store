@@ -1,4 +1,4 @@
-import type { TypedArray } from '@src/domain/entities/typed-array';
+import type { TypedArray } from '@src/domain/entities/typed-array.entity';
 
 /**
  * Covers all standard JavaScript primitive types and their serializable containers.

@@ -1,10 +1,10 @@
 import { complexTypeMappers } from '@src/infrastructure/mappers/complex-type.mapper';
-import { NativePersistable, Persistable } from '@src/domain/entities/persistable';
-import { ComplexTypeData, ComplexTypeNames } from '@src/domain/entities/complex-type';
-import { StoreKey } from '@src/domain/entities/store-keys';
+import { NativePersistable, Persistable } from '@src/domain/entities/persistable.entity';
+import { ComplexTypeData, ComplexTypeNames } from '@src/domain/entities/complex-type.entity';
+import { StoreKey } from '@src/domain/entities/store-key.entity';
 import { SerializerPort } from '@src/app/ports/serializer.port';
-import { TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/domain/entities/typed-array';
-import { isTypedArray } from '@src/domain/policies/typed-array.policy';
+import { TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/domain/entities/typed-array.entity';
+import { typedArrayPolicy } from '@src/domain/policies/typed-array.policy';
 
 /**
  * A strict JSON serializer that handles complex types like bigint, Map, Set, and TypedArray.
@@ -36,7 +36,7 @@ const replacer = (
   else if (value instanceof Set)
     return complexTypeMappers.set(value)
 
-  else if (isTypedArray(value))
+  else if (typedArrayPolicy.isTypedArray(value))
     return complexTypeMappers.typedArray(value)
 
   else
@@ -85,16 +85,13 @@ const reviver = (
   return value;
 }
 
-
-function toArrayBuffer(view: ArrayBufferView): ArrayBuffer {
+const toArrayBuffer = (view: ArrayBufferView): ArrayBuffer => {
   // view.buffer is ArrayBufferLike = ArrayBuffer | SharedArrayBuffer
-  if (view.buffer instanceof ArrayBuffer) {
+  if (view.buffer instanceof ArrayBuffer)
     return view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength);
-  }
 
   // SharedArrayBuffer: copy bytes into a new ArrayBuffer
   const ab = new ArrayBuffer(view.byteLength);
   new Uint8Array(ab).set(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
   return ab;
 }
-

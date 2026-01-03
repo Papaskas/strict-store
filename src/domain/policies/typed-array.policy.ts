@@ -1,5 +1,6 @@
-import { TypedArray } from '@src/domain/entities/typed-array';
+import { TypedArray } from '@src/domain/entities/typed-array.entity';
 
-export const isTypedArray = (val: unknown): val is TypedArray =>{
-  return ArrayBuffer.isView(val) && !(val instanceof DataView);
-}
+export const typedArrayPolicy = {
+  isTypedArray: (val: unknown): val is TypedArray =>
+    ArrayBuffer.isView(val) && !(val instanceof DataView),
+};

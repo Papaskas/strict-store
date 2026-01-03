@@ -1,5 +1,5 @@
 import { mergeWith } from 'lodash';
-import { isTypedArray } from '@src/domain/policies/typed-array.policy';
+import { typedArrayPolicy } from '@src/domain/policies/typed-array.policy';
 
 export const deepMerge = <T, S>(target: T, source: S): T & S => {
   return mergeWith({}, target, source, (objValue, srcValue) => {
@@ -12,7 +12,7 @@ export const deepMerge = <T, S>(target: T, source: S): T & S => {
     else if (objValue instanceof Map && srcValue instanceof Map)
       return srcValue;
 
-    else if (isTypedArray(objValue) && isTypedArray(srcValue))
+    else if (typedArrayPolicy.isTypedArray(objValue) && typedArrayPolicy.isTypedArray(srcValue))
       return srcValue;
 
     return undefined; // default merge
