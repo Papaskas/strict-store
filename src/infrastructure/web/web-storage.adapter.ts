@@ -1,24 +1,25 @@
-import { KeyValueStoragePort, StorageProviderPort } from '@src/app/ports/storage.port';
-import { StoreType } from '@src/domain/entities/store-type';
+import { KeyValueStoragePort } from '@src/app/ports/key-value-storage.port';
 
-class WebStorageAdapter implements KeyValueStoragePort {
-  constructor(private readonly storage: Storage) {}
+export const webStorageAdapter = (
+  storage: Storage
+): KeyValueStoragePort => ({
 
-  get(k: string) { return this.storage.getItem(k); }
-  set(k: string, v: string) { this.storage.setItem(k, v); }
-  remove(k: string) { this.storage.removeItem(k); }
-  keys() {
+  get: (key) => storage.getItem(key),
+
+  set: (key, value) => storage.setItem(key, value),
+
+  remove: (key) => storage.removeItem(key),
+
+  length: () => storage.length,
+
+  clear: () => storage.clear(),
+
+  keys: () => {
     const out: string[] = [];
-    for (let i = 0; i < this.storage.length; i++) {
-      const k = this.storage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (k) out.push(k);
     }
     return out;
-  }
-}
-
-export class BrowserStorageProvider implements StorageProviderPort {
-  get(type: StoreType): KeyValueStoragePort {
-    return new WebStorageAdapter(type === 'local' ? localStorage : sessionStorage);
-  }
-}
+  },
+});
