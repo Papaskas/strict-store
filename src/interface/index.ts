@@ -1,7 +1,7 @@
 import { StrictStoreService } from '@src/app/strict-store.service';
 import { createKey } from '@src/domain/policies/create-key';
 import { WebStorageProvider } from '@src/infrastructure/providers/web-storage.provider';
-import { strictJson } from '@src/infrastructure/serialization/strict-store.adapter';
+import { strictJson } from '@src/infrastructure/adapters/serialization/serialization.adapter';
 
 const StrictStore = new StrictStoreService(new WebStorageProvider(), strictJson);
 

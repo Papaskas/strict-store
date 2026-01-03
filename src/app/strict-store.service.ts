@@ -1,10 +1,13 @@
-import { isStrictStoreKey, makeFullName, parseStoreKey } from '@src/domain/key.format';
+import { isStrictStoreEvent, isStrictStoreKey, makeFullName, parseStoreKey, resolveTargets } from '@src/domain/key.format';
 import { Persistable } from '@src/domain/entities/persistable';
 import { StoreKey } from '@src/domain/entities/store-keys';
 import { SerializerPort } from '@src/app/ports/serializer.port';
 import { StorageProviderPort } from '@src/app/ports/storage-provider.port';
 import { StoreType } from '@src/domain/entities/store-type';
 import { StrictStore } from '@src/interface';
+import { DeepPartial } from '@src/domain/entities/deep-partial';
+import { strictJson } from '@src/infrastructure/adapters/serialization/serialization.adapter';
+import { deepMerge } from '@src/domain/policies/merge.policy';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -101,7 +104,6 @@ export class StrictStoreService {
       storage.remove(makeFullName(key.ns, key.name));
     }
   }
-
 
   /**
    * Retrieves all stored key-value pairs from both localStorage and sessionStorage that belong to StrictStore.
