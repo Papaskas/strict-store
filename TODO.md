@@ -15,5 +15,7 @@
 ## Major v5
 
 - [ ] Refactor the code to follow Clean Architecture
-- [ ] Remove the unnecessary `stress.test.ts` file
+- [X] Remove the unnecessary `stress.test.ts` file
 - [ ] Rewrite `README.md`
+- [ ] Create new tests
+- [ ] Merge Dependabot pull requests
