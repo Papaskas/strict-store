@@ -11,11 +11,7 @@ import { typedArrayPolicy } from '@src/domain/policies/typed-array.policy';
  */
 export const strictJson: SerializerPort = {
   parse<T extends Persistable>(value: string): T {
-    try {
-      return JSON.parse(value, reviver) as T;
-    } catch {
-      return value as T;
-    }
+    return JSON.parse(value, reviver) as T;
   },
 
   stringify<T extends StoreKey<Persistable>>(value: T['__type']): string {
