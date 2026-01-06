@@ -1,4 +1,6 @@
+import { tuplePolicy } from '@src/domain/policies/tuple.policy';
 import { keyPolicy } from '@src/domain/policies/key.policy';
+import { nsPolicy } from '@src/domain/policies/ns.policy';
 import { Persistable } from '@src/domain/entities/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key.entity';
 import { SerializerPort } from '@src/app/ports/serializer.port';
@@ -374,7 +376,9 @@ export class StrictStoreService {
       return []
 
     const prefixes: string[] =
-      ns && ns.length > 0 ? ns.map(n => `strict-store/${n}:`) : ['strict-store/']
+      ns === undefined
+        ? [`${KEY_PREFIX}/`]
+        : nsPolicy.resolveNamespacePrefixes(KEY_PREFIX, ns);
 
     const storages: [Storage, StoreType][] = [
       [localStorage, 'local'],
