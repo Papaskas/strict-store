@@ -17,54 +17,36 @@ export const strictJson: SerializerPort = {
   stringify<T extends StoreKey<Persistable>>(value: T['__type']): string {
     return JSON.stringify(value, replacer);
   },
-}
+};
 
-const replacer = (
-  key: string,
-  value: Persistable,
-): Persistable => {
-  if (typeof value === 'bigint')
-    return complexTypeMappers.bigint(value)
-
-  else if (value instanceof Map)
-    return complexTypeMappers.map(value)
-
-  else if (value instanceof Set)
-    return complexTypeMappers.set(value)
-
-  else if (typedArrayPolicy.isTypedArray(value))
-    return complexTypeMappers.typedArray(value)
-
-  else
-    return value
-}
+const replacer = (key: string, value: Persistable): Persistable => {
+  if (typeof value === 'bigint') return complexTypeMappers.bigint(value);
+  else if (value instanceof Map) return complexTypeMappers.map(value);
+  else if (value instanceof Set) return complexTypeMappers.set(value);
+  else if (typedArrayPolicy.isTypedArray(value)) return complexTypeMappers.typedArray(value);
+  else return value;
+};
 
 /**
  * @param value - All except complex types, they are stored in a different form.
  * */
 const reviver = (
   key: string,
-  value:
-    | NativePersistable
-    | ComplexTypeData // ExtendedPersistable -> ComplexTypeData
+  value: NativePersistable | ComplexTypeData, // ExtendedPersistable -> ComplexTypeData
 ): Persistable => {
-  if (
-    value !== null &&
-    typeof value === 'object' &&
-    '__type' in value &&
-    'value' in value
-  ) {
-    const typeName = (value as ComplexTypeData).__type
+  if (value !== null && typeof value === 'object' && '__type' in value && 'value' in value) {
+    const typeName = (value as ComplexTypeData).__type;
 
     switch (typeName) {
       case 'bigint':
-        return BigInt((value.value) as bigint)
+        return BigInt(value.value as bigint);
       case 'map':
-        return new Map((value.value) as Map<Persistable, Persistable>)
+        return new Map(value.value as Map<Persistable, Persistable>);
       case 'set':
-        return new Set((value.value) as Set<Persistable>)
+        return new Set(value.value as Set<Persistable>);
       case 'typedArray': {
-        const Ctor = TYPED_ARRAY_CONSTRUCTORS[value.subtype as keyof typeof TYPED_ARRAY_CONSTRUCTORS];
+        const Ctor =
+          TYPED_ARRAY_CONSTRUCTORS[value.subtype as keyof typeof TYPED_ARRAY_CONSTRUCTORS];
         if (!Ctor) throw new Error(`Unsupported TypedArray type: ${value.subtype}`);
 
         const ta = value.value as TypedArray;
@@ -74,12 +56,12 @@ const reviver = (
       }
 
       default:
-        throw new Error(`Unknown __type: ${typeName}`)
+        throw new Error(`Unknown __type: ${typeName}`);
     }
   }
 
   return value;
-}
+};
 
 const toArrayBuffer = (view: ArrayBufferView): ArrayBuffer => {
   // view.buffer is ArrayBufferLike = ArrayBuffer | SharedArrayBuffer
@@ -90,4 +72,4 @@ const toArrayBuffer = (view: ArrayBufferView): ArrayBuffer => {
   const ab = new ArrayBuffer(view.byteLength);
   new Uint8Array(ab).set(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
   return ab;
-}
+};

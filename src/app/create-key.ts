@@ -28,15 +28,14 @@ export const createKey = <T extends Persistable>(
   storeType: StoreType = 'local',
 ): StoreKey<T> => {
   if (ns.includes(':') || name.includes(':'))
-    throw new Error('Namespace and name must not contain the ":" character.')
-
-  else if(ns.length === 0 || name.length === 0)
-    throw new Error('The name or namespace cannot be empty.')
+    throw new Error('Namespace and name must not contain the ":" character.');
+  else if (ns.length === 0 || name.length === 0)
+    throw new Error('The name or namespace cannot be empty.');
 
   return {
     ns: ns,
     name: name,
     storeType: storeType,
-    __type: {} as T
-  } as const satisfies StoreKey<T>
-}
+    __type: {} as T,
+  } as const satisfies StoreKey<T>;
+};

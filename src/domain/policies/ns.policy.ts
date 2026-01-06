@@ -25,10 +25,7 @@ export const nsPolicy = {
    * // ['strict-store/']
    * ```
    */
-  resolveNamespacePrefixes: (
-    prefix: string,
-    ns: NonEmptyTuple<string>,
-  ): string[] => {
-    return ns.map(n => `${prefix}/${n}:`)
-  }
-}
+  resolveNamespacePrefixes: (prefix: string, ns: NonEmptyTuple<string>): string[] => {
+    return ns.map((n) => `${prefix}/${n}:`);
+  },
+};

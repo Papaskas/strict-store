@@ -31,8 +31,7 @@ export const keyPolicy = {
    * // → true
    * ```
    */
-  isStrictStoreKey: (rawKey: string, ns: string[]): boolean =>
-    ns.some(p => rawKey.startsWith(p)),
+  isStrictStoreKey: (rawKey: string, ns: string[]): boolean => ns.some((p) => rawKey.startsWith(p)),
 
   /**
    * Creates a full storage key name for StrictStore by combining namespace and name.
@@ -75,19 +74,16 @@ export const keyPolicy = {
    * // }
    * ```
    */
-  parseStoreKey: (
-    raw: string,
-    storeType: StoreType
-  ): StoreKey<Persistable> | null =>{
-    const m = KEY_PATTERN.exec(raw)
-    if (!m) return null
+  parseStoreKey: (raw: string, storeType: StoreType): StoreKey<Persistable> | null => {
+    const m = KEY_PATTERN.exec(raw);
+    if (!m) return null;
 
-    const [, nsPart, namePart] = m
+    const [, nsPart, namePart] = m;
     return {
       ns: nsPart,
       name: namePart,
       storeType,
       __type: undefined as any,
-    }
+    };
   },
 };

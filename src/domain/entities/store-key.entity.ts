@@ -18,4 +18,3 @@ export type StoreKey<T extends Persistable> = {
   readonly storeType: StoreType;
   readonly __type: T;
 };
-

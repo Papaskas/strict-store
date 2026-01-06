@@ -7,11 +7,12 @@
 > 📝 **Strict Store** — Strongly typed wrapper for localStorage and sessionStorage with namespace isolation and automatic serialization.
 
 ## ✨ Features
+
 - 🛡 **Full Type Safety** — Compile-time type checking for all operations
 - 🧠 **Smart Serialization** — Automatic handling of:
-    - Primitive types
-    - Complex types
-    - TypedArray
+  - Primitive types
+  - Complex types
+  - TypedArray
 - 🗂 **Namespace Isolation** — Prevent name collisions with hierarchical organization
 - ⚡ **Dual Storage Support** — Switch between localStorage (persistent) and sessionStorage (session-based)
 - 🗃 **Batch Operations** — Save, remove, or pick multiple keys at once
@@ -74,7 +75,7 @@ const localKey = createKey( , , 'local');
 const sessionKey = createKey( , , 'session');
 ```
 
-##  🚀 Quick start
+## 🚀 Quick start
 
 ```typescript
 import { createKey, StrictStore } from 'strict-store';
@@ -82,12 +83,13 @@ import { createKey, StrictStore } from 'strict-store';
 // Create keys for different namespaces and storage types
 const themeKey = createKey<'light' | 'dark'>('app', 'theme', 'local');
 const langKey = createKey<'en' | 'fr'>('app', 'lang', 'session');
-const userKey = createKey<{ name: string; age: number; }>('app', 'user', 'local');
+const userKey = createKey<{ name: string; age: number }>('app', 'user', 'local');
 
 StrictStore.save(themeKey, 'dark'); // Save with type checking
-StrictStore.saveBatch([ // Batch operations
+StrictStore.saveBatch([
+  // Batch operations
   [themeKey, 'light'],
-  [langKey, 'en']
+  [langKey, 'en'],
 ]);
 
 // Merge partial object (⚠️ cannot initialize, only update existing object)
@@ -97,8 +99,8 @@ const themeValue: 'light' | 'dark' | null = StrictStore.get(themeKey); // Retrie
 const [theme, lang] = StrictStore.pick([themeKey, langKey]); // Retrieve batch of values
 
 // Get all items or by namespace
-const entries: { key, value }[] = StrictStore.entries();
-const appEntries: { key, value }[] = StrictStore.entries(['app']);
+const entries: { key; value }[] = StrictStore.entries();
+const appEntries: { key; value }[] = StrictStore.entries(['app']);
 
 // Get all keys or by namespace
 const keys = StrictStore.keys();
@@ -120,14 +122,20 @@ StrictStore.clear();
 StrictStore.clear(['app']);
 
 // Iterate over all items or by namespace
-StrictStore.forEach((key, value) => {
-  console.log(key, value);
-}, ['app']);
+StrictStore.forEach(
+  (key, value) => {
+    console.log(key, value);
+  },
+  ['app'],
+);
 
 // Listen for changes keys or ns
-const unsubscribe = StrictStore.onChange((key, newValue, oldValue) => {
-  // ...
-}, [themeKey]); // keys or ns
+const unsubscribe = StrictStore.onChange(
+  (key, newValue, oldValue) => {
+    // ...
+  },
+  [themeKey],
+); // keys or ns
 
 // Unsubscribe from changes
 unsubscribe();
@@ -139,6 +147,7 @@ unsubscribe();
 > See the [Wiki](https://github.com/Papaskas/strict-store/wiki) for detailed usage, types, and advanced examples.
 
 ### 🗝️ createKey
+
 ```typescript
   createKey<T>(
     namespace: string, // namespace for key
@@ -148,11 +157,12 @@ unsubscribe();
 ```
 
 ### 🛠️ StrictStore methods
+
 ```typescript
 StrictStore
   .get<T extends Persistable>(key: StoreKey<T>): T | null
   // Retrieve a value by key
-  
+
   .pick<const K extends readonly StoreKey<Persistable>[]>(
     keys: K
   ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never }
@@ -201,33 +211,28 @@ StrictStore
 **Arrays:**
 
 ```typescript
-const tagsKey = createKey<string[]>(
-  'app', 
-  'tags',
-);
+const tagsKey = createKey<string[]>('app', 'tags');
 
 StrictStore.save(tagsKey, ['ts', 'storage', 'util']); // string[] preserved
 ```
 
 **Objects:**
+
 ```typescript
 type User = {
   id: number;
   name: string;
   settings: {
-    darkMode: boolean
-  }
+    darkMode: boolean;
+  };
 };
 
-const userKey = createKey<User>(
-  'app',
-  'user',
-);
+const userKey = createKey<User>('app', 'user');
 
 StrictStore.save(userKey, {
   id: 1,
   name: 'Alex',
-  settings: { darkMode: true }
+  settings: { darkMode: true },
 }); // Structure is type-checked
 ```
 
@@ -247,6 +252,7 @@ This ensures data isolation and prevents accidental conflicts with other librari
 - Lodash is used under the hood.
 
 ## ⚙️ Requirements
+
 - TypeScript >= 4.9.0
 
 ## 📚 Full documentation

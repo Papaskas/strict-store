@@ -32,20 +32,18 @@ export const onChangePolicy = {
    * ```
    */
   resolveTargets: (target?: StoreKey<Persistable>[] | string[]) => {
-    if (!target) return { keyNames: undefined, nsPrefixes: undefined }
-    if (target.length === 0) return { keyNames: [], nsPrefixes: [] }
+    if (!target) return { keyNames: undefined, nsPrefixes: undefined };
+    if (target.length === 0) return { keyNames: [], nsPrefixes: [] };
 
     if (typeof target[0] === 'string') {
       return {
         keyNames: undefined,
-        nsPrefixes: (target as string[]).map(ns => `strict-store/${ns}:`),
+        nsPrefixes: (target as string[]).map((ns) => `strict-store/${ns}:`),
       };
     }
 
     return {
-      keyNames: (target as StoreKey<Persistable>[]).map(k =>
-        keyPolicy.makeKey(k.ns, k.name),
-      ),
+      keyNames: (target as StoreKey<Persistable>[]).map((k) => keyPolicy.makeKey(k.ns, k.name)),
       nsPrefixes: undefined,
     };
   },
@@ -78,11 +76,13 @@ export const onChangePolicy = {
     keyNames?: string[],
     nsPrefixes?: string[],
   ): boolean => {
-    if (!event.key || !event.key.startsWith('strict-store/')) return false
-    else if (keyNames && keyNames.length > 0 && !keyNames.includes(event.key)) return false
+    if (!event.key || !event.key.startsWith('strict-store/')) return false;
+    else if (keyNames && keyNames.length > 0 && !keyNames.includes(event.key)) return false;
 
-    return !(nsPrefixes &&
+    return !(
+      nsPrefixes &&
       nsPrefixes.length > 0 &&
-      !nsPrefixes.some(prefix => event.key!.startsWith(prefix)));
+      !nsPrefixes.some((prefix) => event.key!.startsWith(prefix))
+    );
   },
 };

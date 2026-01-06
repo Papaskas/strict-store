@@ -1,9 +1,6 @@
 import { KeyValueStoragePort } from '@src/app/ports/key-value-storage.port';
 
-export const webStorageAdapter = (
-  storage: Storage
-): KeyValueStoragePort => ({
-
+export const webStorageAdapter = (storage: Storage): KeyValueStoragePort => ({
   get: (key) => storage.getItem(key),
 
   set: (key, value) => storage.setItem(key, value),

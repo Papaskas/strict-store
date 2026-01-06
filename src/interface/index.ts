@@ -5,7 +5,4 @@ import { strictJson } from '@src/infrastructure/adapters/serialization/serializa
 
 const StrictStore = new StrictStoreService(new WebStorageProvider(), strictJson);
 
-export {
-  StrictStore,
-  createKey,
-}
+export { StrictStore, createKey };

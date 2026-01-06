@@ -76,13 +76,12 @@ export class StrictStoreService {
    * ```
    */
   pick<const K extends readonly StoreKey<Persistable>[]>(
-    keys: K
+    keys: K,
   ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never } {
-    const out: unknown[] = new Array(keys.length)
-    for (let i = 0; i < keys.length; i++)
-      out[i] = this.get(keys[i]);
+    const out: unknown[] = new Array(keys.length);
+    for (let i = 0; i < keys.length; i++) out[i] = this.get(keys[i]);
 
-    return out as { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never }
+    return out as { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never };
   }
 
   /**
@@ -104,10 +103,7 @@ export class StrictStoreService {
   save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void {
     const storage = this.storageProvider.get(key.storeType);
 
-    storage.set(
-      keyPolicy.makeKey(key.ns, key.name),
-      this.serializer.stringify(value)
-    );
+    storage.set(keyPolicy.makeKey(key.ns, key.name), this.serializer.stringify(value));
   }
 
   /**
@@ -127,22 +123,19 @@ export class StrictStoreService {
    * ]);
    * ```
    */
-  saveBatch<
-    Pairs extends readonly [StoreKey<Persistable>, Persistable][]
-  >(
+  saveBatch<Pairs extends readonly [StoreKey<Persistable>, Persistable][]>(
     entries: Pairs & {
       [K in keyof Pairs]: Pairs[K] extends [infer Key, unknown]
         ? Key extends StoreKey<infer T>
           ? [Key, T]
           : never
-        : never
-    }
+        : never;
+    },
   ): void {
-    for (const [key, value] of entries)
-      this.save(key as any, value);
+    for (const [key, value] of entries) this.save(key, value);
   }
 
- /**
+  /**
    * Merges a partial value into an existing object stored under the specified key.
    * @public
    *
@@ -172,15 +165,13 @@ export class StrictStoreService {
    * - Use {@link StrictStore.save} if you need to completely overwrite the object
    *   rather than partially merging.
    * */
-  merge<T extends Record<string, Persistable>>(
-    key: StoreKey<T>,
-    partial: DeepPartial<T>
-  ): void {
+  merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void {
     const value = this.get(key);
 
     if (!value)
-      throw new Error('StrictStore.merge: Cannot initialize the object. Use StrictStore.save for initial value.');
-
+      throw new Error(
+        'StrictStore.merge: Cannot initialize the object. Use StrictStore.save for initial value.',
+      );
     else if (typeof value !== 'object' || Array.isArray(value))
       throw new Error('StrictStore.merge: Can only merge into plain objects');
 
@@ -204,10 +195,7 @@ export class StrictStoreService {
    * ```
    */
   forEach(
-    callback: (
-      key: StoreKey<Persistable>,
-      value: Persistable,
-    ) => void,
+    callback: (key: StoreKey<Persistable>, value: Persistable) => void,
     ns?: NonEmptyTuple<string>,
   ): void {
     this.entries(ns).forEach(({ key, value }) => {
@@ -249,33 +237,32 @@ export class StrictStoreService {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event
    */
   onChange(
-    callback: (
-      key: StoreKey<Persistable>,
-      newValue: Persistable,
-      oldValue: Persistable,
-    ) => void,
+    callback: (key: StoreKey<Persistable>, newValue: Persistable, oldValue: Persistable) => void,
     target?: StoreKey<Persistable>[] | string[],
   ) {
-    const { keyNames, nsPrefixes } = onChangePolicy.resolveTargets(target)
+    const { keyNames, nsPrefixes } = onChangePolicy.resolveTargets(target);
 
     const handler = (e: StorageEvent) => {
-      if (!onChangePolicy.isStrictStoreEvent(e, keyNames, nsPrefixes)) return
+      if (!onChangePolicy.isStrictStoreEvent(e, keyNames, nsPrefixes)) return;
 
-      const storeKey = keyPolicy.parseStoreKey(e.key!, e.storageArea === localStorage ? 'local' : 'session')
-      if (!storeKey) return
+      const storeKey = keyPolicy.parseStoreKey(
+        e.key!,
+        e.storageArea === localStorage ? 'local' : 'session',
+      );
+      if (!storeKey) return;
 
       callback(
         storeKey,
         e.newValue !== null ? this.serializer.parse(e.newValue) : null,
         e.oldValue !== null ? this.serializer.parse(e.oldValue) : null,
-      )
-    }
+      );
+    };
 
-    window.addEventListener('storage', handler)
+    window.addEventListener('storage', handler);
 
     return () => {
-      window.removeEventListener('storage', handler)
-    }
+      window.removeEventListener('storage', handler);
+    };
   }
 
   /**
@@ -299,13 +286,12 @@ export class StrictStoreService {
   has(key: StoreKey<Persistable>): boolean;
   has(key: NonEmptyTuple<StoreKey<Persistable>>): boolean[];
   has(
-    keyOrKeys: StoreKey<Persistable> | NonEmptyTuple<StoreKey<Persistable>>
+    keyOrKeys: StoreKey<Persistable> | NonEmptyTuple<StoreKey<Persistable>>,
   ): boolean | boolean[] {
     if (tuplePolicy.isNonEmptyTuple(keyOrKeys)) {
-      return keyOrKeys.map(storeKey => {
+      return keyOrKeys.map((storeKey) => {
         return this.get(storeKey) !== null;
-      })
-
+      });
     } else return this.get(keyOrKeys) !== null;
   }
 
@@ -362,42 +348,38 @@ export class StrictStoreService {
    * - Scans both localStorage and sessionStorage.
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    */
-  entries(
-    ns?: NonEmptyTuple<string>
-  ): { key: StoreKey<Persistable>, value: Persistable }[] {
+  entries(ns?: NonEmptyTuple<string>): { key: StoreKey<Persistable>; value: Persistable }[] {
     const prefixes: string[] =
-      ns === undefined
-        ? [`${KEY_PREFIX}/`]
-        : nsPolicy.resolveNamespacePrefixes(KEY_PREFIX, ns);
+      ns === undefined ? [`${KEY_PREFIX}/`] : nsPolicy.resolveNamespacePrefixes(KEY_PREFIX, ns);
 
     const storages: [Storage, StoreType][] = [
       [localStorage, 'local'],
       [sessionStorage, 'session'],
-    ]
+    ];
 
-    const result: { key: StoreKey<Persistable>; value: Persistable }[] = []
+    const result: { key: StoreKey<Persistable>; value: Persistable }[] = [];
 
     for (let s = 0; s < storages.length; s++) {
-      const [storage, storageType] = storages[s]
+      const [storage, storageType] = storages[s];
 
       for (let i = 0; i < storage.length; i++) {
         const rawKey = storage.key(i);
-        if (!rawKey || !keyPolicy.isStrictStoreKey(rawKey, prefixes)) continue
+        if (!rawKey || !keyPolicy.isStrictStoreKey(rawKey, prefixes)) continue;
 
         const valueStr = storage.getItem(rawKey);
-        if (!valueStr) continue
+        if (!valueStr) continue;
 
-        const storeKey = keyPolicy.parseStoreKey(rawKey, storageType)
-        if (!storeKey) continue
+        const storeKey = keyPolicy.parseStoreKey(rawKey, storageType);
+        if (!storeKey) continue;
 
         result.push({
           key: storeKey,
           value: this.serializer.parse(valueStr),
-        })
+        });
       }
     }
 
-    return result
+    return result;
   }
 
   /**
@@ -448,7 +430,7 @@ export class StrictStoreService {
    * - The returned StoreKey objects include ns, name, storeType, and __type.
    */
   keys(ns?: NonEmptyTuple<string>): StoreKey<Persistable>[] {
-    return this.entries(ns).map(({ key } ) => key)
+    return this.entries(ns).map(({ key }) => key);
   }
 
   /**
@@ -468,7 +450,6 @@ export class StrictStoreService {
    */
   clear(ns?: NonEmptyTuple<string>): void {
     const items = this.entries(ns);
-    for (const { key } of items)
-      this.remove([key]);
+    for (const { key } of items) this.remove([key]);
   }
 }

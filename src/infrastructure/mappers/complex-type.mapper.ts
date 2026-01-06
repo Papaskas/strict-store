@@ -58,10 +58,10 @@ const TypedArrayMapper = (value: TypedArray): ComplexTypeData => {
  */
 const processTypedArray = (value: TypedArray): Persistable[] => {
   if (value instanceof BigInt64Array || value instanceof BigUint64Array)
-    return Array.from(value).map(n => n.toString());
+    return Array.from(value).map((n) => n.toString());
 
   return Array.from(value);
-}
+};
 
 /**
  * An object containing mappers for various complex types.
@@ -71,4 +71,4 @@ export const complexTypeMappers = {
   map: (val: Map<Persistable, Persistable>) => MapMapper(val),
   set: (val: Set<Persistable>) => SetMapper(val),
   typedArray: (val: TypedArray) => TypedArrayMapper(val),
-}
+};

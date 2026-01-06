@@ -43,6 +43,4 @@ export type AdvancedPersistable =
  *
  * @public
  */
-export type Persistable =
-  | NativePersistable
-  | AdvancedPersistable;
+export type Persistable = NativePersistable | AdvancedPersistable;
