@@ -367,9 +367,6 @@ export class StrictStoreService {
   entries(
     ns?: NonEmptyTuple<string>
   ): { key: StoreKey<Persistable>, value: Persistable }[] {
-    if (Array.isArray(ns) && ns.length === 0)
-      return []
-
     const prefixes: string[] =
       ns === undefined
         ? [`${KEY_PREFIX}/`]
@@ -387,11 +384,10 @@ export class StrictStoreService {
 
       for (let i = 0; i < storage.length; i++) {
         const rawKey = storage.key(i);
-        if (!rawKey) continue
-        if (!keyPolicy.isStrictStoreKey(rawKey, prefixes)) continue
+        if (!rawKey || !keyPolicy.isStrictStoreKey(rawKey, prefixes)) continue
 
         const valueStr = storage.getItem(rawKey);
-        if (valueStr === null) continue
+        if (!valueStr) continue
 
         const storeKey = keyPolicy.parseStoreKey(rawKey, storageType)
         if (!storeKey) continue
