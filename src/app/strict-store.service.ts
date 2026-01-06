@@ -139,9 +139,8 @@ export class StrictStoreService {
         : never
     }
   ): void {
-    for (const [key, value] of entries) {
-      StrictStore.save(key as any, value);
-    }
+    for (const [key, value] of entries)
+      this.save(key as any, value);
   }
 
  /**
