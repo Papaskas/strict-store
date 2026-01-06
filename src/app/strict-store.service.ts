@@ -466,8 +466,8 @@ export class StrictStoreService {
    * @remarks
    * it only works in StrictStore
    */
-    const items = StrictStore.entries(ns);
   clear(ns?: NonEmptyTuple<string>): void {
+    const items = this.entries(ns);
     for (const { key } of items)
       this.remove([key]);
   }
