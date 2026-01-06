@@ -1,4 +1,4 @@
-import { StrictStore } from '../src/interface';
+import { StrictStore } from '../src/index.module';
 import { keys } from './entities/key.entities';
 
 describe('StrictStore', () => {

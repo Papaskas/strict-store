@@ -1,4 +1,4 @@
-import { createKey } from '../../src/interface';
+import { createKey } from '../../src/index.module';
 
 export const keys = {
   stringKey: createKey<string>('test-ns', 'string'),

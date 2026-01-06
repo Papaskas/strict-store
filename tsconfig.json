@@ -13,8 +13,11 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["src/*"],
-      "@test/*": ["test/*"]
+      "@module": ["src/index.module.ts"],
+      "@test/*": ["test/*"],
+      "@core/*": ["src/modules/core/*"],
+      "@strict-store/*": ["src/modules/strict-store/*"],
+      "@strict-json/*": ["src/modules/strict-json/*"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
