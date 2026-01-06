@@ -64,9 +64,9 @@ const processTypedArray = (value: TypedArray): Persistable[] => {
 };
 
 /**
- * An object containing mappers for various complex types.
+ * An object containing encoders for various complex types.
  */
-export const complexTypeMappers = {
+export const complexTypeEncoders = {
   bigint: (val: bigint) => BigIntMapper(val),
   map: (val: Map<Persistable, Persistable>) => MapMapper(val),
   set: (val: Set<Persistable>) => SetMapper(val),
