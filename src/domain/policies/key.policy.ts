@@ -1,29 +1,38 @@
-import { KEY_PATTERN } from '@src/domain/entities/key-pattern.entity';
+import { KEY_PATTERN } from '@src/domain/constants/key-pattern.constant';
 import { Persistable } from '@src/domain/entities/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key.entity';
 import { StoreType } from '@src/domain/entities/store-type.entity';
+import { KEY_PREFIX } from '@src/domain/constants/key-prefix.contant';
+import { NonEmptyTuple } from 'type-fest';
 
 export const keyPolicy = {
   /**
-   * Checks whether a raw storage key is managed by {@link StrictStore}.
+   * Determines whether a given storage key is owned by StrictStore.
    *
-   * The method validates that the given key starts with at least one of the allowed
-   * StrictStore prefixes (e.g. `"strict-store/user:"`).
+   * A key is considered managed by StrictStore if it starts with
+   * at least one of the provided namespace prefixes.
+   *
+   * This check is purely lexical and does not validate key structure
+   * beyond prefix matching.
    *
    * @internal
    *
-   * @param raw - Raw storage key string as retrieved from `localStorage.key()` or `sessionStorage.key()`.
-   * @param prefixes - One or more allowed StrictStore prefixes to match against.
-   * @returns `true` if the key belongs to StrictStore and matches any prefix, otherwise `false`.
+   * @param rawKey - Full key string obtained from a Web Storage backend
+   * (`localStorage` or `sessionStorage`).
+   * @param ns - One or more StrictStore namespace prefixes
+   * used to identify managed keys.
+   *
+   * @returns `true` if the storage key starts with any of the namespace prefixes;
+   * otherwise `false`.
    *
    * @example
    * ```ts
-   * const isValid = keyPolicy.isStrictStoreKey('strict-store/user:123', ['strict-store/user:']);
+   * const result: boolean = keyPolicy.isStrictStoreKey('strict-store/user:profile', ['strict-store/user:']);
    * // → true
    * ```
    */
-  isStrictStoreKey: (raw: string, prefixes: string[]) =>
-    prefixes.some(p => raw.startsWith(p)),
+  isStrictStoreKey: (rawKey: string, ns: string[]): boolean =>
+    ns.some(p => rawKey.startsWith(p)),
 
   /**
    * Creates a full storage key name for StrictStore by combining namespace and name.
@@ -36,11 +45,11 @@ export const keyPolicy = {
    *
    * @example
    * ```ts
-   * const fullName = keyPolicy.makeFullName('user', '123');
+   * const fullName = keyPolicy.makeKey('user', '123');
    * // → 'strict-store/user:123'
    * ```
    */
-  makeFullName: (ns: string, name: string) => `strict-store/${ns}:${name}`,
+  makeKey: (ns: string, name: string) => `${KEY_PREFIX}/${ns}:${name}`,
 
   /**
    * Parses a raw storage key into a strongly typed {@link StoreKey} structure.

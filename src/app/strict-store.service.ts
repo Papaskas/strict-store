@@ -51,7 +51,7 @@ export class StrictStoreService {
    */
   get<T extends Persistable>(key: StoreKey<T>): T | null {
     const storage = this.storageProvider.get(key.storeType);
-    const raw = storage.get(keyPolicy.makeFullName(key.ns, key.name));
+    const raw = storage.get(keyPolicy.makeKey(key.ns, key.name));
 
     if (raw === null) return null;
     return this.serializer.parse<T>(raw);
@@ -101,7 +101,11 @@ export class StrictStoreService {
    */
   save<T extends StoreKey<Persistable>>(key: T, value: T["__type"]): void {
     const storage = this.storageProvider.get(key.storeType);
-    storage.set(keyPolicy.makeFullName(key.ns, key.name), this.serializer.stringify(value));
+
+    storage.set(
+      keyPolicy.makeKey(key.ns, key.name),
+      this.serializer.stringify(value)
+    );
   }
 
   /**
@@ -333,7 +337,7 @@ export class StrictStoreService {
   remove(keys: StoreKey<Persistable>[]): void {
     for (const key of keys) {
       const storage = this.storageProvider.get(key.storeType);
-      storage.remove(keyPolicy.makeFullName(key.ns, key.name));
+      storage.remove(keyPolicy.makeKey(key.ns, key.name));
     }
   }
 

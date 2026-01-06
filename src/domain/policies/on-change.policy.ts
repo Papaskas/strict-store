@@ -44,7 +44,7 @@ export const onChangePolicy = {
 
     return {
       keyNames: (target as StoreKey<Persistable>[]).map(k =>
-        keyPolicy.makeFullName(k.ns, k.name),
+        keyPolicy.makeKey(k.ns, k.name),
       ),
       nsPrefixes: undefined,
     };
