@@ -9,7 +9,6 @@ import { StorageProviderPort } from '@src/app/ports/storage-provider.port';
 import { StoreType } from '@src/domain/entities/store-type.entity';
 import { StrictStore } from '@src/interface';
 import { DeepPartial } from '@src/domain/entities/deep-partial.entity';
-import { strictJson } from '@src/infrastructure/adapters/serialization/serialization.adapter';
 import { onChangePolicy } from '../domain/policies/on-change.policy';
 import { NonEmptyTuple } from 'type-fest';
 
@@ -267,8 +266,8 @@ export class StrictStoreService {
 
       callback(
         storeKey,
-        e.newValue !== null ? strictJson.parse(e.newValue) : null,
-        e.oldValue !== null ? strictJson.parse(e.oldValue) : null,
+        e.newValue !== null ? this.serializer.parse(e.newValue) : null,
+        e.oldValue !== null ? this.serializer.parse(e.oldValue) : null,
       )
     }
 
