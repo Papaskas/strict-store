@@ -17,7 +17,7 @@ import { onChangePolicy } from '../domain/policies/on-change.policy';
  * @public
  *
  * @example
- * ```typescript
+ * ```ts
  * const themeKey = createKey<'light', 'dark'>('app', 'theme');
  *
  * StrictStore.save(themeKey, 'dark'); // Only the literal type is allowed
@@ -115,6 +115,9 @@ export class StrictStoreService {
    * @public
    *
    * @param entries - Array of [StoreKey, value] tuples
+   *
+   * const themeKey = createKey<'light' | 'dark'>('app', 'theme');
+   * const langKey = createKey<'en' | 'ru'>('app', 'lang');
    *
    * @example
    * ```ts
