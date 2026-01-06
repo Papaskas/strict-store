@@ -1,4 +1,4 @@
-import { KeyValueStoragePort } from '@strict-store/app/ports/key-value-storage.port';
+import { KeyValueStoragePort } from "@core/ports/key-value-storage.port";
 
 export const webStorageAdapter = (storage: Storage): KeyValueStoragePort => ({
   get: (key: string) => storage.getItem(key),

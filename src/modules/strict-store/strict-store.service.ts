@@ -8,9 +8,9 @@ import { StoreKey } from '@core/entities/store-key.entity';
 import { StoreType } from '@core/entities/store-type.entity';
 import { DeepPartial } from '@core/entities/deep-partial.entity';
 import { KEY_PREFIX } from '@core/constants/key-prefix.contant';
-import { SerializerPort } from '@strict-store/app/ports/serializer.port';
-import { StorageProviderPort } from '@strict-store/app/ports/storage-provider.port';
 import { NonEmptyTuple } from 'type-fest';
+import { SerializerPort } from '@core/ports/serializer.port';
+import { StorageProviderPort } from '@core/ports/storage-provider.port';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage

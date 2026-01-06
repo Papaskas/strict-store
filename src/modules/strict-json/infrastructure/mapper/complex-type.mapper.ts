@@ -1,6 +1,6 @@
 import { Persistable } from '@core/entities/persistable.entity';
-import { ComplexTypeData } from '@core/entities/complex-type.entity';
-import { TypedArray } from '@core/entities/typed-array.entity';
+import { ComplexTypeData } from '@strict-json/domain/entities/complex-type.entity';
+import { TypedArray } from 'type-fest';
 
 /**
  * Converts a bigint value to ComplexTypeData.

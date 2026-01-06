@@ -1,4 +1,4 @@
-import { TypedArray } from '@core/entities/typed-array.entity';
+import { TypedArray } from 'type-fest';
 
 export const typedArrayPolicy = {
   isTypedArray: (val: unknown): val is TypedArray =>

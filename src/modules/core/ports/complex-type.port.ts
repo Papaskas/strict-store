@@ -1,5 +1,5 @@
 import type { Persistable, NativePersistable } from '@core/entities/persistable.entity';
-import type { ComplexTypeData } from '@core/entities/complex-type.entity';
+import type { ComplexTypeData } from '@strict-json/domain/entities/complex-type.entity';
 
 export interface ComplexTypeCodecPort {
   /**
