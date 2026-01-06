@@ -8,10 +8,7 @@ import { complexTypeMappers } from '@strict-json/infrastructure/mapper/complex-t
 import { typedArrayUtils } from '@strict-json/infrastructure/utils/typed-array.utils';
 
 const isComplexPayload = (v: unknown): v is ComplexTypeData =>
-  v !== null &&
-  typeof v === 'object' &&
-  '__type' in (v as any) &&
-  'value' in (v as any);
+  v !== null && typeof v === 'object' && '__type' in (v as any) && 'value' in (v as any);
 
 export class ComplexTypeCodec implements ComplexTypeCodecPort {
   constructor(private readonly typedArrayRegistry: TypedArrayRegistryPort) {}
