@@ -11,6 +11,7 @@ import { DeepPartial } from '@src/domain/entities/deep-partial.entity';
 import { strictJson } from '@src/infrastructure/adapters/serialization/serialization.adapter';
 import { deepMerge } from '@src/domain/policies/merge.policy';
 import { onChangePolicy } from '../domain/policies/on-change.policy';
+import { NonEmptyTuple } from 'type-fest';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -215,7 +216,7 @@ export class StrictStoreService {
       key: StoreKey<Persistable>,
       value: Persistable,
     ) => void,
-    ns?: string[]
+    ns?: NonEmptyTuple<string>,
   ): void {
     this.entries(ns).forEach(({ key, value }) => {
       callback(key, value);
@@ -304,12 +305,14 @@ export class StrictStoreService {
    * - If the value is null, it returns false
    */
   has(key: StoreKey<Persistable>): boolean;
-  has(key: StoreKey<Persistable>[]): boolean[];
-  has(key: StoreKey<Persistable> | StoreKey<Persistable>[]): boolean | boolean[] {
     if (Array.isArray(key)) {
       return key.map(storeKey => {
         const storage = this.storageProvider.get(storeKey.storeType);
         return storage.get(keyPolicy.makeFullName(storeKey.ns, storeKey.name)) !== null;
+  has(key: NonEmptyTuple<StoreKey<Persistable>>): boolean[];
+  has(
+    keyOrKeys: StoreKey<Persistable> | NonEmptyTuple<StoreKey<Persistable>>
+  ): boolean | boolean[] {
       })
 
     } else {
@@ -339,7 +342,7 @@ export class StrictStoreService {
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  remove(keys: StoreKey<Persistable>[]): void {
+  remove(keys: NonEmptyTuple<StoreKey<Persistable>>): void {
     for (const key of keys) {
       const storage = this.storageProvider.get(key.storeType);
       storage.remove(keyPolicy.makeKey(key.ns, key.name));
@@ -373,7 +376,7 @@ export class StrictStoreService {
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    */
   entries(
-    ns?: string[]
+    ns?: NonEmptyTuple<string>
   ): { key: StoreKey<Persistable>, value: Persistable }[] {
     if (Array.isArray(ns) && ns.length === 0)
       return []
@@ -433,7 +436,7 @@ export class StrictStoreService {
    * }
    * ```
    */
-  size(ns?: string[]): number {
+  size(ns?: NonEmptyTuple<string>): number {
     return this.entries(ns).length;
   }
 
@@ -461,7 +464,7 @@ export class StrictStoreService {
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    * - The returned StoreKey objects include ns, name, storeType, and __type.
    */
-  keys(ns?: string[]): StoreKey<Persistable>[] {
+  keys(ns?: NonEmptyTuple<string>): StoreKey<Persistable>[] {
     return this.entries(ns).map(({ key } ) => key)
   }
 
@@ -480,8 +483,8 @@ export class StrictStoreService {
    * @remarks
    * it only works in StrictStore
    */
-  clear(ns?: string[]): void {
     const items = StrictStore.entries(ns);
+  clear(ns?: NonEmptyTuple<string>): void {
     for (const { key } of items)
       this.remove([key]);
   }
