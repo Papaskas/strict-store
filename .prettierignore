@@ -1,0 +1,9 @@
+dist
+coverage
+docs
+*.d.ts
+
+node_modules
+
+.idea
+.vscode
