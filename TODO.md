@@ -20,3 +20,20 @@
 - [ ] Create new tests
 - [ ] Merge Dependabot pull requests
 - [x] Set up ESLint configuration
+
+### Refactor
+
+- [ ] Split `strict-store.service` into multiple files
+- [ ] Refactor `serialization.adapter`
+- [ ] Refactor `deepMerge` method
+- [ ] Refactor return type in `parseStoreKey` method
+- [ ] Simplify `entries` method
+- [ ] Simplify `onChange` method
+- [ ] Refactor `DeepPartial` type
+- [ ] Refactor `ComplexTypesData` type
+
+### Docs
+
+- [ ] Add TSDoc to `deepMerge`
+- [ ] Add TSDoc to `tuplePolicy`
+- [ ] Add TSDoc to `typedArraypolicy`
