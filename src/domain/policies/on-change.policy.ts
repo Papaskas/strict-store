@@ -1,6 +1,7 @@
 import { Persistable } from '@src/domain/entities/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key.entity';
 import { keyPolicy } from '@src/domain/policies/key.policy';
+import { KEY_PREFIX } from '@src/domain/constants/key-prefix.contant';
 
 export const onChangePolicy = {
   /**
@@ -38,7 +39,7 @@ export const onChangePolicy = {
     if (typeof target[0] === 'string') {
       return {
         keyNames: undefined,
-        nsPrefixes: (target as string[]).map((ns) => `strict-store/${ns}:`),
+        nsPrefixes: (target as string[]).map((ns) => `${KEY_PREFIX}/${ns}:`),
       };
     }
 
@@ -76,7 +77,7 @@ export const onChangePolicy = {
     keyNames?: string[],
     nsPrefixes?: string[],
   ): boolean => {
-    if (!event.key || !event.key.startsWith('strict-store/')) return false;
+    if (!event.key || !event.key.startsWith(`${KEY_PREFIX}/`)) return false;
     else if (keyNames && keyNames.length > 0 && !keyNames.includes(event.key)) return false;
 
     return !(
