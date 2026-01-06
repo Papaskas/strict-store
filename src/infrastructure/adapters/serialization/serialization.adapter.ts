@@ -1,6 +1,6 @@
 import { complexTypeMappers } from '@src/infrastructure/mappers/complex-type.mapper';
 import { NativePersistable, Persistable } from '@src/domain/entities/persistable.entity';
-import { ComplexTypeData, ComplexTypeNames } from '@src/domain/entities/complex-type.entity';
+import { ComplexTypeData } from '@src/domain/entities/complex-type.entity';
 import { StoreKey } from '@src/domain/entities/store-key.entity';
 import { SerializerPort } from '@src/app/ports/serializer.port';
 import { TYPED_ARRAY_CONSTRUCTORS, TypedArray } from '@src/domain/entities/typed-array.entity';
