@@ -20,6 +20,7 @@
 - [ ] Create new tests
 - [ ] Merge Dependabot pull requests
 - [x] Set up ESLint configuration
+- [ ] Fix `baseUrl` in `tsconfig.json`
 
 ### Refactor
 
@@ -37,3 +38,8 @@
 - [ ] Add TSDoc to `deepMerge`
 - [ ] Add TSDoc to `tuplePolicy`
 - [ ] Add TSDoc to `typedArraypolicy`
+
+### Tests
+
+- [ ] Class `StrictStore` has interface `any`
+- [ ] Fix imports
