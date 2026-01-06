@@ -1,15 +1,15 @@
 import { tuplePolicy } from '@src/domain/policies/tuple.policy';
 import { keyPolicy } from '@src/domain/policies/key.policy';
 import { mergePolicy } from '@src/domain/policies/merge.policy';
+import { onChangePolicy } from '@src/domain/policies/on-change.policy';
 import { nsPolicy } from '@src/domain/policies/ns.policy';
 import { Persistable } from '@src/domain/entities/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key.entity';
+import { StoreType } from '@src/domain/entities/store-type.entity';
+import { DeepPartial } from '@src/domain/entities/deep-partial.entity';
+import { KEY_PREFIX } from '@src/domain/constants/key-prefix.contant';
 import { SerializerPort } from '@src/app/ports/serializer.port';
 import { StorageProviderPort } from '@src/app/ports/storage-provider.port';
-import { StoreType } from '@src/domain/entities/store-type.entity';
-import { StrictStore } from '@src/interface';
-import { DeepPartial } from '@src/domain/entities/deep-partial.entity';
-import { onChangePolicy } from '../domain/policies/on-change.policy';
 import { NonEmptyTuple } from 'type-fest';
 
 /**
@@ -55,7 +55,7 @@ export class StrictStoreService {
     const storage = this.storageProvider.get(key.storeType);
     const raw = storage.get(keyPolicy.makeKey(key.ns, key.name));
 
-    if (raw === null) return null;
+    if (!raw) return null;
     return this.serializer.parse<T>(raw);
   }
 
@@ -101,7 +101,7 @@ export class StrictStoreService {
    * StrictStore.save(themeKey, 'dark');
    * ```
    */
-  save<T extends StoreKey<Persistable>>(key: T, value: T["__type"]): void {
+  save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void {
     const storage = this.storageProvider.get(key.storeType);
 
     storage.set(
@@ -203,7 +203,7 @@ export class StrictStoreService {
    * }, ['namespace1', 'namespace2']);
    * ```
    */
-   forEach(
+  forEach(
     callback: (
       key: StoreKey<Persistable>,
       value: Persistable,
@@ -313,7 +313,6 @@ export class StrictStoreService {
    * Removes a name-value pair from storage.
    * @public
    *
-   * @typeParam T - Type parameter for StoreKey consistency
    * @param keys - StoreKey object identifying item to remove
    *
    * @example
