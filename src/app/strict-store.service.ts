@@ -298,20 +298,16 @@ export class StrictStoreService {
    * - If the value is null, it returns false
    */
   has(key: StoreKey<Persistable>): boolean;
-    if (Array.isArray(key)) {
-      return key.map(storeKey => {
-        const storage = this.storageProvider.get(storeKey.storeType);
-        return storage.get(keyPolicy.makeFullName(storeKey.ns, storeKey.name)) !== null;
   has(key: NonEmptyTuple<StoreKey<Persistable>>): boolean[];
   has(
     keyOrKeys: StoreKey<Persistable> | NonEmptyTuple<StoreKey<Persistable>>
   ): boolean | boolean[] {
+    if (tuplePolicy.isNonEmptyTuple(keyOrKeys)) {
+      return keyOrKeys.map(storeKey => {
+        return this.get(storeKey) !== null;
       })
 
-    } else {
-      const storage = this.storageProvider.get(key.storeType);
-      return storage.get(keyPolicy.makeFullName(key.ns, key.name)) !== null;
-    }
+    } else return this.get(keyOrKeys) !== null;
   }
 
   /**
