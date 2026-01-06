@@ -1,5 +1,6 @@
 import { tuplePolicy } from '@src/domain/policies/tuple.policy';
 import { keyPolicy } from '@src/domain/policies/key.policy';
+import { mergePolicy } from '@src/domain/policies/merge.policy';
 import { nsPolicy } from '@src/domain/policies/ns.policy';
 import { Persistable } from '@src/domain/entities/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key.entity';
@@ -9,7 +10,6 @@ import { StoreType } from '@src/domain/entities/store-type.entity';
 import { StrictStore } from '@src/interface';
 import { DeepPartial } from '@src/domain/entities/deep-partial.entity';
 import { strictJson } from '@src/infrastructure/adapters/serialization/serialization.adapter';
-import { deepMerge } from '@src/domain/policies/merge.policy';
 import { onChangePolicy } from '../domain/policies/on-change.policy';
 import { NonEmptyTuple } from 'type-fest';
 
@@ -178,22 +178,16 @@ export class StrictStoreService {
     key: StoreKey<T>,
     partial: DeepPartial<T>
   ): void {
-    const storage = this.storageProvider.get(key.storeType);
-    const fullKey = keyPolicy.makeFullName(key.ns, key.name);
-    const storedValue = storage.get(fullKey);
+    const value = this.get(key);
 
-    let current: T | null = null;
-    if (storedValue !== null)
-      current = strictJson.parse<T>(storedValue);
-
-    else if (current === null)
+    if (!value)
       throw new Error('StrictStore.merge: Cannot initialize the object. Use StrictStore.save for initial value.');
 
-    else if (typeof current !== 'object' || Array.isArray(current))
+    else if (typeof value !== 'object' || Array.isArray(value))
       throw new Error('StrictStore.merge: Can only merge into plain objects');
 
-    const merged = deepMerge(current, partial);
-    storage.set(fullKey, this.serializer.stringify(merged));
+    const merged = mergePolicy.deepMerge(value, partial);
+    this.save(key, merged);
   }
 
   /**
