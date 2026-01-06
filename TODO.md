@@ -19,3 +19,4 @@
 - [ ] Rewrite `README.md`
 - [ ] Create new tests
 - [ ] Merge Dependabot pull requests
+- [ ] Set up ESLint configuration
