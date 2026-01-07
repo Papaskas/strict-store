@@ -13,7 +13,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@module": ["src/index.module.ts"],
+      "strict-store": ["src/index.module.ts"],
       "@test/*": ["test/*"],
       "@core/*": ["src/modules/core/*"],
       "@strict-store/*": ["src/modules/strict-store/*"],

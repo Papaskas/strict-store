@@ -4,10 +4,10 @@ const config: Config.InitialOptions = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.ts?$': 'ts-jest',
   },
   moduleNameMapper: {
-    '^@src/(.*)$': '<rootDir>/src/$1',
+    '^strict-store$': '<rootDir>/src/index.module.ts',
     '^@test/(.*)$': '<rootDir>/test/$1',
     '^@core/(.*)$': '<rootDir>/src/modules/core/$1',
     '^@strict-store/(.*)$': '<rootDir>/src/modules/strict-store/$1',
