@@ -1,6 +1,7 @@
 import { Persistable } from '@core/entities/persistable.entity';
 import { StoreKey } from '@core/entities/store-key.entity';
 import { StoreType } from '@core/entities/store-type.entity';
+import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error/throws.messages';
 
 /**
  * Creates a type-safe store name object for use with StrictStore.
@@ -28,9 +29,9 @@ export const createKey = <T extends Persistable>(
   storeType: StoreType = 'local',
 ): StoreKey<T> => {
   if (ns.includes(':') || name.includes(':'))
-    throw new Error('Namespace and name must not contain the ":" character.');
+    throw new Error(STRICT_STORE_THROWS_MESSAGES.key.containsColon);
   else if (ns.length === 0 || name.length === 0)
-    throw new Error('The name or namespace cannot be empty.');
+    throw new Error(STRICT_STORE_THROWS_MESSAGES.key.emptyNameOrNamespace);
 
   return {
     ns: ns,

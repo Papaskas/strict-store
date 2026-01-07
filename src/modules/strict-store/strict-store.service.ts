@@ -9,6 +9,7 @@ import { DeepPartial } from '@core/entities/deep-partial.entity';
 import { KEY_PREFIX } from '@core/constants/key-prefix.constant';
 import { SerializerPort } from '@core/ports/serializer.port';
 import { StorageProviderPort } from '@core/ports/storage-provider.port';
+import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error/throws.messages';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -167,11 +168,9 @@ export class StrictStoreService {
     const value = this.get(key);
 
     if (!value)
-      throw new Error(
-        'StrictStore.merge: Cannot initialize the object. Use StrictStore.save for initial value.',
-      );
+      throw new Error(STRICT_STORE_THROWS_MESSAGES.merge.notInitialized);
     else if (typeof value !== 'object' || Array.isArray(value))
-      throw new Error('StrictStore.merge: Can only merge into plain objects');
+      throw new Error(STRICT_STORE_THROWS_MESSAGES.merge.targetNotPlainObject);
 
     const merged = mergePolicy.deepMerge(value, partial);
     this.save(key, merged);
