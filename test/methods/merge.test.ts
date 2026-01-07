@@ -1,5 +1,5 @@
 import { StrictStore } from 'strict-store';
-import { keys } from '@test/entities/key.entities'
+import { keys } from '@test/entities/key.entities';
 import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error/throws.messages';
 
 describe.skip('Merge method', () => {
@@ -15,7 +15,7 @@ describe.skip('Merge method', () => {
     expect(StrictStore.get(keys.userKey)).toEqual({
       name: 'Ivan',
       age: 31,
-      email: 'ivan@example.com'
+      email: 'ivan@example.com',
     });
   });
 
@@ -49,7 +49,10 @@ describe.skip('Merge method', () => {
 
     StrictStore.merge(keys.objectWithArray, { tags: ['typescript', 'store', 'util'] });
 
-    expect(StrictStore.get(keys.objectWithArray)).toEqual({ name: 'Alex', tags: ['typescript', 'store', 'util'] });
+    expect(StrictStore.get(keys.objectWithArray)).toEqual({
+      name: 'Alex',
+      tags: ['typescript', 'store', 'util'],
+    });
   });
 
   test('should merge object with Set property', () => {
@@ -64,16 +67,27 @@ describe.skip('Merge method', () => {
   });
 
   test('should merge object with Map property', () => {
-    StrictStore.save(keys.objectWithMap, { name: 'Carl', scores: new Map([['math', 5], ['eng', 4]]) });
+    StrictStore.save(keys.objectWithMap, {
+      name: 'Carl',
+      scores: new Map([
+        ['math', 5],
+        ['eng', 4],
+      ]),
+    });
 
-    StrictStore.merge(keys.objectWithMap, { scores: new Map([['fr', 4], ['sci', 3]]) });
+    StrictStore.merge(keys.objectWithMap, {
+      scores: new Map([
+        ['fr', 4],
+        ['sci', 3],
+      ]),
+    });
 
     const result = StrictStore.get(keys.objectWithMap);
     expect(result?.name).toBe('Carl');
     expect(result?.scores instanceof Map).toBe(true);
     expect(Array.from(result!.scores.entries())).toEqual([
       ['fr', 4],
-      ['sci', 3]
+      ['sci', 3],
     ]);
   });
 
@@ -82,15 +96,15 @@ describe.skip('Merge method', () => {
       user: {
         name: 'Dina',
         tags: ['a', 'b'],
-        permissions: new Set(['read'])
-      }
+        permissions: new Set(['read']),
+      },
     });
 
     StrictStore.merge(keys.objectWithArrayAndSet, {
       user: {
         tags: ['c'],
-        permissions: new Set(['write'])
-      }
+        permissions: new Set(['write']),
+      },
     });
 
     const result = StrictStore.get(keys.objectWithArrayAndSet);

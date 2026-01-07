@@ -15,7 +15,7 @@
   - TypedArray
 - 🗂 **Namespace Isolation** — Prevent name collisions with hierarchical organization
 - ⚡ **Dual Storage Support** — Switch between localStorage (persistent) and sessionStorage (session-based)
-- 🗃 **Batch Operations** — Save, remove, or pick multiple keys at once
+- 🗃 **Batch Operations** — Save, delete, or pick multiple keys at once
 - 🔄 **Merge & Partial Update** — Merge new values into stored objects
 - 🕵️ **Change Listeners** — Subscribe to storage changes
 - 🔍 **forEach & getByNamespace** — Iterate and filter by namespace
@@ -107,7 +107,7 @@ const keys = StrictStore.keys();
 const appKeys = StrictStore.keys(['app']);
 
 // Remove item
-StrictStore.remove([themeKey]);
+StrictStore.delete([themeKey]);
 
 // Check key
 const hasKey: boolean = StrictStore.has(themeKey);
@@ -143,7 +143,7 @@ unsubscribe();
 
 ## 📦 API Reference
 
-> Below is a summary of the main methods.  
+> Below is a summary of the main methods.
 > See the [Wiki](https://github.com/Papaskas/strict-store/wiki) for detailed usage, types, and advanced examples.
 
 ### 🗝️ createKey
@@ -180,7 +180,7 @@ StrictStore
   .saveBatch(entries: [StoreKey<Persistable>, Persistable][]): void
   // Save multiple pairs
 
-  .remove(keys: StoreKey<Persistable>[]): void
+  .delete(keys: StoreKey<Persistable>[]): void
   // Remove keys
 
   .has(key: StoreKey<Persistable>): boolean
@@ -238,7 +238,7 @@ StrictStore.save(userKey, {
 
 ## ⚠️ Key Isolation
 
-Strict Store **only works with keys created via the `createKey` function**.  
+Strict Store **only works with keys created via the `createKey` function**.
 Each key is automatically prefixed with a unique namespace, and the library only interacts with keys that have this prefix in `localStorage` or `sessionStorage`.
 
 Keys created outside Strict Store, or without the appropriate prefix, are **not visible** to the library and will not be processed.

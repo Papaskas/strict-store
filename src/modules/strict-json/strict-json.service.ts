@@ -14,6 +14,6 @@ export class StrictJsonSerializer implements SerializerPort {
   }
 
   stringify<T extends StoreKey<Persistable>>(value: T['__type']): string {
-    return JSON.stringify(value, (_k, v) => this.codec.encode(v as Persistable) ?? (v as any));
+    return JSON.stringify(value, (_k, v: Persistable) => this.codec.encode(v) ?? v);
   }
 }

@@ -17,17 +17,26 @@ describe('forEach method', () => {
     StrictStore.save(key2, 42);
     StrictStore.save(key3, true);
 
-    const seen: Array<{ key: StoreKey<Persistable>; value: unknown; }> = [];
+    const seen: Array<{ key: StoreKey<Persistable>; value: unknown }> = [];
     StrictStore.forEach((key, value) => {
       seen.push({ key, value });
     });
 
     expect(seen).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ key: expect.objectContaining({ ns: 'ns1', name: 'k1' }), value: 'foo' }),
-        expect.objectContaining({ key: expect.objectContaining({ ns: 'ns2', name: 'k2' }), value: 42 }),
-        expect.objectContaining({ key: expect.objectContaining({ ns: 'ns1', name: 'k3' }), value: true }),
-      ])
+        expect.objectContaining({
+          key: expect.objectContaining({ ns: 'ns1', name: 'k1' }),
+          value: 'foo',
+        }),
+        expect.objectContaining({
+          key: expect.objectContaining({ ns: 'ns2', name: 'k2' }),
+          value: 42,
+        }),
+        expect.objectContaining({
+          key: expect.objectContaining({ ns: 'ns1', name: 'k3' }),
+          value: true,
+        }),
+      ]),
     );
     expect(seen.length).toBe(3);
   });
@@ -38,14 +47,18 @@ describe('forEach method', () => {
     StrictStore.save(key1, 'v1');
     StrictStore.save(key2, 2);
 
-    const seen: Array<{ key: StoreKey<Persistable>, value: Persistable }> = [];
+    const seen: Array<{ key: StoreKey<Persistable>; value: Persistable }> = [];
     StrictStore.forEach((key, value) => {
       seen.push({ key, value });
     });
 
     expect(seen.length).toBe(2);
-    expect(seen.some(e => e.key.name === 'k1' && e.value === 'v1' && e.key.storeType === 'local')).toBe(true);
-    expect(seen.some(e => e.key.name === 'k2' && e.value === 2 && e.key.storeType === 'session')).toBe(true);
+    expect(
+      seen.some((e) => e.key.name === 'k1' && e.value === 'v1' && e.key.storeType === 'local'),
+    ).toBe(true);
+    expect(
+      seen.some((e) => e.key.name === 'k2' && e.value === 2 && e.key.storeType === 'session'),
+    ).toBe(true);
   });
 
   test('should filter by namespace if ns is provided as array', () => {
@@ -58,12 +71,15 @@ describe('forEach method', () => {
     StrictStore.save(key3, true);
 
     const seen: Array<{ key: StoreKey<Persistable>; value: unknown }> = [];
-    StrictStore.forEach((key, value) => {
-      seen.push({ key, value });
-    }, ['ns1']);
+    StrictStore.forEach(
+      (key, value) => {
+        seen.push({ key, value });
+      },
+      ['ns1'],
+    );
 
     expect(seen.length).toBe(2);
-    expect(seen.every(item => item.key.ns === 'ns1')).toBe(true);
+    expect(seen.every((item) => item.key.ns === 'ns1')).toBe(true);
   });
 
   test('should filter by multiple namespaces', () => {
@@ -75,13 +91,16 @@ describe('forEach method', () => {
     StrictStore.save(key2, 42);
     StrictStore.save(key3, true);
 
-    const seen: Array<{ key: StoreKey<Persistable>; value: unknown; }> = [];
-    StrictStore.forEach((key, value) => {
-      seen.push({ key, value });
-    }, ['ns1', 'ns3']);
+    const seen: Array<{ key: StoreKey<Persistable>; value: unknown }> = [];
+    StrictStore.forEach(
+      (key, value) => {
+        seen.push({ key, value });
+      },
+      ['ns1', 'ns3'],
+    );
 
     expect(seen.length).toBe(2);
-    expect(seen.map(item => item.key.ns).sort()).toEqual(['ns1', 'ns3']);
+    expect(seen.map((item) => item.key.ns).sort()).toEqual(['ns1', 'ns3']);
   });
 
   test('should not call callback for non-StrictStore keys', () => {

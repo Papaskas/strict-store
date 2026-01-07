@@ -27,9 +27,9 @@ describe('Size method', () => {
   test('passes ns through to entries(ns)', () => {
     const ns = ['user'];
 
-    const spy = jest.spyOn(StrictStore, 'entries').mockReturnValue([
-      { key: createKey('user', 'k'), value: 1 },
-    ]);
+    const spy = jest
+      .spyOn(StrictStore, 'entries')
+      .mockReturnValue([{ key: createKey('user', 'k'), value: 1 }]);
 
     StrictStore.size(ns);
 
@@ -48,14 +48,11 @@ describe('Size method', () => {
     expect(spy).toHaveBeenCalledWith(ns);
   });
 
-
   test('does not mutate the ns array', () => {
     const ns = ['user', 'settings'];
     const snapshot = [...ns];
 
-    const spy = jest
-      .spyOn(StrictStore, 'entries')
-      .mockReturnValue([]);
+    const spy = jest.spyOn(StrictStore, 'entries').mockReturnValue([]);
 
     StrictStore.size(ns);
 
@@ -65,7 +62,6 @@ describe('Size method', () => {
     // Ensure ns not mutated
     expect(ns).toEqual(snapshot);
   });
-
 
   test('has no side-effects on web storages (localStorage/sessionStorage)', () => {
     localStorage.setItem('x', '1');

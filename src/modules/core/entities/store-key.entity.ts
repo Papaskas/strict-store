@@ -10,7 +10,7 @@ import { StoreType } from '@core/entities/store-type.entity';
  * @param ns - Namespace prefix to prevent name collisions between modules
  * @param name - Name of the storage entry
  * @param key - Unique identifier within the ns
- * @param __type - Acceptable types for key
+ * @param __type - Acceptable types for a key
  * */
 export type StoreKey<T extends Persistable> = {
   readonly ns: string;

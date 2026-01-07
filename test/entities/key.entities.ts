@@ -24,6 +24,6 @@ export const keys = {
       name: string;
       tags: string[];
       permissions: Set<string>;
-    }
+    };
   }>('test-ns', 'complex'),
 } as const;

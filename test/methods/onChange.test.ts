@@ -46,7 +46,7 @@ describe.skip('OnChange method', () => {
           ns: key.ns,
           name: key.name,
           storeType: key.storeType,
-          __type: undefined
+          __type: undefined,
         });
         expect(newValue).toEqual(newVal);
         expect(oldValue).toEqual(oldVal);
@@ -82,10 +82,13 @@ describe.skip('OnChange method', () => {
       const key2 = createKey<string>('ns2', 'k2', 'local');
 
       let called = false;
-      const unsubscribe = StrictStore.onChange((changedKey) => {
-        expect(changedKey.ns).toBe('ns1');
-        called = true;
-      }, ['ns1']);
+      const unsubscribe = StrictStore.onChange(
+        (changedKey) => {
+          expect(changedKey.ns).toBe('ns1');
+          called = true;
+        },
+        ['ns1'],
+      );
 
       fireStorageEvent(key2, 'foo', 'bar');
       expect(called).toBe(false);
@@ -104,7 +107,7 @@ describe.skip('OnChange method', () => {
       const seen: string[] = [];
       const unsubscribe = StrictStore.onChange(
         (changedKey) => seen.push(changedKey.ns),
-        ['ns1', 'ns3']
+        ['ns1', 'ns3'],
       );
 
       fireStorageEvent(key1, 'v1', null);
@@ -125,7 +128,7 @@ describe.skip('OnChange method', () => {
           expect(changedKey.name).toBe('k1');
           called = true;
         },
-        [key1]
+        [key1],
       );
 
       fireStorageEvent(key2, 'foo', 'bar');
@@ -145,7 +148,7 @@ describe.skip('OnChange method', () => {
       const seen: string[] = [];
       const unsubscribe = StrictStore.onChange(
         (changedKey) => seen.push(changedKey.name),
-        [key1, key3]
+        [key1, key3],
       );
 
       fireStorageEvent(key1, 'new1', 'v1');

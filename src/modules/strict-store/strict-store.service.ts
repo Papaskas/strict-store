@@ -42,10 +42,7 @@ export class StrictStoreService {
    *
    * @example
    * ```ts
-   * const themeKey = createKey<'light', 'dark'>(
-   *  'app',
-   *  'theme',
-   * );
+   * const themeKey = createKey<'light', 'dark'>('app', 'theme');
    *
    * const theme: 'light' | 'dark' | null = StrictStore.get(themeKey);
    * ```
@@ -89,7 +86,7 @@ export class StrictStoreService {
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
    * @param key - StoreKey object containing ns and name
-   * @param value - Value to store (will be JSON.stringified)
+   * @param value - Value to store (will be JSON.stringify)
    *
    * @example
    * ```ts
@@ -140,7 +137,7 @@ export class StrictStoreService {
    *
    * @typeParam T - Type of the stored value (must be an object)
    * @param key - StoreKey object identifying the item to merge into
-   * @param partial - Partial object to merge
+   * @param partial - a Partial object to merge
    *
    * @example
    * ```ts
@@ -167,8 +164,7 @@ export class StrictStoreService {
   merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void {
     const value = this.get(key);
 
-    if (!value)
-      throw new Error(STRICT_STORE_THROWS_MESSAGES.merge.notInitialized);
+    if (!value) throw new Error(STRICT_STORE_THROWS_MESSAGES.merge.notInitialized);
     else if (typeof value !== 'object' || Array.isArray(value))
       throw new Error(STRICT_STORE_THROWS_MESSAGES.merge.targetNotPlainObject);
 
@@ -191,10 +187,7 @@ export class StrictStoreService {
    * }, ['namespace1', 'namespace2']);
    * ```
    */
-  forEach(
-    callback: (key: StoreKey<Persistable>, value: Persistable) => void,
-    ns?: string[],
-  ): void {
+  forEach(callback: (key: StoreKey<Persistable>, value: Persistable) => void, ns?: string[]): void {
     this.entries(ns).forEach(({ key, value }) => {
       callback(key, value);
     });
@@ -222,8 +215,7 @@ export class StrictStoreService {
    * const userKey = createKey<{name: string}>('user', 'profile');
    * const settingsKey = createKey<{theme: string}>('user', 'settings');
    *
-   * StrictStore.onChange(
-   *   (key, newValue, oldValue) => { ... },
+   * StrictStore.onChange((key, newValue, oldValue) => { ... },
    *   [userKey, settingsKey]
    * );
    *
@@ -282,11 +274,8 @@ export class StrictStoreService {
    */
   has(key: StoreKey<Persistable>): boolean;
   has(keys: StoreKey<Persistable>[]): boolean[];
-  has(
-    value: StoreKey<Persistable> | StoreKey<Persistable>[],
-  ): boolean | boolean[] {
-    if (Array.isArray(value))
-      return value.map((storeKey) => this.get(storeKey) !== null);
+  has(value: StoreKey<Persistable> | StoreKey<Persistable>[]): boolean | boolean[] {
+    if (Array.isArray(value)) return value.map((storeKey) => this.get(storeKey) !== null);
 
     return this.get(value) !== null;
   }
@@ -299,10 +288,7 @@ export class StrictStoreService {
    *
    * @example
    * ```ts
-   * const themeKey = createKey<'light', 'dark'>(
-   *  'app',
-   *  'theme',
-   * );
+   * const themeKey = createKey<'light', 'dark'>('app', 'theme');
    *
    * StrictStore.delete([themeKey]) // -> boolean[];
    * StrictStore.delete(themeKey) // -> boolean;
@@ -312,8 +298,8 @@ export class StrictStoreService {
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  delete(key: StoreKey<Persistable>): boolean
-  delete(keys: StoreKey<Persistable>[]): boolean[]
+  delete(key: StoreKey<Persistable>): boolean;
+  delete(keys: StoreKey<Persistable>[]): boolean[];
   delete(value: StoreKey<Persistable> | StoreKey<Persistable>[]): boolean | boolean[] {
     const isBatch = Array.isArray(value);
     const keys = isBatch ? value : [value];
@@ -358,7 +344,7 @@ export class StrictStoreService {
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    */
   entries(ns?: string[]): { key: StoreKey<Persistable>; value: Persistable }[] {
-    if(Array.isArray(ns) && ns.length === 0) return [];
+    if (Array.isArray(ns) && ns.length === 0) return [];
 
     const prefixes: string[] =
       ns === undefined ? [`${KEY_PREFIX}/`] : nsPolicy.resolveNamespacePrefixes(KEY_PREFIX, ns);
@@ -395,7 +381,7 @@ export class StrictStoreService {
 
   /**
    * Gets the total number of items in localStorage + sessionStorage, but **only from strict-store**.
-   * If ns is provided, counts only items from the specified namespaces.
+   * If ns is provided, count only items from the specified namespaces.
    * @public
    *
    * @param ns - (optional) Array of namespaces to filter by
@@ -422,7 +408,7 @@ export class StrictStoreService {
    *
    * @public
    * @param ns - (optional) Array of namespaces to filter keys (e.g., ['user', 'settings']).
-   *             If omitted, returns keys from all namespaces.
+   *             If omitted, return keys from all namespaces.
    * @returns Array of StoreKey objects for all stored items matching the filter.
    *
    * @example
@@ -455,17 +441,18 @@ export class StrictStoreService {
    * StrictStore.clear(); // Remove only strict-store keys
    * StrictStore.clear(['auth']); // Removes all strict-store 'auth:*' keys
    * ```
+   * @return keys of clears
    *
    * @remarks
    * it only works in StrictStore
    */
   clear(ns?: string[]): {
-    key: StoreKey<Persistable>
-    value: Persistable
+    key: StoreKey<Persistable>;
+    value: Persistable;
   }[] {
     const items = this.entries(ns);
     for (const { key } of items) this.delete([key]);
 
-    return items
+    return items;
   }
 }
