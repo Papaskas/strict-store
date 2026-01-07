@@ -194,7 +194,7 @@ export class StrictStoreService {
    */
   forEach(
     callback: (key: StoreKey<Persistable>, value: Persistable) => void,
-    ns?: NonEmptyTuple<string>,
+    ns?: string[],
   ): void {
     this.entries(ns).forEach(({ key, value }) => {
       callback(key, value);
@@ -296,7 +296,7 @@ export class StrictStoreService {
    * Removes a name-value pair from storage.
    * @public
    *
-   * @param keys - StoreKey object identifying item to remove
+   * @param key - StoreKey object identifying item to delete
    *
    * @example
    * ```ts
@@ -305,18 +305,31 @@ export class StrictStoreService {
    *  'theme',
    * );
    *
-   * StrictStore.remove([themeKey]);
+   * StrictStore.delete([themeKey]) // -> boolean[];
+   * StrictStore.delete(themeKey) // -> boolean;
    * ```
    *
    * @remarks
    * - Silent if name doesn't exist
    * - Namespace-aware operation
    */
-  remove(keys: NonEmptyTuple<StoreKey<Persistable>>): void {
-    for (const key of keys) {
+  delete(key: StoreKey<Persistable>): boolean
+  delete(keys: StoreKey<Persistable>[]): boolean[]
+  delete(value: StoreKey<Persistable> | StoreKey<Persistable>[]): boolean | boolean[] {
+    const isBatch = Array.isArray(value);
+    const keys = isBatch ? value : [value];
+
+    const results = keys.map((key) => {
       const storage = this.storageProvider.get(key.storeType);
-      storage.remove(keyPolicy.makeKey(key.ns, key.name));
-    }
+      const storageKey = keyPolicy.makeKey(key.ns, key.name);
+
+      const existed = storage.get(storageKey) !== null;
+      storage.remove(storageKey);
+
+      return existed;
+    });
+
+    return isBatch ? results : results[0];
   }
 
   /**
@@ -436,7 +449,7 @@ export class StrictStoreService {
    * Clears all **strict-store managed** items from localStorage and sessionStorage.
    * @public
    *
-   * @param ns - Namespace prefix to clear (e.g., 'user' will remove 'user:settings', 'user:data' etc.)
+   * @param ns - Namespace prefix to clear (e.g., 'user' will delete 'user:settings', 'user:data' etc.)
    *
    * @example
    * ```ts
@@ -449,6 +462,6 @@ export class StrictStoreService {
    */
   clear(ns?: string[]): void {
     const items = this.entries(ns);
-    for (const { key } of items) this.remove([key]);
+    for (const { key } of items) this.delete([key]);
   }
 }

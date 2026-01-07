@@ -4,7 +4,7 @@
 - [x] Add `saveBatch` method
 - [x] Add `pick` method
 - [x] Add `entries` method
-- [x] Add `remove` method
+- [x] Add `delete` method
 - [x] Add `merge` method - Merges a value into an existing object stored under the specified key
 - [x] Add `forEach` method - Iterates over all key-value pairs in the storage and executes a callback for each
 - [x] Add `onChange` method - Allows you to listen for changes to the storage (this may require additional implementation for event handling)

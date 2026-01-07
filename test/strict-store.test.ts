@@ -24,7 +24,7 @@ describe('StrictStore', () => {
 
     test('removes a key and returns null after removal', () => {
       StrictStore.save(keys.stringKey, 'to be removed');
-      StrictStore.remove([keys.stringKey]);
+      StrictStore.delete([keys.stringKey]);
       expect(StrictStore.get(keys.stringKey)).toBe(null);
     });
 
@@ -55,13 +55,13 @@ describe('StrictStore', () => {
     test('does not affect other keys when removing', () => {
       StrictStore.save(keys.stringKey, 'one');
       StrictStore.save(keys.numberKey, 2);
-      StrictStore.remove([keys.stringKey]);
+      StrictStore.delete([keys.stringKey]);
       expect(StrictStore.get(keys.stringKey)).toBe(null);
       expect(StrictStore.get(keys.numberKey)).toBe(2);
     });
 
     test('does not throw when removing non-existent key', () => {
-      expect(() => StrictStore.remove([keys.stringKey])).not.toThrow();
+      expect(() => StrictStore.delete([keys.stringKey])).not.toThrow();
     });
 
     test('does not throw when getting non-existent key', () => {
