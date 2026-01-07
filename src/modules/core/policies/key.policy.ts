@@ -2,7 +2,7 @@ import { KEY_PATTERN } from '@core/constants/key-pattern.constant';
 import { Persistable } from '@core/entities/persistable.entity';
 import { StoreKey } from '@core/entities/store-key.entity';
 import { StoreType } from '@core/entities/store-type.entity';
-import { KEY_PREFIX } from '@core/constants/key-prefix.contant';
+import { KEY_PREFIX } from '@core/constants/key-prefix.constant';
 
 export const keyPolicy = {
   /**
