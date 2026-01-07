@@ -459,8 +459,13 @@ export class StrictStoreService {
    * @remarks
    * it only works in StrictStore
    */
-  clear(ns?: string[]): void {
+  clear(ns?: string[]): {
+    key: StoreKey<Persistable>
+    value: Persistable
+  }[] {
     const items = this.entries(ns);
     for (const { key } of items) this.delete([key]);
+
+    return items
   }
 }
