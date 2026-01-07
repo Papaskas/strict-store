@@ -1,4 +1,4 @@
-import { TypedArray } from 'type-fest';
+import { TypedArray } from '@core/entities/typed-array.entity';
 
 /**
  * Covers all standard JavaScript primitive types and their serializable containers.

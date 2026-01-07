@@ -1,4 +1,3 @@
-import { tuplePolicy } from '@core/policies/tuple.policy';
 import { keyPolicy } from '@core/policies/key.policy';
 import { mergePolicy } from '@core/policies/merge.policy';
 import { onChangePolicy } from '@core/policies/on-change.policy';
@@ -8,7 +7,6 @@ import { StoreKey } from '@core/entities/store-key.entity';
 import { StoreType } from '@core/entities/store-type.entity';
 import { DeepPartial } from '@core/entities/deep-partial.entity';
 import { KEY_PREFIX } from '@core/constants/key-prefix.contant';
-import { NonEmptyTuple } from 'type-fest';
 import { SerializerPort } from '@core/ports/serializer.port';
 import { StorageProviderPort } from '@core/ports/storage-provider.port';
 
@@ -284,15 +282,14 @@ export class StrictStoreService {
    * - If the value is null, it returns false
    */
   has(key: StoreKey<Persistable>): boolean;
-  has(key: NonEmptyTuple<StoreKey<Persistable>>): boolean[];
+  has(keys: StoreKey<Persistable>[]): boolean[];
   has(
-    keyOrKeys: StoreKey<Persistable> | NonEmptyTuple<StoreKey<Persistable>>,
+    value: StoreKey<Persistable> | StoreKey<Persistable>[],
   ): boolean | boolean[] {
-    if (tuplePolicy.isNonEmptyTuple(keyOrKeys)) {
-      return keyOrKeys.map((storeKey) => {
-        return this.get(storeKey) !== null;
-      });
-    } else return this.get(keyOrKeys) !== null;
+    if (Array.isArray(value))
+      return value.map((storeKey) => this.get(storeKey) !== null);
+
+    return this.get(value) !== null;
   }
 
   /**
@@ -348,7 +345,9 @@ export class StrictStoreService {
    * - Scans both localStorage and sessionStorage.
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    */
-  entries(ns?: NonEmptyTuple<string>): { key: StoreKey<Persistable>; value: Persistable }[] {
+  entries(ns?: string[]): { key: StoreKey<Persistable>; value: Persistable }[] {
+    if(Array.isArray(ns) && ns.length === 0) return [];
+
     const prefixes: string[] =
       ns === undefined ? [`${KEY_PREFIX}/`] : nsPolicy.resolveNamespacePrefixes(KEY_PREFIX, ns);
 
@@ -401,7 +400,7 @@ export class StrictStoreService {
    * }
    * ```
    */
-  size(ns?: NonEmptyTuple<string>): number {
+  size(ns?: string[]): number {
     return this.entries(ns).length;
   }
 
@@ -429,7 +428,7 @@ export class StrictStoreService {
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    * - The returned StoreKey objects include ns, name, storeType, and __type.
    */
-  keys(ns?: NonEmptyTuple<string>): StoreKey<Persistable>[] {
+  keys(ns?: string[]): StoreKey<Persistable>[] {
     return this.entries(ns).map(({ key }) => key);
   }
 
@@ -448,7 +447,7 @@ export class StrictStoreService {
    * @remarks
    * it only works in StrictStore
    */
-  clear(ns?: NonEmptyTuple<string>): void {
+  clear(ns?: string[]): void {
     const items = this.entries(ns);
     for (const { key } of items) this.remove([key]);
   }

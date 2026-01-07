@@ -1,6 +1,6 @@
 import { TypedArrayRegistryPort } from '@core/ports/typed-array-registry.port';
 import { TYPED_ARRAY_CONSTRUCTORS } from '@strict-json/domain/entities/typed-array-constructors.entity';
-import { TypedArray } from 'type-fest';
+import { TypedArray } from '@core/entities/typed-array.entity';
 
 export type TypedArraySubtype = keyof typeof TYPED_ARRAY_CONSTRUCTORS;
 

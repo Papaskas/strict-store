@@ -1,5 +1,3 @@
-import type { NonEmptyTuple } from 'type-fest';
-
 export const nsPolicy = {
   /**
    * Resolves namespace filters key prefixes.
@@ -25,7 +23,7 @@ export const nsPolicy = {
    * // ['strict-store/']
    * ```
    */
-  resolveNamespacePrefixes: (prefix: string, ns: NonEmptyTuple<string>): string[] => {
+  resolveNamespacePrefixes: (prefix: string, ns: string[]): string[] => {
     return ns.map((n) => `${prefix}/${n}:`);
   },
 };
