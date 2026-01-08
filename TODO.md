@@ -21,6 +21,8 @@
 - [ ] Merge Dependabot pull requests
 - [x] Set up ESLint configuration
 - [ ] Fix `baseUrl` in `tsconfig.json`
+- [ ] Replace jest with vitest
+- [ ] Replace custom serialization with SuperJSON
 
 ### Refactor
 
@@ -38,6 +40,7 @@
 - [ ] Add TSDoc to `deepMerge`
 - [ ] Add TSDoc to `tuplePolicy`
 - [ ] Add TSDoc to `typedArraypolicy`
+- [ ] Refactor TSDoc from 'StoreKey'
 
 ### Tests
 
