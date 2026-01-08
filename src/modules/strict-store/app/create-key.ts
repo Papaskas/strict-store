@@ -37,6 +37,5 @@ export const createKey = <T extends Persistable>(
     ns: ns,
     name: name,
     storeType: storeType,
-    __type: {} as T,
   } as const satisfies StoreKey<T>;
 };

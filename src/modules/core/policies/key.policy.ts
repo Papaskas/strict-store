@@ -69,7 +69,7 @@ export const keyPolicy = {
    * //   ns: 'app',
    * //   name: 'theme',
    * //   storeType: 'local',
-   * //   __type: 'undefined'
+   * //   phantomTypeSymbol: 'undefined'
    * // }
    * ```
    */
@@ -82,7 +82,6 @@ export const keyPolicy = {
       ns: nsPart,
       name: namePart,
       storeType,
-      __type: undefined as any,
     };
   },
 };

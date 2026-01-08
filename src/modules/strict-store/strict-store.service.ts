@@ -10,6 +10,7 @@ import { KEY_PREFIX } from '@core/constants/key-prefix.constant';
 import { SerializerPort } from '@core/ports/serializer.port';
 import { StorageProviderPort } from '@core/ports/storage-provider.port';
 import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error/throws.messages';
+import { phantomTypeSymbol } from '@core/types/phantom-type.symbol';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -86,7 +87,7 @@ export class StrictStoreService {
    *
    * @typeParam T - Type of the stored value (inferred from StoreKey)
    * @param key - StoreKey object containing ns and name
-   * @param value - Value to store (will be JSON.stringify)
+   * @param value - Value to store
    *
    * @example
    * ```ts
@@ -96,7 +97,7 @@ export class StrictStoreService {
    * StrictStore.save(themeKey, 'dark');
    * ```
    */
-  save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void {
+  save<T extends StoreKey<Persistable>>(key: T, value: T[typeof phantomTypeSymbol]): void {
     const storage = this.storageProvider.get(key.storeType);
 
     storage.set(keyPolicy.makeKey(key.ns, key.name), this.serializer.stringify(value));
@@ -424,7 +425,7 @@ export class StrictStoreService {
    *
    * @remarks
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
-   * - The returned StoreKey objects include ns, name, storeType, and __type.
+   * - The returned StoreKey objects include ns, name, storeType, and phantomTypeSymbol.
    */
   keys(ns?: string[]): StoreKey<Persistable>[] {
     return this.entries(ns).map(({ key }) => key);
@@ -446,15 +447,10 @@ export class StrictStoreService {
    * @remarks
    * it only works in StrictStore
    */
-  clear(ns?: string[]): { key: string, storeType: StoreType }[] {
+  clear(ns?: string[]): StoreKey<Persistable>[] {
     const items = this.entries(ns);
     for (const { key } of items) this.delete([key]);
 
-    return items.map((item) => {
-      return {
-        key: keyPolicy.makeKey(item.key.ns, item.key.name),
-        storeType: item.key.storeType,
-      }
-    });
+    return items.map((item) => item.key);
   }
 }
