@@ -3,6 +3,7 @@ import type { Persistable } from '@core/entities/persistable.entity';
 import { StoreKey } from '@core/entities/store-key.entity';
 import { keyPolicy } from '@core/policies/key.policy';
 import { createKey } from '@strict-store/app/create-key';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe.skip('OnChange method', () => {
   beforeEach(() => {

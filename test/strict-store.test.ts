@@ -1,5 +1,6 @@
 import { StrictStore } from 'strict-store';
 import { keys } from '@test/entities/key.entities';
+import { describe, test, expect, beforeEach } from 'vitest';
 
 describe('StrictStore', () => {
   beforeEach(() => {

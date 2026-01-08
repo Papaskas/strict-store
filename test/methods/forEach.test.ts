@@ -2,6 +2,7 @@ import { createKey } from '@strict-store/app/create-key';
 import { StrictStore } from 'strict-store';
 import { StoreKey } from '@core/entities/store-key.entity';
 import type { Persistable } from '@core/entities/persistable.entity';
+import { describe, test, expect, beforeEach } from 'vitest';
 
 describe('forEach method', () => {
   beforeEach(() => {

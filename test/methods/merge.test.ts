@@ -1,6 +1,7 @@
 import { StrictStore } from 'strict-store';
 import { keys } from '@test/entities/key.entities';
 import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error/throws.messages';
+import { describe, test, expect, beforeEach } from 'vitest';
 
 describe.skip('Merge method', () => {
   beforeEach(() => {

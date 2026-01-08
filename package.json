@@ -38,7 +38,7 @@
   "description": "Strongly typed wrapper for localStorage and sessionStorage with namespace isolation and automatic serialization.",
   "scripts": {
     "build": "vite build",
-    "test": "jest",
+    "test": "vitest",
     "docs": "typedoc",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

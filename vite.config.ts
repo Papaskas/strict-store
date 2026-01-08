@@ -1,6 +1,16 @@
-import path from 'path';
-import { defineConfig } from 'vite';
+/// <reference types="vitest/config" />
+import { AliasOptions, defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+import path from 'path';
+
+const pathAlias: AliasOptions = {
+  '@test': path.resolve(__dirname, './test'),
+
+  'strict-store': path.resolve(__dirname, './src/index.module.ts'),
+  '@core': path.resolve(__dirname, './src/modules/core'),
+  '@strict-store': path.resolve(__dirname, './src/modules/strict-store'),
+  '@strict-json': path.resolve(__dirname, './src/modules/strict-json'),
+}
 
 export default defineConfig({
   build: {
@@ -13,12 +23,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   resolve: {
-    alias: {
-      'strict-store': path.resolve(__dirname, './src/index.module.ts'),
-      '@core': path.resolve(__dirname, './src/modules/core'),
-      '@strict-store': path.resolve(__dirname, './src/modules/strict-store'),
-      '@strict-json': path.resolve(__dirname, './src/modules/strict-json'),
-    },
+    alias: pathAlias,
   },
   plugins: [
     dts({
@@ -28,4 +33,9 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
   ],
+  test: {
+    alias: pathAlias,
+    globals: true,
+    environment: 'jsdom',
+  }
 });
