@@ -446,13 +446,15 @@ export class StrictStoreService {
    * @remarks
    * it only works in StrictStore
    */
-  clear(ns?: string[]): {
-    key: StoreKey<Persistable>;
-    value: Persistable;
-  }[] {
+  clear(ns?: string[]): { key: string, storeType: StoreType }[] {
     const items = this.entries(ns);
     for (const { key } of items) this.delete([key]);
 
-    return items;
+    return items.map((item) => {
+      return {
+        key: keyPolicy.makeKey(item.key.ns, item.key.name),
+        storeType: item.key.storeType,
+      }
+    });
   }
 }
