@@ -1,5 +1,5 @@
-import { StrictStore } from '../src/index.module';
-import { keys } from './entities/key.entities';
+import { StrictStore } from 'strict-store';
+import { keys } from '@test/entities/key.entities';
 
 describe('StrictStore', () => {
   beforeEach(() => {

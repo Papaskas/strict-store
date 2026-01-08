@@ -41,5 +41,4 @@
 
 ### Tests
 
-- [ ] Class `StrictStore` has interface `any`
-- [ ] Fix imports
+- [x] Fix imports
