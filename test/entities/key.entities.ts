@@ -1,4 +1,4 @@
-import { createKey } from '../../src/index.module';
+import { createKey } from 'strict-store';
 
 export const keys = {
   stringKey: createKey<string>('test-ns', 'string'),
@@ -26,4 +26,9 @@ export const keys = {
       permissions: Set<string>;
     };
   }>('test-ns', 'complex'),
+
+  ns1Key: createKey<string>('ns1', 'ns1', 'local'),
+  ns2Key: createKey<string>('ns2', 'ns2', 'local'),
+  ns3Key: createKey<string>('ns3', 'ns3', 'session'),
+  ns4Key: createKey<string>('ns4', 'ns4', 'session'),
 } as const;
