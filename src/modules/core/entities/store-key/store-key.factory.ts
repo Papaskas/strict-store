@@ -1,7 +1,7 @@
 import { Persistable } from '@core/entities/persistable.entity';
-import { StoreKey } from '@core/entities/store-key.entity';
+import { StoreKey } from '@core/entities/store-key/store-key.entity';
 import { StoreType } from '@core/entities/store-type.entity';
-import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error/throws.messages';
+import { STORE_KEY_ERROR } from '@core/entities/store-key/store-key.error';
 
 /**
  * Creates a type-safe store name object for use with StrictStore.
@@ -23,15 +23,14 @@ import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error
  *
  * @see {@link StrictStore} for usage examples with storage methods
  */
-export const createKey = <T extends Persistable>(
+export const storeKeyFactory = <T extends Persistable>(
   ns: string,
   name: string,
   storeType: StoreType = 'local',
 ): StoreKey<T> => {
-  if (ns.includes(':') || name.includes(':'))
-    throw new Error(STRICT_STORE_THROWS_MESSAGES.key.containsColon);
+  if (ns.includes(':') || name.includes(':')) throw new Error(STORE_KEY_ERROR.containsColon);
   else if (ns.length === 0 || name.length === 0)
-    throw new Error(STRICT_STORE_THROWS_MESSAGES.key.emptyNameOrNamespace);
+    throw new Error(STORE_KEY_ERROR.emptyNameOrNamespace);
 
   return {
     ns: ns,
