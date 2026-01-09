@@ -6,11 +6,13 @@ import { Persistable } from '@core/entities/persistable.entity';
 import { StoreKey } from '@core/entities/store-key/store-key.entity';
 import { PersistenceType } from '@core/entities/persistence-type.entity';
 import { DeepPartial } from '@core/entities/deep-partial.entity';
-import { KEY_PREFIX } from '@core/constants/key-prefix.constant';
 import { SerializerPort } from '@core/ports/serializer.port';
 import { StorageProviderPort } from '@core/ports/storage-provider.port';
-import { THROWS_MSG_CONSTANTS } from '@core/constants/throws-msg.constant';
 import { phantomTypeSymbol } from '@core/types/phantom-type.symbol';
+import { StrictStoreError } from '@core/entities/errors/strict-store.error';
+import { STRICT_STORE_ERROR_CODE } from '@core/entities/errors/strict-store.error.code';
+import { STRICT_STORE_ERROR_MESSAGE } from '@core/entities/errors/strict-store.error.msg';
+import { KEY_PREFIX } from '@core/constants/key.constant';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -152,7 +154,8 @@ export class StrictStoreService {
    * StrictStore.merge(userKey, { name: 'Alex' });
    * ```
    *
-   * @throws Error if no value exists for the key.
+   * @throws STRICT_STORE_ERROR_CODE.MERGE_NOT_INITIALIZED
+   * @throws STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT
    *
    * @remarks
    * - Internally uses {@link https://lodash.com/docs/#merge | lodash.merge}.
@@ -165,9 +168,11 @@ export class StrictStoreService {
   merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void {
     const value = this.get(key);
 
-    if (!value) throw new Error(THROWS_MSG_CONSTANTS.merge.notInitialized);
-    else if (typeof value !== 'object' || Array.isArray(value))
-      throw new Error(THROWS_MSG_CONSTANTS.merge.targetNotPlainObject);
+    if (!value) {
+      throw new StrictStoreError(STRICT_STORE_ERROR_CODE.MERGE_NOT_INITIALIZED);
+    } else if (typeof value !== 'object' || Array.isArray(value)) {
+      throw new StrictStoreError(STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT);
+    }
 
     const merged = mergePolicy.deepMerge(value, partial);
     this.save(key, merged);

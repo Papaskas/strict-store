@@ -1,9 +1,10 @@
 import { StrictStore } from 'strict-store';
 import { keys } from '@test/entities/key.entities';
 import { describe, test, expect, beforeEach } from 'vitest';
-import { THROWS_MSG_CONSTANTS } from '@core/constants/throws-msg.constant';
+import { STRICT_STORE_ERROR_CODE } from '../../src/modules/core/entities/errors/strict-store.error.code';
+import { StrictStoreError } from '@core/entities/errors/strict-store.error';
 
-describe.skip('Merge method', () => {
+describe('Merge method', () => {
   beforeEach(() => {
     StrictStore.clear();
   });
@@ -25,7 +26,14 @@ describe.skip('Merge method', () => {
 
     expect(() => {
       StrictStore.merge(keys.userKey, { name: 'Ivan' });
-    }).toThrow(THROWS_MSG_CONSTANTS.merge.notInitialized);
+    }).toThrowError(StrictStoreError);
+
+    try {
+      StrictStore.merge(keys.userKey, { name: 'Ivan' });
+    } catch (e) {
+      expect(e).toBeInstanceOf(StrictStoreError);
+      expect((e as StrictStoreError).code).toBe(STRICT_STORE_ERROR_CODE.MERGE_NOT_INITIALIZED);
+    }
   });
 
   test('should throw if trying to merge into non-object', () => {
@@ -34,7 +42,15 @@ describe.skip('Merge method', () => {
     expect(() => {
       // @ts-expect-error
       StrictStore.merge(keys.numberKey, { foo: 'bar' });
-    }).toThrow(THROWS_MSG_CONSTANTS.merge.targetNotPlainObject);
+    }).toThrowError(StrictStoreError);
+
+    try {
+      // @ts-expect-error
+      StrictStore.merge(keys.numberKey, { foo: 'bar' });
+    } catch (e) {
+      expect(e).toBeInstanceOf(StrictStoreError);
+      expect((e as StrictStoreError).code).toBe(STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT);
+    }
   });
 
   test('should merge only provided fields (shallow merge)', () => {

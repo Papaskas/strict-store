@@ -1,3 +1,1 @@
-export const appConstants = {
-  APP_NAME: 'StrictStore',
-};
+export const APP_NAME = 'StrictStore';
