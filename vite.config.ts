@@ -10,7 +10,7 @@ const pathAlias: AliasOptions = {
   '@core': path.resolve(__dirname, './src/modules/core'),
   '@strict-store': path.resolve(__dirname, './src/modules/strict-store'),
   '@strict-json': path.resolve(__dirname, './src/modules/strict-json'),
-}
+};
 
 export default defineConfig({
   build: {
@@ -37,5 +37,5 @@ export default defineConfig({
     alias: pathAlias,
     globals: true,
     environment: 'jsdom',
-  }
+  },
 });

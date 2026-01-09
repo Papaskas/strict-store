@@ -3,13 +3,13 @@ import { mergePolicy } from '@core/policies/merge.policy';
 import { onChangePolicy } from '@core/policies/on-change.policy';
 import { nsPolicy } from '@core/policies/ns.policy';
 import { Persistable } from '@core/entities/persistable.entity';
-import { StoreKey } from '@core/entities/store-key.entity';
+import { StoreKey } from '@core/entities/store-key/store-key.entity';
 import { StoreType } from '@core/entities/store-type.entity';
 import { DeepPartial } from '@core/entities/deep-partial.entity';
 import { KEY_PREFIX } from '@core/constants/key-prefix.constant';
 import { SerializerPort } from '@core/ports/serializer.port';
 import { StorageProviderPort } from '@core/ports/storage-provider.port';
-import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error/throws.messages';
+import { THROWS_MSG_CONSTANTS } from '@core/constants/throws-msg.constant';
 import { phantomTypeSymbol } from '@core/types/phantom-type.symbol';
 
 /**
@@ -165,9 +165,9 @@ export class StrictStoreService {
   merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void {
     const value = this.get(key);
 
-    if (!value) throw new Error(STRICT_STORE_THROWS_MESSAGES.merge.notInitialized);
+    if (!value) throw new Error(THROWS_MSG_CONSTANTS.merge.notInitialized);
     else if (typeof value !== 'object' || Array.isArray(value))
-      throw new Error(STRICT_STORE_THROWS_MESSAGES.merge.targetNotPlainObject);
+      throw new Error(THROWS_MSG_CONSTANTS.merge.targetNotPlainObject);
 
     const merged = mergePolicy.deepMerge(value, partial);
     this.save(key, merged);

@@ -1,5 +1,5 @@
 import { Persistable } from '@core/entities/persistable.entity';
-import { StoreKey } from '@core/entities/store-key.entity';
+import { StoreKey } from '@core/entities/store-key/store-key.entity';
 import { keyPolicy } from '@core/policies/key.policy';
 import { KEY_PREFIX } from '@core/constants/key-prefix.constant';
 

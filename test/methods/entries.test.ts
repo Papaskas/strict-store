@@ -15,21 +15,23 @@ describe('Entries method', () => {
   });
 
   test('returns single entry when one key is stored', () => {
-    StrictStore.save(keys.stringKey, 'string')
+    StrictStore.save(keys.stringKey, 'string');
 
     const res = StrictStore.entries();
 
     expect(res.length).toBe(1);
-    expect(res).toEqual([{
-      key: keys.stringKey,
-      value: 'string',
-    }]);
+    expect(res).toEqual([
+      {
+        key: keys.stringKey,
+        value: 'string',
+      },
+    ]);
   });
 
   test('returns all entries when multiple keys are stored', () => {
-    StrictStore.save(keys.stringKey, 'string')
-    StrictStore.save(keys.numberKey, 321)
-    StrictStore.save(keys.booleanKey, false)
+    StrictStore.save(keys.stringKey, 'string');
+    StrictStore.save(keys.numberKey, 321);
+    StrictStore.save(keys.booleanKey, false);
 
     const res = StrictStore.entries();
 

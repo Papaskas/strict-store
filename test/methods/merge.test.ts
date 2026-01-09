@@ -1,7 +1,7 @@
 import { StrictStore } from 'strict-store';
 import { keys } from '@test/entities/key.entities';
-import { STRICT_STORE_THROWS_MESSAGES } from '@strict-store/infrastructure/error/throws.messages';
 import { describe, test, expect, beforeEach } from 'vitest';
+import { THROWS_MSG_CONSTANTS } from '@core/constants/throws-msg.constant';
 
 describe.skip('Merge method', () => {
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe.skip('Merge method', () => {
 
     expect(() => {
       StrictStore.merge(keys.userKey, { name: 'Ivan' });
-    }).toThrow(STRICT_STORE_THROWS_MESSAGES.merge.notInitialized);
+    }).toThrow(THROWS_MSG_CONSTANTS.merge.notInitialized);
   });
 
   test('should throw if trying to merge into non-object', () => {
@@ -34,7 +34,7 @@ describe.skip('Merge method', () => {
     expect(() => {
       // @ts-expect-error
       StrictStore.merge(keys.numberKey, { foo: 'bar' });
-    }).toThrow(STRICT_STORE_THROWS_MESSAGES.merge.targetNotPlainObject);
+    }).toThrow(THROWS_MSG_CONSTANTS.merge.targetNotPlainObject);
   });
 
   test('should merge only provided fields (shallow merge)', () => {
