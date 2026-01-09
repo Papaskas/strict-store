@@ -1,27 +1,29 @@
 /**
- * Covers all standard JavaScript primitive types and their serializable containers.
+ * Represents the set of values that are allowed to be stored in `StrictStore`.
  *
- * - `string`: Any string value.
- * - `number`: Any finite number.
- * - `boolean`: `true` or `false`.
- * - `null`: The `null` value.
+ * @remarks
+ * `Persistable` defines the **serialization boundary** of the library.
+ * Any value accepted by `StrictStore` must conform to this type so that it can be
+ * safely and deterministically serialized, persisted, and restored across
+ * application reloads and execution contexts.
  *
- * @public
- */
-export type NativePersistable = string | number | boolean | null | undefined;
-
-/**
- * Extends the set of storable values to include certain advanced JavaScript types.
+ * This type exists to:
+ * - make the storage contract explicit and self-documenting;
+ * - prevent accidental persistence of unsupported or non-deterministic values;
+ * - provide a single, centralized place to evolve storage capabilities
+ *   without leaking serialization concerns into business logic.
  *
- * - `{ [key: string]: Persistable }`: Plain objects with string keys and serializable values.
- * - `Persistable[]`: Arrays containing serializable values.
- * - `Set<Persistable>`: A Set containing only serializable values.
- * - `Map<Persistable, Persistable>`: A Map with serializable keys and values.
- * - `bigint`: Arbitrary-precision integers.
+ * Values outside `Persistable` are intentionally rejected to preserve
+ * correctness, predictability, and long-term compatibility of stored data.
  *
  * @public
  */
-export type AdvancedPersistable =
+export type Persistable =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
   | { [key: string]: Persistable }
   | Persistable[]
   | Date
@@ -31,12 +33,3 @@ export type AdvancedPersistable =
   | bigint
   | Error
   | URL;
-
-/**
- * Represents all value types that can be safely stored in StrictStore.
- * This includes both primitive JavaScript values and a set of supported complex types.
- * Any value passed to the store must conform to this type.
- *
- * @public
- */
-export type Persistable = NativePersistable | AdvancedPersistable;
