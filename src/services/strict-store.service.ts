@@ -1,18 +1,17 @@
-import { keyPolicy } from '@core/policies/key.policy';
-import { mergePolicy } from '@core/policies/merge.policy';
-import { onChangePolicy } from '@core/policies/on-change.policy';
-import { nsPolicy } from '@core/policies/ns.policy';
-import { Persistable } from '@core/entities/persistable.entity';
-import { StoreKey } from '@core/entities/store-key/store-key.entity';
-import { PersistenceType } from '@core/entities/persistence-type.entity';
-import { DeepPartial } from '@core/entities/deep-partial.entity';
-import { SerializerPort } from '@core/ports/serializer.port';
-import { StorageProviderPort } from '@core/ports/storage-provider.port';
-import { phantomTypeSymbol } from '@core/types/phantom-type.symbol';
-import { StrictStoreError } from '@core/entities/errors/strict-store.error';
-import { STRICT_STORE_ERROR_CODE } from '@core/entities/errors/strict-store.error.code';
-import { STRICT_STORE_ERROR_MESSAGE } from '@core/entities/errors/strict-store.error.msg';
-import { KEY_PREFIX } from '@core/constants/key.constant';
+import { keyPolicy } from '@src/domain/policies/key.policy';
+import { mergePolicy } from '@src/domain/policies/merge.policy';
+import { onChangePolicy } from '@src/domain/policies/on-change.policy';
+import { nsPolicy } from '@src/domain/policies/ns.policy';
+import { Persistable } from '@src/domain/entities/persistable.entity';
+import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
+import { PersistenceType } from '@src/domain/entities/persistence-type.entity';
+import { DeepPartial } from '@src/domain/entities/deep-partial.entity';
+import { SerializerPort } from '@src/domain/ports/serializer.port';
+import { StorageProviderPort } from '@src/domain/ports/storage-provider.port';
+import { phantomTypeSymbol } from '@src/domain/types/phantom-type.symbol';
+import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
+import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
+import { KEY_PREFIX } from '@src/domain/constants/key.constant';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage

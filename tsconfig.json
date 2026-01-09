@@ -15,9 +15,7 @@
     "paths": {
       "strict-store": ["src/index.module.ts"],
       "@test/*": ["test/*"],
-      "@core/*": ["src/modules/core/*"],
-      "@strict-store/*": ["src/modules/strict-store/*"],
-      "@strict-json/*": ["src/modules/strict-json/*"]
+      "@src/*": ["src/*"],
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],

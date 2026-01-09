@@ -1,7 +1,7 @@
-import { Persistable } from '@core/entities/persistable.entity';
-import { StoreKey } from '@core/entities/store-key/store-key.entity';
-import { PersistenceType } from '@core/entities/persistence-type.entity';
-import { KEY_PATTERN, KEY_PREFIX } from '@core/constants/key.constant';
+import { Persistable } from '@src/domain/entities/persistable.entity';
+import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
+import { PersistenceType } from '@src/domain/entities/persistence-type.entity';
+import { KEY_PATTERN, KEY_PREFIX } from '@src/domain/constants/key.constant';
 
 export const keyPolicy = {
   /**

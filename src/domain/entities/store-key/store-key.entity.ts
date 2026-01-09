@@ -1,6 +1,6 @@
-import { Persistable } from '@core/entities/persistable.entity';
-import { PersistenceType } from '@core/entities/persistence-type.entity';
-import { phantomTypeSymbol } from '@core/types/phantom-type.symbol';
+import { Persistable } from '@src/domain/entities/persistable.entity';
+import { PersistenceType } from '@src/domain/entities/persistence-type.entity';
+import { phantomTypeSymbol } from '@src/domain/types/phantom-type.symbol';
 
 /**
  * Defines a type-safe storage name structure for `StrictStore` operations.

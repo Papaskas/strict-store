@@ -1,8 +1,8 @@
 import { StrictStore, createKey } from 'strict-store';
-import type { Persistable } from '@core/entities/persistable.entity';
-import { keyPolicy } from '@core/policies/key.policy';
+import type { Persistable } from '@src/domain/entities/persistable.entity';
+import { keyPolicy } from '@src/domain/policies/key.policy';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { StoreKey } from '@core/entities/store-key/store-key.entity';
+import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
 
 describe.skip('OnChange method', () => {
   beforeEach(() => {

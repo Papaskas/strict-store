@@ -7,9 +7,7 @@ const pathAlias: AliasOptions = {
   '@test': path.resolve(__dirname, './test'),
 
   'strict-store': path.resolve(__dirname, './src/index.module.ts'),
-  '@core': path.resolve(__dirname, './src/modules/core'),
-  '@strict-store': path.resolve(__dirname, './src/modules/strict-store'),
-  '@strict-json': path.resolve(__dirname, './src/modules/strict-json'),
+  '@src': path.resolve(__dirname, './src'),
 };
 
 export default defineConfig({

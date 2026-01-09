@@ -1,8 +1,8 @@
-import { Persistable } from '@core/entities/persistable.entity';
-import { StoreKey } from '@core/entities/store-key/store-key.entity';
-import { PersistenceType } from '@core/entities/persistence-type.entity';
-import { StrictStoreError } from '@core/entities/errors/strict-store.error';
-import { STRICT_STORE_ERROR_CODE } from '@core/entities/errors/strict-store.error.code';
+import { Persistable } from '@src/domain/entities/persistable.entity';
+import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
+import { PersistenceType } from '@src/domain/entities/persistence-type.entity';
+import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
+import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
 
 /**
  * Creates a type-safe store name object for use with StrictStore.

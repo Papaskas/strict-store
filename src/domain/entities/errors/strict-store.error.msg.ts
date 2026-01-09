@@ -1,4 +1,4 @@
-import { STRICT_STORE_ERROR_CODE } from '@core/entities/errors/strict-store.error.code';
+import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
 
 export const STRICT_STORE_ERROR_MESSAGE: Record<STRICT_STORE_ERROR_CODE, string> = {
   [STRICT_STORE_ERROR_CODE.STORE_KEY_CONTAINS_COLON]: 'StoreKey ns/name must not contain ":"',

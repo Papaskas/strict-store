@@ -1,6 +1,6 @@
-import { Persistable } from '@core/entities/persistable.entity';
-import { StoreKey } from '@core/entities/store-key/store-key.entity';
-import { SerializerPort } from '@core/ports/serializer.port';
+import { Persistable } from '@src/domain/entities/persistable.entity';
+import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
+import { SerializerPort } from '@src/domain/ports/serializer.port';
 import { SuperJSON } from 'superjson';
 
 export class StrictJsonService implements SerializerPort {

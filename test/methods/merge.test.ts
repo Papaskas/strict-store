@@ -1,8 +1,8 @@
 import { StrictStore } from 'strict-store';
 import { keys } from '@test/entities/key.entities';
 import { describe, test, expect, beforeEach } from 'vitest';
-import { STRICT_STORE_ERROR_CODE } from '../../src/modules/core/entities/errors/strict-store.error.code';
-import { StrictStoreError } from '@core/entities/errors/strict-store.error';
+import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
+import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
 
 describe('Merge method', () => {
   beforeEach(() => {
