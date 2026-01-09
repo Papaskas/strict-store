@@ -1,6 +1,6 @@
 # Update
 
-- [ ] Add `Date` type
+- [x] Add `Date` type
 - [x] Add `saveBatch` method
 - [x] Add `pick` method
 - [x] Add `entries` method
@@ -21,25 +21,22 @@
 - [ ] Merge Dependabot pull requests
 - [x] Set up ESLint configuration
 - [ ] Fix `baseUrl` in `tsconfig.json`
-- [ ] Replace jest with vitest
-- [ ] Replace custom serialization with SuperJSON
+- [x] Replace jest with vitest
+- [x] Replace custom serialization with SuperJSON
 
 ### Refactor
 
 - [ ] Split `strict-store.service` into multiple files
-- [ ] Refactor `serialization.adapter`
+- [x] Refactor `serialization.adapter`
 - [ ] Refactor `deepMerge` method
 - [ ] Refactor return type in `parseStoreKey` method
 - [ ] Simplify `entries` method
 - [ ] Simplify `onChange` method
 - [ ] Refactor `DeepPartial` type
-- [ ] Refactor `ComplexTypesData` type
 
 ### Docs
 
 - [ ] Add TSDoc to `deepMerge`
-- [ ] Add TSDoc to `tuplePolicy`
-- [ ] Add TSDoc to `typedArraypolicy`
 - [ ] Refactor TSDoc from 'StoreKey'
 
 ### Tests
