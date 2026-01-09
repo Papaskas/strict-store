@@ -1,7 +1,7 @@
 import { KEY_PATTERN } from '@core/constants/key-pattern.constant';
 import { Persistable } from '@core/entities/persistable.entity';
 import { StoreKey } from '@core/entities/store-key/store-key.entity';
-import { StoreType } from '@core/entities/store-type.entity';
+import { PersistenceType } from '@core/entities/persistence-type.entity';
 import { KEY_PREFIX } from '@core/constants/key-prefix.constant';
 
 export const keyPolicy = {
@@ -73,7 +73,7 @@ export const keyPolicy = {
    * // }
    * ```
    */
-  parseStoreKey: (raw: string, storeType: StoreType): StoreKey<Persistable> | null => {
+  parseStoreKey: (raw: string, storeType: PersistenceType): StoreKey<Persistable> | null => {
     const m = KEY_PATTERN.exec(raw);
     if (!m) return null;
 

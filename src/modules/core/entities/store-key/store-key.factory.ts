@@ -1,6 +1,6 @@
 import { Persistable } from '@core/entities/persistable.entity';
 import { StoreKey } from '@core/entities/store-key/store-key.entity';
-import { StoreType } from '@core/entities/store-type.entity';
+import { PersistenceType } from '@core/entities/persistence-type.entity';
 import { STORE_KEY_ERROR } from '@core/entities/store-key/store-key.error';
 
 /**
@@ -26,7 +26,7 @@ import { STORE_KEY_ERROR } from '@core/entities/store-key/store-key.error';
 export const storeKeyFactory = <T extends Persistable>(
   ns: string,
   name: string,
-  storeType: StoreType = 'local',
+  storeType: PersistenceType = 'local',
 ): StoreKey<T> => {
   if (ns.includes(':') || name.includes(':')) throw new Error(STORE_KEY_ERROR.containsColon);
   else if (ns.length === 0 || name.length === 0)

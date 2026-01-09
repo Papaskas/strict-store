@@ -1,5 +1,5 @@
 import { Persistable } from '@core/entities/persistable.entity';
-import { StoreType } from '@core/entities/store-type.entity';
+import { PersistenceType } from '@core/entities/persistence-type.entity';
 import { phantomTypeSymbol } from '@core/types/phantom-type.symbol';
 
 /**
@@ -16,6 +16,6 @@ import { phantomTypeSymbol } from '@core/types/phantom-type.symbol';
 export type StoreKey<T extends Persistable> = {
   readonly ns: string;
   readonly name: string;
-  readonly storeType: StoreType;
+  readonly storeType: PersistenceType;
   readonly [phantomTypeSymbol]?: T;
 };

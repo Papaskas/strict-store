@@ -20,4 +20,4 @@
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API | MDN Web Storage API}
  * @see {@link createKey} for usage with store keys
  */
-export type StoreType = 'local' | 'session';
+export type PersistenceType = 'local' | 'session';

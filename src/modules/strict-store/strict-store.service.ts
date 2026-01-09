@@ -4,7 +4,7 @@ import { onChangePolicy } from '@core/policies/on-change.policy';
 import { nsPolicy } from '@core/policies/ns.policy';
 import { Persistable } from '@core/entities/persistable.entity';
 import { StoreKey } from '@core/entities/store-key/store-key.entity';
-import { StoreType } from '@core/entities/store-type.entity';
+import { PersistenceType } from '@core/entities/persistence-type.entity';
 import { DeepPartial } from '@core/entities/deep-partial.entity';
 import { KEY_PREFIX } from '@core/constants/key-prefix.constant';
 import { SerializerPort } from '@core/ports/serializer.port';
@@ -350,7 +350,7 @@ export class StrictStoreService {
     const prefixes: string[] =
       ns === undefined ? [`${KEY_PREFIX}/`] : nsPolicy.resolveNamespacePrefixes(KEY_PREFIX, ns);
 
-    const storages: [Storage, StoreType][] = [
+    const storages: [Storage, PersistenceType][] = [
       [localStorage, 'local'],
       [sessionStorage, 'session'],
     ];
