@@ -1,5 +1,3 @@
-import { TypedArray } from '@core/entities/typed-array.entity';
-
 /**
  * Covers all standard JavaScript primitive types and their serializable containers.
  *
@@ -10,7 +8,7 @@ import { TypedArray } from '@core/entities/typed-array.entity';
  *
  * @public
  */
-export type NativePersistable = string | number | boolean | null;
+export type NativePersistable = string | number | boolean | null | undefined;
 
 /**
  * Extends the set of storable values to include certain advanced JavaScript types.
@@ -20,21 +18,19 @@ export type NativePersistable = string | number | boolean | null;
  * - `Set<Persistable>`: A Set containing only serializable values.
  * - `Map<Persistable, Persistable>`: A Map with serializable keys and values.
  * - `bigint`: Arbitrary-precision integers.
- * - `TypedArray`: Any of the standard JavaScript typed arrays (e.g., Int8Array, Float32Array, etc.).
- *
- * @remarks
- * - These types are internally serialized and deserialized by `StrictStore` to ensure compatibility with web storage.
- * - `undefined` and `symbols` are **not** allowed.
  *
  * @public
  */
 export type AdvancedPersistable =
   | { [key: string]: Persistable }
   | Persistable[]
+  | Date
+  | RegExp
   | Set<Persistable>
   | Map<Persistable, Persistable>
   | bigint
-  | TypedArray;
+  | Error
+  | URL;
 
 /**
  * Represents all value types that can be safely stored in StrictStore.
