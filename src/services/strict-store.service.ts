@@ -73,7 +73,7 @@ export class StrictStoreService {
    * const [theme, lang] = StrictStore.pick([themeKey, langKey]);
    * ```
    */
-  pick<const K extends readonly StoreKey<Persistable>[]>(
+  pick<const K extends StoreKey<Persistable>[]>(
     keys: K,
   ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never } {
     const out: unknown[] = new Array(keys.length);
@@ -99,9 +99,11 @@ export class StrictStoreService {
    * ```
    */
   save<T extends StoreKey<Persistable>>(key: T, value: T[typeof phantomTypeSymbol]): void {
-    const storage = this.storageProvider.get(key.storeType);
-
-    storage.set(keyPolicy.makeKey(key.ns, key.name), this.serializer.stringify(value));
+    if (value === null) this.delete(key);
+    else {
+      const storage = this.storageProvider.get(key.storeType);
+      storage.set(keyPolicy.makeKey(key.ns, key.name), this.serializer.stringify(value));
+    }
   }
 
   /**
