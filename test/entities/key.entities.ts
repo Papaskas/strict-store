@@ -9,9 +9,9 @@ export const keys = {
 
   nullKey: createKey<null>('test-ns', 'null', 'local'),
 
-  userKey: createKey<{ name: string; age: number; email?: string }>('test-ns', 'user'),
+  objIncludedObj: createKey<{ a: number; b: { c: number; d: number } }>('test-ns', 'user'),
 
-  objKey: createKey<{ a: number; b: { c: number; d: number } }>('test-ns', 'object'),
+  objectKey: createKey<{ name: string; age: number; email?: string }>('test-ns', 'user'),
 
   objectWithArray: createKey<{ name: string; tags: string[] }>('test-ns', 'arr'),
 

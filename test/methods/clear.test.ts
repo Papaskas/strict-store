@@ -62,7 +62,7 @@ describe('Clear method', () => {
     expect(StrictStore.has(keys.ns4Key)).toBe(true);
   });
 
-  test.skip('returns cleared key metadata for a single entry', () => {
+  test('returns cleared key metadata for a single entry', () => {
     expect(StrictStore.has(keys.stringKey)).toBe(false);
 
     StrictStore.save(keys.stringKey, 'string');
@@ -72,7 +72,7 @@ describe('Clear method', () => {
     expect(value).toEqual([keys.stringKey]);
   });
 
-  test.skip('returns cleared key metadata without leaking stored values', () => {
+  test('returns cleared key metadata without leaking stored values', () => {
     StrictStore.save(keys.ns1Key, 'ns1');
     StrictStore.save(keys.ns2Key, 'ns2');
     StrictStore.save(keys.ns3Key, 'ns3');

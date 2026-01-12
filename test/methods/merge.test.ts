@@ -10,11 +10,11 @@ describe('Merge method', () => {
   });
 
   test('should merge partial object into existing object', () => {
-    StrictStore.save(keys.userKey, { name: 'Ivan', age: 30 });
+    StrictStore.save(keys.objectKey, { name: 'Ivan', age: 30 });
 
-    StrictStore.merge(keys.userKey, { age: 31, email: 'ivan@example.com' });
+    StrictStore.merge(keys.objectKey, { age: 31, email: 'ivan@example.com' });
 
-    expect(StrictStore.get(keys.userKey)).toEqual({
+    expect(StrictStore.get(keys.objectKey)).toEqual({
       name: 'Ivan',
       age: 31,
       email: 'ivan@example.com',
@@ -22,14 +22,14 @@ describe('Merge method', () => {
   });
 
   test('should set value if no value exists', () => {
-    expect(StrictStore.get(keys.userKey)).toBe(null);
+    expect(StrictStore.get(keys.objectKey)).toBe(null);
 
     expect(() => {
-      StrictStore.merge(keys.userKey, { name: 'Ivan' });
+      StrictStore.merge(keys.objectKey, { name: 'Ivan' });
     }).toThrowError(StrictStoreError);
 
     try {
-      StrictStore.merge(keys.userKey, { name: 'Ivan' });
+      StrictStore.merge(keys.objectKey, { name: 'Ivan' });
     } catch (e) {
       expect(e).toBeInstanceOf(StrictStoreError);
       expect((e as StrictStoreError).code).toBe(STRICT_STORE_ERROR_CODE.MERGE_NOT_INITIALIZED);
@@ -54,11 +54,11 @@ describe('Merge method', () => {
   });
 
   test('should merge only provided fields (shallow merge)', () => {
-    StrictStore.save(keys.objKey, { a: 1, b: { c: 2, d: 3 } });
+    StrictStore.save(keys.objIncludedObj, { a: 1, b: { c: 2, d: 3 } });
 
-    StrictStore.merge(keys.objKey, { b: { c: 99 } });
+    StrictStore.merge(keys.objIncludedObj, { b: { c: 99 } });
 
-    expect(StrictStore.get(keys.objKey)).toEqual({ a: 1, b: { c: 99, d: 3 } });
+    expect(StrictStore.get(keys.objIncludedObj)).toEqual({ a: 1, b: { c: 99, d: 3 } });
   });
 
   test('should merge object with array property', () => {
