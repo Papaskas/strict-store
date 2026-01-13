@@ -1,17 +1,17 @@
 import { keyPolicy } from '@src/domain/policies/key.policy';
-import { mergePolicy } from '@src/domain/policies/merge.policy';
 import { onChangePolicy } from '@src/domain/policies/on-change.policy';
 import { nsPolicy } from '@src/domain/policies/ns.policy';
 import { Persistable } from '@src/domain/entities/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
 import { PersistenceType } from '@src/domain/entities/persistence-type.entity';
-import { DeepPartial } from '@src/domain/entities/deep-partial.entity';
 import { SerializerPort } from '@src/domain/ports/serializer.port';
 import { StorageProviderPort } from '@src/domain/ports/storage-provider.port';
 import { phantomTypeSymbol } from '@src/domain/types/phantom-type.symbol';
 import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
 import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
 import { KEY_PREFIX } from '@src/domain/constants/key.constant';
+import { MergePort } from '@src/domain/ports/merge.port';
+import { PartialDeep } from 'type-fest';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -29,6 +29,7 @@ export class StrictStoreService {
   constructor(
     private readonly storageProvider: StorageProviderPort,
     private readonly serializationAdapter: SerializerPort,
+    private readonly mergeAdapter: MergePort,
   ) {}
 
   /**
@@ -163,10 +164,8 @@ export class StrictStoreService {
    * - ⚠️ Unlike lodash's default behavior, arrays in StrictStore **are replaced entirely**,
    *   not merged by index.
    *   - Example: merging `{ tags: ['a', 'b'] }` with `{ tags: ['x'] }` results in `{ tags: ['x'] }`.
-   * - Use {@link StrictStore.save} if you need to completely overwrite the object
-   *   rather than partially merging.
    * */
-  merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void {
+  merge<T extends Persistable>(key: StoreKey<T>, partial: PartialDeep<T>): T | null {
     const value = this.get(key);
 
     if (!value) {
@@ -175,8 +174,10 @@ export class StrictStoreService {
       throw new StrictStoreError(STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT);
     }
 
-    const merged = mergePolicy.deepMerge(value, partial);
+    const merged = this.mergeAdapter.merge(value, partial);
     this.save(key, merged);
+
+    return this.get(key);
   }
 
   /**

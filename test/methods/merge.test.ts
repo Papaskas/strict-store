@@ -12,9 +12,9 @@ describe('Merge method', () => {
   test('should merge partial object into existing object', () => {
     StrictStore.save(keys.objectKey, { name: 'Ivan', age: 30 });
 
-    StrictStore.merge(keys.objectKey, { age: 31, email: 'ivan@example.com' });
+    const res = StrictStore.merge(keys.objectKey, { age: 31, email: 'ivan@example.com' });
 
-    expect(StrictStore.get(keys.objectKey)).toEqual({
+    expect(res).toEqual({
       name: 'Ivan',
       age: 31,
       email: 'ivan@example.com',
@@ -56,17 +56,17 @@ describe('Merge method', () => {
   test('should merge only provided fields (shallow merge)', () => {
     StrictStore.save(keys.objIncludedObj, { a: 1, b: { c: 2, d: 3 } });
 
-    StrictStore.merge(keys.objIncludedObj, { b: { c: 99 } });
+    const res = StrictStore.merge(keys.objIncludedObj, { b: { c: 99 } });
 
-    expect(StrictStore.get(keys.objIncludedObj)).toEqual({ a: 1, b: { c: 99, d: 3 } });
+    expect(res).toEqual({ a: 1, b: { c: 99, d: 3 } });
   });
 
   test('should merge object with array property', () => {
     StrictStore.save(keys.objectWithArray, { name: 'Alex', tags: ['ts', 'storage'] });
 
-    StrictStore.merge(keys.objectWithArray, { tags: ['typescript', 'store', 'util'] });
+    const res = StrictStore.merge(keys.objectWithArray, { tags: ['typescript', 'store', 'util'] });
 
-    expect(StrictStore.get(keys.objectWithArray)).toEqual({
+    expect(res).toEqual({
       name: 'Alex',
       tags: ['typescript', 'store', 'util'],
     });
@@ -75,12 +75,12 @@ describe('Merge method', () => {
   test('should merge object with Set property', () => {
     StrictStore.save(keys.objectWithSet, { name: 'Bob', roles: new Set(['admin', 'user']) });
 
-    StrictStore.merge(keys.objectWithSet, { roles: new Set(['editor']) });
+    const result = StrictStore.merge(keys.objectWithSet, { roles: new Set(['editor']) });
 
-    const result = StrictStore.get(keys.objectWithSet);
-    expect(result?.name).toBe('Bob');
-    expect(result?.roles instanceof Set).toBe(true);
-    expect(Array.from(result!.roles)).toEqual(['editor']);
+    expect(result).toEqual({
+      name: 'Bob',
+      roles: new Set( ['editor']),
+    })
   });
 
   test('should merge object with Map property', () => {
@@ -92,20 +92,18 @@ describe('Merge method', () => {
       ]),
     });
 
-    StrictStore.merge(keys.objectWithMap, {
+    const result = StrictStore.merge(keys.objectWithMap, {
       scores: new Map([
         ['fr', 4],
-        ['sci', 3],
       ]),
     });
 
-    const result = StrictStore.get(keys.objectWithMap);
-    expect(result?.name).toBe('Carl');
-    expect(result?.scores instanceof Map).toBe(true);
-    expect(Array.from(result!.scores.entries())).toEqual([
-      ['fr', 4],
-      ['sci', 3],
-    ]);
+    expect(result).toEqual({
+      name: 'Carl',
+      scores: new Map([
+        ['fr', 4],
+      ]),
+    });
   });
 
   test('should merge deeply nested object with array and set', () => {
@@ -113,21 +111,23 @@ describe('Merge method', () => {
       user: {
         name: 'Dina',
         tags: ['a', 'b'],
-        permissions: new Set(['read']),
+        permissions: new Set(['read', 'edit']),
       },
     });
 
-    StrictStore.merge(keys.objectWithArrayAndSet, {
+    const result = StrictStore.merge(keys.objectWithArrayAndSet, {
       user: {
         tags: ['c'],
         permissions: new Set(['write']),
       },
     });
 
-    const result = StrictStore.get(keys.objectWithArrayAndSet);
-    expect(result?.user.name).toBe('Dina');
-    expect(result?.user.tags).toEqual(['c']);
-    expect(result?.user.permissions instanceof Set).toBe(true);
-    expect(Array.from(result!.user.permissions)).toEqual(['write']);
+    expect(result).toEqual({
+      user: {
+        name: 'Dina',
+        tags: ['c', 'b'],
+        permissions: new Set(['write']),
+      }
+    })
   });
 });

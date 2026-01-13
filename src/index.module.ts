@@ -3,9 +3,11 @@ import { storeKeyFactory } from '@src/domain/entities/store-key/store-key.factor
 import { WebStorageProvider } from '@src/infrastructure/providers/web-storage.provider';
 import { SerializationAdapter } from '@src/infrastructure/adapters/serialization.adapter';
 import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
+import { MergeAdapter } from '@src/infrastructure/adapters/merge.adapter';
 
 const serializationAdapter = new SerializationAdapter();
-const StrictStore = new StrictStoreService(new WebStorageProvider(), serializationAdapter);
+const mergeAdapter = new MergeAdapter();
+const StrictStore = new StrictStoreService(new WebStorageProvider(), serializationAdapter, mergeAdapter);
 
 export {
   StrictStore,
