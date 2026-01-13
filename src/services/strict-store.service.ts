@@ -195,9 +195,20 @@ export class StrictStoreService {
    * }, ['namespace1', 'namespace2']);
    * ```
    */
-  forEach(callback: (key: StoreKey<Persistable>, value: Persistable) => void, ns?: string[]): void {
-    this.entries(ns).forEach(({ key, value }) => {
-      callback(key, value);
+  forEach(
+    callback: (
+      key: StoreKey<Persistable>,
+      value: Persistable,
+      index: number,
+      array: {
+        key: StoreKey<Persistable>,
+        value: Persistable,
+      }[],
+    ) => void,
+    ns?: string[],
+  ): void {
+    this.entries(ns).forEach(({ key, value }, index, array) => {
+      callback(key, value, index, array);
     });
   }
 

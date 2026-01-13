@@ -1,120 +1,141 @@
-import { StrictStore, createKey } from 'strict-store';
-import type { Persistable } from '@src/domain/entities/persistable.entity';
-import type { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
+import { StrictStore } from 'strict-store';
 import { describe, test, expect, beforeEach } from 'vitest';
+import { keys } from '@test/entities/key.entities';
 
 describe('forEach method', () => {
   beforeEach(() => {
     StrictStore.clear();
   });
 
-  test('should iterate over all StrictStore-managed keys in both storages', () => {
-    const key1 = createKey<string>('ns1', 'k1', 'local');
-    const key2 = createKey<number>('ns2', 'k2', 'session');
-    const key3 = createKey<boolean>('ns1', 'k3', 'local');
-
-    StrictStore.save(key1, 'foo');
-    StrictStore.save(key2, 42);
-    StrictStore.save(key3, true);
-
-    const seen: Array<{ key: StoreKey<Persistable>; value: unknown }> = [];
-    StrictStore.forEach((key, value) => {
-      seen.push({ key, value });
+  test('should not invoke callback when store is empty and namespaces are not provided', () => {
+    StrictStore.forEach(() => {
+      throw new Error('dont have key');
     });
-
-    expect(seen).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          key: expect.objectContaining({ ns: 'ns1', name: 'k1' }),
-          value: 'foo',
-        }),
-        expect.objectContaining({
-          key: expect.objectContaining({ ns: 'ns2', name: 'k2' }),
-          value: 42,
-        }),
-        expect.objectContaining({
-          key: expect.objectContaining({ ns: 'ns1', name: 'k3' }),
-          value: true,
-        }),
-      ]),
-    );
-    expect(seen.length).toBe(3);
   });
 
-  test('forEach iterates over all items and passes correct arguments', () => {
-    const key1 = createKey<string>('ns', 'k1');
-    const key2 = createKey<number>('ns', 'k2', 'session');
-    StrictStore.save(key1, 'v1');
-    StrictStore.save(key2, 2);
-
-    const seen: Array<{ key: StoreKey<Persistable>; value: Persistable }> = [];
-    StrictStore.forEach((key, value) => {
-      seen.push({ key, value });
-    });
-
-    expect(seen.length).toBe(2);
-    expect(
-      seen.some((e) => e.key.name === 'k1' && e.value === 'v1' && e.key.storeType === 'local'),
-    ).toBe(true);
-    expect(
-      seen.some((e) => e.key.name === 'k2' && e.value === 2 && e.key.storeType === 'session'),
-    ).toBe(true);
+  test('should not invoke callback when store is empty and namespaces list is empty', () => {
+    StrictStore.forEach(() => {
+      throw new Error('dont have a key');
+    }, []);
   });
 
-  test('should filter by namespace if ns is provided as array', () => {
-    const key1 = createKey<string>('ns1', 'k1', 'local');
-    const key2 = createKey<number>('ns2', 'k2', 'session');
-    const key3 = createKey<boolean>('ns1', 'k3', 'local');
+  test('should not invoke callback when no keys match provided namespaces', () => {
+    StrictStore.save(keys.stringKey, 'value');
 
-    StrictStore.save(key1, 'foo');
-    StrictStore.save(key2, 42);
-    StrictStore.save(key3, true);
+    StrictStore.forEach(() => {
+      throw new Error('dont have a key');
+    }, ['ns1']);
+  });
 
-    const seen: Array<{ key: StoreKey<Persistable>; value: unknown }> = [];
+  test('should not invoke callback when multiple namespaces do not match stored key', () => {
+    StrictStore.save(keys.stringKey, 'value');
+
+    StrictStore.forEach(() => {
+      throw new Error('dont have a key');
+    }, ['ns1', 'ns2', 'ns3', 'ns4']);
+  });
+
+  test('should iterate over all stored entries when namespaces are not provided', () => {
+    StrictStore.save(keys.stringKey, 'value');
+
+    StrictStore.forEach((key, value) => {
+      expect(key).toEqual(keys.stringKey);
+      expect(value).toBe('value');
+    });
+  });
+
+  test('should iterate over all stored entries even if namespace filter does not match key namespace', () => {
+    StrictStore.save(keys.stringKey, 'value');
+
     StrictStore.forEach(
       (key, value) => {
-        seen.push({ key, value });
+        expect(key).toEqual(keys.stringKey);
+        expect(value).toBe('value');
       },
-      ['ns1'],
+      ['test-ns'],
     );
-
-    expect(seen.length).toBe(2);
-    expect(seen.every((item) => item.key.ns === 'ns1')).toBe(true);
   });
 
-  test('should filter by multiple namespaces', () => {
-    const key1 = createKey<string>('ns1', 'k1', 'local');
-    const key2 = createKey<number>('ns2', 'k2', 'session');
-    const key3 = createKey<boolean>('ns3', 'k3', 'local');
+  test('should iterate over stored entries in insertion order and provide correct index', () => {
+    StrictStore.saveBatch([
+      [keys.stringKey, 'value'],
+      [keys.numberKey, 123],
+      [keys.booleanKey, true],
+      [keys.nullKey, null],
+    ]);
 
-    StrictStore.save(key1, 'foo');
-    StrictStore.save(key2, 42);
-    StrictStore.save(key3, true);
-
-    const seen: Array<{ key: StoreKey<Persistable>; value: unknown }> = [];
     StrictStore.forEach(
-      (key, value) => {
-        seen.push({ key, value });
+      (key, value, index) => {
+        switch (index) {
+          case 0:
+            expect(key).toEqual(keys.stringKey);
+            expect(value).toBe('value');
+            break;
+          case 1:
+            expect(key).toEqual(keys.numberKey);
+            expect(value).toBe(123);
+            break;
+          case 2:
+            expect(key).toEqual(keys.booleanKey);
+            expect(value).toBe(true);
+            break;
+          default:
+            throw new Error(`key ${index} not found`);
+        }
+      },
+      ['test-ns'],
+    );
+  });
+
+  test('should iterate only over keys matching provided namespaces and preserve order', () => {
+    StrictStore.saveBatch([
+      [keys.ns1Key, 'ns1'],
+      [keys.ns2Key, 'ns2'],
+      [keys.ns3Key, 'ns3'],
+      [keys.ns4Key, 'ns4'],
+    ]);
+
+    StrictStore.forEach(
+      (key, value, index) => {
+        switch (index) {
+          case 0:
+            expect(key).toEqual(keys.ns1Key);
+            expect(value).toBe('ns1');
+            break;
+          case 1:
+            expect(key).toEqual(keys.ns3Key);
+            expect(value).toBe('ns3');
+            break;
+          default:
+            throw new Error(`key ${index} not found`);
+        }
       },
       ['ns1', 'ns3'],
     );
-
-    expect(seen.length).toBe(2);
-    expect(seen.map((item) => item.key.ns).sort()).toEqual(['ns1', 'ns3']);
   });
 
-  test('should not call callback for non-StrictStore keys', () => {
-    localStorage.setItem('randomKey', '123');
-    sessionStorage.setItem('anotherKey', '456');
+  test('should provide filtered iteration array as fourth callback argument', () => {
+    StrictStore.saveBatch([
+      [keys.ns1Key, 'ns1'],
+      [keys.ns2Key, 'ns2'],
+      [keys.ns3Key, 'ns3'],
+      [keys.ns4Key, 'ns4'],
+    ]);
 
-    const key = createKey<string>('ns', 'k', 'local');
-    StrictStore.save(key, 'foo');
-
-    const seen: StoreKey<Persistable>[] = [];
-    StrictStore.forEach((key) => seen.push(key));
-
-    expect(seen.length).toBe(1);
-    expect(seen[0].ns).toBe('ns');
-    expect(seen[0].name).toBe('k');
+    StrictStore.forEach(
+      (key, value, index, array) => {
+        expect(array).toEqual([
+          {
+            key: keys.ns1Key,
+            value: 'ns1',
+          },
+          {
+            key: keys.ns3Key,
+            value: 'ns3',
+          },
+        ]);
+      },
+      ['ns1', 'ns3'],
+    );
   });
 });
