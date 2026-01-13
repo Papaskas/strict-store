@@ -28,7 +28,7 @@ import { KEY_PREFIX } from '@src/domain/constants/key.constant';
 export class StrictStoreService {
   constructor(
     private readonly storageProvider: StorageProviderPort,
-    private readonly serializer: SerializerPort,
+    private readonly serializationAdapter: SerializerPort,
   ) {}
 
   /**
@@ -54,7 +54,7 @@ export class StrictStoreService {
     const raw = storage.get(keyPolicy.makeKey(key.ns, key.name));
 
     if (!raw) return null;
-    return this.serializer.parse<T>(raw);
+    return this.serializationAdapter.parse<T>(raw);
   }
 
   /**
@@ -102,7 +102,7 @@ export class StrictStoreService {
     if (value === null) this.delete(key);
     else {
       const storage = this.storageProvider.get(key.storeType);
-      storage.set(keyPolicy.makeKey(key.ns, key.name), this.serializer.stringify(value));
+      storage.set(keyPolicy.makeKey(key.ns, key.name), this.serializationAdapter.stringify(value));
     }
   }
 
@@ -249,8 +249,8 @@ export class StrictStoreService {
 
       callback(
         storeKey,
-        e.newValue !== null ? this.serializer.parse(e.newValue) : null,
-        e.oldValue !== null ? this.serializer.parse(e.oldValue) : null,
+        e.newValue !== null ? this.serializationAdapter.parse(e.newValue) : null,
+        e.oldValue !== null ? this.serializationAdapter.parse(e.oldValue) : null,
       );
     };
 
@@ -378,7 +378,7 @@ export class StrictStoreService {
 
         result.push({
           key: storeKey,
-          value: this.serializer.parse(valueStr),
+          value: this.serializationAdapter.parse(valueStr),
         });
       }
     }
