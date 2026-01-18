@@ -12,7 +12,7 @@
  * export type StoreKey<T> = {
  *   ns: string;
  *   name: string;
- *   storeType: PersistenceType;
+ *   persistenceType: PersistenceType;
  *   readonly [phantomTypeSymbol]?: T; // phantom link, no runtime field
  * };
  *

@@ -1,4 +1,4 @@
-import { Persistable } from '@src/domain/entities/persistable.entity';
+import { Persistable } from '@src/domain/entities/core/persistable.entity';
 import { PartialDeep } from 'type-fest';
 
 export interface MergePort {

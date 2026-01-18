@@ -1,4 +1,4 @@
-import { Persistable } from '@src/domain/entities/persistable.entity';
+import { Persistable } from '@src/domain/entities/core/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
 import { phantomTypeSymbol } from '@src/domain/types/phantom-type.symbol';
 

@@ -1,9 +1,9 @@
 import { keyPolicy } from '@src/domain/policies/key.policy';
 import { onChangePolicy } from '@src/domain/policies/on-change.policy';
 import { nsPolicy } from '@src/domain/policies/ns.policy';
-import { Persistable } from '@src/domain/entities/persistable.entity';
+import { Persistable } from '@src/domain/entities/core/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
-import { PersistenceType } from '@src/domain/entities/persistence-type.entity';
+import { PersistenceType } from '@src/domain/entities/core/persistence-type.entity';
 import { SerializerPort } from '@src/domain/ports/serializer.port';
 import { StorageProviderPort } from '@src/domain/ports/storage-provider.port';
 import { phantomTypeSymbol } from '@src/domain/types/phantom-type.symbol';
@@ -439,12 +439,12 @@ export class StrictStoreService {
    * const userKeys = StrictStore.keys(['user']);
    *
    * userKeys.forEach(key => {
-   *   console.log(key.ns, key.name, key.storeType);
+   *   console.log(key.ns, key.name, key.persistenceType);
    * });
    *
    * @remarks
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
-   * - The returned StoreKey objects include ns, name, storeType, and phantomTypeSymbol.
+   * - The returned StoreKey objects include ns, name, persistenceType, and phantomTypeSymbol.
    */
   keys(ns?: string[]): StoreKey<Persistable>[] {
     return this.entries(ns).map(({ key }) => key);

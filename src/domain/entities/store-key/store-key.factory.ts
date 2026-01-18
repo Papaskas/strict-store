@@ -1,6 +1,6 @@
-import { Persistable } from '@src/domain/entities/persistable.entity';
+import { Persistable } from '@src/domain/entities/core/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
-import { PersistenceType } from '@src/domain/entities/persistence-type.entity';
+import { PersistenceType } from '@src/domain/entities/core/persistence-type.entity';
 import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
 import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
 
@@ -12,7 +12,7 @@ import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-stor
  *
  * @param ns - Namespace to prevent name collisions (e.g., 'app', 'user')
  * @param name - Unique identifier within the ns
- * @param storeType - Determines which Web Storage API to use:
+ * @param persistenceType - Determines which Web Storage API to use:
  *                  - 'local': Uses `localStorage`
  *                  - 'session': Uses `sessionStorage`
  *
@@ -27,7 +27,7 @@ import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-stor
 export const storeKeyFactory = <T extends Persistable>(
   ns: string,
   name: string,
-  storeType: PersistenceType = 'local',
+  persistenceType: PersistenceType = 'local',
 ): StoreKey<T> => {
   if (ns.includes(':') || name.includes(':')) {
     throw new StrictStoreError(STRICT_STORE_ERROR_CODE.STORE_KEY_CONTAINS_COLON);
@@ -40,6 +40,6 @@ export const storeKeyFactory = <T extends Persistable>(
   return {
     ns: ns,
     name: name,
-    storeType: storeType,
+    persistenceType: persistenceType,
   } as const satisfies StoreKey<T>;
 };
