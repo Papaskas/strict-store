@@ -27,9 +27,10 @@ import { PartialDeep } from 'type-fest';
  */
 export class StrictStoreService {
   constructor(
-    private readonly storageProvider: StorageProviderPort,
-    private readonly serializationAdapter: SerializerPort,
-    private readonly mergeAdapter: MergePort,
+    private readonly storagePort: StorageProviderPort,
+    private readonly serializationPort: SerializerPort,
+    private readonly mergePort: MergePort,
+    private readonly messagePort: EventPort,
   ) {}
 
   /**
