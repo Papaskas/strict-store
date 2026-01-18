@@ -10,7 +10,6 @@
 - [x] Add `onChange` method - Allows you to listen for changes to the storage (this may require additional implementation for event handling)
 - [x] Add a void check for name and ns
 - [x] Add `Clear` and `Length` methods
-- [ ] Add custom `Function` for key (key themeKey has method toggle() -> StrictStore(themeKey).toggle())
 
 ## Major v5
 
@@ -28,16 +27,22 @@
 
 - [ ] Split `strict-store.service` into multiple files
 - [x] Refactor `serialization.adapter`
-- [ ] Refactor `deepMerge` method
-- [ ] Refactor return type in `parseStoreKey` method
-- [ ] Simplify `entries` method
+- [x] Refactor `deepMerge` method
+- [ ] Refactor return type in `parseKey` method
+- [x] Simplify `entries` method
 - [ ] Simplify `onChange` method
-- [ ] Refactor `DeepPartial` type
+- [x] Refactor `DeepPartial` type
+- [ ] Rename `phantomType` type
+
+### Types
+
+- [ ] Simplify `pick` method types
+- [ ] Simplify `saveBatch` method types
 
 ### Docs
 
-- [ ] Add TSDoc to `deepMerge`
 - [ ] Refactor TSDoc from 'StoreKey'
+- [ ] Refactor TSDoc `strict-store`
 
 ### Tests
 
