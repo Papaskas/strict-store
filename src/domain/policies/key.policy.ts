@@ -29,7 +29,7 @@ export const keyPolicy = {
    * // → true
    * ```
    */
-  isStrictStoreKey: (rawKey: string, ns: string[]): boolean => ns.some((p) => rawKey.startsWith(p)),
+  isStoreKey: (rawKey: string): boolean => KEY_PATTERN.test(rawKey),
 
   /**
    * Creates a full storage key name for StrictStore by combining namespace and name.
@@ -46,7 +46,8 @@ export const keyPolicy = {
    * // → 'strict-store/user:123'
    * ```
    */
-  makeKey: (ns: string, name: string) => `${KEY_PREFIX}/${ns}:${name}`,
+  makeKey: (ns: string, name: string, persistenceType: PersistenceType) =>
+    `${KEY_PREFIX}:${persistenceType}/${ns}:${name}`,
 
   /**
    * Parses a raw storage key into a strongly typed {@link StoreKey} structure.
@@ -72,15 +73,14 @@ export const keyPolicy = {
    * // }
    * ```
    */
-  parseStoreKey: (raw: string, storeType: PersistenceType): StoreKey<Persistable> | null => {
-    const m = KEY_PATTERN.exec(raw);
-    if (!m) return null;
+  parseKey: (raw: string): StoreKey<Persistable> | null => {
+    const match = KEY_PATTERN.exec(raw);
+    if (!match || !match.groups) return null;
 
-    const [, nsPart, namePart] = m;
     return {
-      ns: nsPart,
-      name: namePart,
-      storeType,
+      ns: match.groups.ns,
+      name: match.groups.name,
+      persistenceType: match.groups.type as PersistenceType,
     };
   },
 };

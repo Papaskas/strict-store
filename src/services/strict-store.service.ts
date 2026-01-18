@@ -52,11 +52,11 @@ export class StrictStoreService {
    * ```
    */
   get<T extends Persistable>(key: StoreKey<T>): T | null {
-    const storage = this.storageProvider.get(key.storeType);
-    const raw = storage.get(keyPolicy.makeKey(key.ns, key.name));
+    const storage = this.storagePort.get(key.persistenceType);
+    const raw = storage.get(keyPolicy.makeKey(key.ns, key.name, key.persistenceType));
 
     if (!raw) return null;
-    return this.serializationAdapter.parse<T>(raw);
+    return this.serializationPort.parse<T>(raw);
   }
 
   /**
@@ -103,8 +103,12 @@ export class StrictStoreService {
   save<T extends StoreKey<Persistable>>(key: T, value: T[typeof phantomTypeSymbol]): void {
     if (value === null) this.delete(key);
     else {
-      const storage = this.storageProvider.get(key.storeType);
-      storage.set(keyPolicy.makeKey(key.ns, key.name), this.serializationAdapter.stringify(value));
+      const storage = this.storagePort.get(key.persistenceType);
+
+      const rawValue = this.serializationPort.stringify(value);
+      const rawKey = keyPolicy.makeKey(key.ns, key.name, key.persistenceType);
+
+      storage.set(rawKey, rawValue);
     }
   }
 
@@ -175,7 +179,7 @@ export class StrictStoreService {
       throw new StrictStoreError(STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT);
     }
 
-    const merged = this.mergeAdapter.merge(value, partial);
+    const merged = this.mergePort.merge(value, partial);
     this.save(key, merged);
 
     return this.get(key);
@@ -325,8 +329,8 @@ export class StrictStoreService {
     const keys = isBatch ? value : [value];
 
     const results = keys.map((key) => {
-      const storage = this.storageProvider.get(key.storeType);
-      const storageKey = keyPolicy.makeKey(key.ns, key.name);
+      const storage = this.storagePort.get(key.persistenceType);
+      const storageKey = keyPolicy.makeKey(key.ns, key.name, key.persistenceType);
 
       const existed = storage.get(storageKey) !== null;
       storage.remove(storageKey);
