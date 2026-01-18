@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 
-describe.skip('Typed-array types', () => {
+describe.skip('Null types', () => {
   test('', () => {});
 });
