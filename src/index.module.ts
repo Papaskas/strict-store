@@ -4,15 +4,18 @@ import { WebStorageProvider } from '@src/infrastructure/providers/web-storage.pr
 import { SuperJsonAdapter } from '@src/infrastructure/adapters/super-json.adapter';
 import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
 import { LodashMergeAdapter } from '@src/infrastructure/adapters/lodash-merge.adapter';
+import { EventStorageAdapter } from '@src/infrastructure/adapters/event-storage.adapter';
 
 const webStorageProvider = new WebStorageProvider();
 const superJsonAdapter = new SuperJsonAdapter();
 const lodashMergeAdapter = new LodashMergeAdapter();
+const eventStorageAdapter = new EventStorageAdapter();
 
 const StrictStore = new StrictStoreService(
   webStorageProvider,
   superJsonAdapter,
   lodashMergeAdapter,
+  eventStorageAdapter,
 );
 
 export {

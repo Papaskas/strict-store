@@ -1,203 +1,193 @@
-import { StrictStore, createKey } from 'strict-store';
-import type { Persistable } from '@src/domain/entities/persistable.entity';
+import { describe, expect, vi, beforeEach, test } from 'vitest';
+import { StrictStore } from 'strict-store';
+import { keys } from '@test/entities/key.entities';
 import { keyPolicy } from '@src/domain/policies/key.policy';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { SuperJSON } from 'superjson';
+import { StoreEvent } from '@src/domain/entities/on-change/store-event.entity';
 import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
+import { Persistable } from '@src/domain/entities/core/persistable.entity';
 
-describe.skip('OnChange method', () => {
+describe('OnChange method', () => {
+  const dispatchEvent = (
+    key: StoreKey<Persistable>,
+    newValue: Persistable,
+    oldValue: Persistable = null
+  ) => {
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: keyPolicy.makeKey(key.ns, key.name, key.persistenceType),
+        newValue: SuperJSON.stringify(newValue),
+        oldValue: SuperJSON.stringify(oldValue),
+        url: window.location.href,
+      }),
+    );
+  }
+
   beforeEach(() => {
+    vi.restoreAllMocks();
     StrictStore.clear();
   });
 
-  describe('StrictStore.onChange', () => {
-    // Auxiliary function for simulating StorageEvent
-    const fireStorageEvent = <T extends Persistable>(
-      key: StoreKey<T>,
-      newValue: T,
-      oldValue: T,
-    ) => {
-      const storageKey = keyPolicy.makeKey(key.ns, key.name);
-      const storageArea = key.storeType === 'local' ? localStorage : sessionStorage;
+  test('should not invoke the callback immediately upon subscription for a string key', () => {
+    const callback = vi.fn();
 
-      const serialize = (v: Persistable) =>
-        v === null ? null : typeof v === 'string' ? v : JSON.stringify(v);
+    const unsub = StrictStore.onChange(callback, keys.stringKey);
 
-      const event = new StorageEvent('storage', {
-        key: storageKey,
-        newValue: serialize(newValue),
-        oldValue: serialize(oldValue),
-        storageArea,
+    expect(callback).not.toHaveBeenCalled();
+    unsub();
+  });
+
+  test('should not invoke the callback immediately upon subscription for a null key', () => {
+    const callback = vi.fn();
+
+    const unsub = StrictStore.onChange(callback, keys.nullKey);
+
+    expect(callback).not.toHaveBeenCalled();
+    unsub();
+  });
+
+  test('should ignore dispatched storage events that do not match the subscribed key', () => {
+    const callback = vi.fn();
+
+    const unsub = StrictStore.onChange(callback, keys.nullKey);
+
+    dispatchEvent(keys.stringKey, 'someValue');
+
+    expect(callback).not.toHaveBeenCalled();
+    unsub();
+  });
+
+  test('should trigger the callback when a storage event with a matching null key is detected', () => {
+    const callback = vi.fn();
+
+    const unsub = StrictStore.onChange(callback, keys.nullKey);
+
+    dispatchEvent(keys.nullKey, null);
+
+    expect(callback).toHaveBeenCalled();
+    unsub();
+  });
+
+  test('should trigger the callback when a storage event with a matching string key is detected', () => {
+    const callback = vi.fn();
+
+    const unsub = StrictStore.onChange(callback, keys.stringKey);
+
+    dispatchEvent(keys.stringKey, 'new val');
+
+    expect(callback).toHaveBeenCalled();
+    unsub();
+  });
+
+  test('should cease callback execution for a null key after the unsubscription function is called', () => {
+    const callback = vi.fn();
+
+    const unsub = StrictStore.onChange(callback, keys.nullKey);
+    unsub();
+
+    dispatchEvent(keys.nullKey, 'new val');
+
+    expect(callback).not.toHaveBeenCalled();
+  });
+
+  test('should cease callback execution for a string key after the unsubscription function is called', () => {
+    const callback = vi.fn();
+
+    const unsub = StrictStore.onChange(callback, keys.stringKey);
+    unsub();
+
+    dispatchEvent(keys.stringKey, 'new val');
+
+    expect(callback).not.toHaveBeenCalled();
+  });
+
+  test('should provide a correctly mapped StoreEvent object for primitive value updates', () => {
+    const callback = vi.fn((ev: StoreEvent) => {
+      expect(ev).toEqual({
+        oldValue: null,
+        newValue: 'new val',
+        url: expect.any(String),
+        key: keys.stringKey,
+        isTrusted: false,
+        timestamp: expect.any(Number),
       });
-
-      window.dispatchEvent(event);
-    };
-
-    it('calls callback on storage event for strict-store key (no target)', () => {
-      const key = createKey<{ foo: string }>('ns', 'k', 'local');
-      const oldVal = { foo: 'old' };
-      const newVal = { foo: 'new' };
-
-      let called = false;
-      StrictStore.save(key, oldVal);
-
-      const unsubscribe = StrictStore.onChange((changedKey, newValue, oldValue) => {
-        called = true;
-        expect(changedKey).toEqual({
-          ns: key.ns,
-          name: key.name,
-          storeType: key.storeType,
-          __type: undefined,
-        });
-        expect(newValue).toEqual(newVal);
-        expect(oldValue).toEqual(oldVal);
-        expect(changedKey.storeType).toBe('local');
-      });
-
-      fireStorageEvent(key, newVal, oldVal);
-
-      expect(called).toBe(true);
-      unsubscribe();
     });
 
-    it('does not call callback for non-strict-store key', () => {
-      let called = false;
-      const unsubscribe = StrictStore.onChange(() => {
-        called = true;
-      });
+    const unsub = StrictStore.onChange(callback, keys.stringKey);
 
-      const event = new StorageEvent('storage', {
-        key: 'randomKey',
-        newValue: '1',
-        oldValue: '2',
-        storageArea: localStorage,
-      });
-      window.dispatchEvent(event);
+    dispatchEvent(keys.stringKey, 'new val');
 
-      expect(called).toBe(false);
-      unsubscribe();
-    });
+    expect(callback).toHaveBeenCalled();
+    unsub()
+  });
 
-    it('filters by namespace (string target)', () => {
-      const key1 = createKey<string>('ns1', 'k1', 'local');
-      const key2 = createKey<string>('ns2', 'k2', 'local');
-
-      let called = false;
-      const unsubscribe = StrictStore.onChange(
-        (changedKey) => {
-          expect(changedKey.ns).toBe('ns1');
-          called = true;
+  test('should provide a correctly mapped StoreEvent object with deserialized complex data structures', () => {
+    const callback = vi.fn((ev: StoreEvent) => {
+      expect(ev).toEqual({
+        oldValue: null,
+        newValue: {
+          name: 'StrictStore',
+          tags: ['storage', 'area'],
         },
-        ['ns1'],
-      );
-
-      fireStorageEvent(key2, 'foo', 'bar');
-      expect(called).toBe(false);
-
-      fireStorageEvent(key1, 'baz', 'foo');
-      expect(called).toBe(true);
-
-      unsubscribe();
+        url: expect.any(String),
+        key: keys.objectWithArray,
+        isTrusted: false,
+        timestamp: expect.any(Number),
+      });
     });
 
-    it('filters by array of namespaces (string[] target)', () => {
-      const key1 = createKey<string>('ns1', 'k1', 'local');
-      const key2 = createKey<string>('ns2', 'k2', 'local');
-      const key3 = createKey<string>('ns3', 'k3', 'local');
+    const unsub = StrictStore.onChange(callback, keys.objectWithArray);
 
-      const seen: string[] = [];
-      const unsubscribe = StrictStore.onChange(
-        (changedKey) => seen.push(changedKey.ns),
-        ['ns1', 'ns3'],
-      );
-
-      fireStorageEvent(key1, 'v1', null);
-      fireStorageEvent(key2, 'v2', null);
-      fireStorageEvent(key3, 'v3', null);
-
-      expect(seen).toEqual(['ns1', 'ns3']);
-      unsubscribe();
+    dispatchEvent(keys.objectWithArray, {
+      name: 'StrictStore',
+      tags: ['storage', 'area'],
     });
 
-    it('filters by StoreKey (single key target)', () => {
-      const key1 = createKey<string>('ns', 'k1', 'local');
-      const key2 = createKey<string>('ns', 'k2', 'local');
+    expect(callback).toHaveBeenCalled();
+    unsub()
+  });
 
-      let called = false;
-      const unsubscribe = StrictStore.onChange(
-        (changedKey) => {
-          expect(changedKey.name).toBe('k1');
-          called = true;
+  test('should provide accurate state transitions and metadata when updating complex objects', () => {
+    const callback = vi.fn();
+
+    const unsub = StrictStore.onChange(callback, keys.objectWithArray);
+
+    dispatchEvent(keys.objectWithArray, {
+      name: 'old val',
+      tags: ['old', 'val'],
+    });
+
+    dispatchEvent(
+      keys.objectWithArray,
+      {
+        name: 'new val',
+        tags: ['new val'],
+      },
+      {
+        name: 'old val',
+        tags: ['old', 'val'],
+      },
+    );
+
+    expect(callback).toHaveBeenCalled();
+
+    expect(callback).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        key: keys.objectWithArray,
+        oldValue: {
+          name: 'old val',
+          tags: ['old', 'val'],
         },
-        [key1],
-      );
+        newValue: {
+          name: 'new val',
+          tags: ['new val'],
+        },
+        isTrusted: false,
+        timestamp: expect.any(Number),
+        url: expect.any(String),
+      }),
+    );
 
-      fireStorageEvent(key2, 'foo', 'bar');
-      expect(called).toBe(false);
-
-      fireStorageEvent(key1, 'baz', 'foo');
-      expect(called).toBe(true);
-
-      unsubscribe();
-    });
-
-    it('filters by array of StoreKeys (StoreKey[] target)', () => {
-      const key1 = createKey<string>('ns', 'k1', 'local');
-      const key2 = createKey<string>('ns', 'k2', 'local');
-      const key3 = createKey<string>('ns', 'k3', 'local');
-
-      const seen: string[] = [];
-      const unsubscribe = StrictStore.onChange(
-        (changedKey) => seen.push(changedKey.name),
-        [key1, key3],
-      );
-
-      fireStorageEvent(key1, 'new1', 'v1');
-      fireStorageEvent(key2, 'new2', 'v2');
-      fireStorageEvent(key3, 'new3', 'v3');
-
-      expect(seen).toEqual(['k1', 'k3']);
-      unsubscribe();
-    });
-
-    it('unsubscribes correctly', () => {
-      const key = createKey<string>('ns', 'k', 'local');
-      let called = false;
-      const unsubscribe = StrictStore.onChange(() => {
-        called = true;
-      }, [key]);
-
-      unsubscribe();
-
-      fireStorageEvent(key, 'foo', 'bar');
-      expect(called).toBe(false);
-    });
-
-    it('unsubscribes correctly with namespace', () => {
-      const key = createKey<string>('ns', 'k', 'local');
-      let called = false;
-      const unsubscribe = StrictStore.onChange(() => {
-        called = true;
-      }, ['ns']);
-
-      unsubscribe();
-
-      fireStorageEvent(key, 'foo', 'bar');
-      expect(called).toBe(false);
-    });
-
-    it('does not call callback for keys not in the filter', () => {
-      const key1 = createKey<string>('ns', 'k1', 'local');
-      const key2 = createKey<string>('ns', 'k2', 'local');
-
-      let called = false;
-      const unsubscribe = StrictStore.onChange(() => {
-        called = true;
-      }, [key1]);
-
-      fireStorageEvent(key2, 'foo', 'bar');
-      expect(called).toBe(false);
-
-      unsubscribe();
-    });
+    unsub();
   });
 });

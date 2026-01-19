@@ -1,6 +1,4 @@
 import { keyPolicy } from '@src/domain/policies/key.policy';
-import { onChangePolicy } from '@src/domain/policies/on-change.policy';
-import { nsPolicy } from '@src/domain/policies/ns.policy';
 import { Persistable } from '@src/domain/entities/core/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
 import { PersistenceType } from '@src/domain/entities/core/persistence-type.entity';
@@ -9,9 +7,12 @@ import { StorageProviderPort } from '@src/domain/ports/storage-provider.port';
 import { phantomTypeSymbol } from '@src/domain/types/phantom-type.symbol';
 import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
 import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
-import { KEY_PREFIX } from '@src/domain/constants/key.constant';
 import { MergePort } from '@src/domain/ports/merge.port';
 import { PartialDeep } from 'type-fest';
+import { EventPort } from '@src/domain/ports/event.port';
+import { Unsubscribe } from '@src/domain/entities/on-change/unsubscribe.entity';
+import { StoreEvent } from '@src/domain/entities/on-change/store-event.entity';
+import { isEqual } from 'lodash';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -30,7 +31,7 @@ export class StrictStoreService {
     private readonly storagePort: StorageProviderPort,
     private readonly serializationPort: SerializerPort,
     private readonly mergePort: MergePort,
-    private readonly messagePort: EventPort,
+    private readonly eventPort: EventPort,
   ) {}
 
   /**
@@ -250,32 +251,28 @@ export class StrictStoreService {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event
    */
   onChange(
-    callback: (key: StoreKey<Persistable>, newValue: Persistable, oldValue: Persistable) => void,
-    target?: StoreKey<Persistable>[] | string[],
-  ) {
-    const { keyNames, nsPrefixes } = onChangePolicy.resolveTargets(target);
+    callback: (res: StoreEvent) => void,
+    target: StoreKey<Persistable>,
+  ): Unsubscribe {
+    return this.eventPort.subscribe((res) => {
+      if (
+        res.key === null ||
+        !keyPolicy.isStoreKey(res.key) ||
+        !isEqual(keyPolicy.parseKey(res.key), target)
+      )
+        return;
 
-    const handler = (e: StorageEvent) => {
-      if (!onChangePolicy.isStrictStoreEvent(e, keyNames, nsPrefixes)) return;
+      const result: StoreEvent = {
+        key: target,
+        oldValue: res.oldValue && this.serializationPort.parse(res.oldValue),
+        newValue: res.newValue && this.serializationPort.parse(res.newValue),
+        url: res.url,
+        isTrusted: res.isTrusted,
+        timestamp: res.timeStamp,
+      };
 
-      const storeKey = keyPolicy.parseStoreKey(
-        e.key!,
-        e.storageArea === localStorage ? 'local' : 'session',
-      );
-      if (!storeKey) return;
-
-      callback(
-        storeKey,
-        e.newValue !== null ? this.serializationAdapter.parse(e.newValue) : null,
-        e.oldValue !== null ? this.serializationAdapter.parse(e.oldValue) : null,
-      );
-    };
-
-    window.addEventListener('storage', handler);
-
-    return () => {
-      window.removeEventListener('storage', handler);
-    };
+      callback(result);
+    });
   }
 
   /**
