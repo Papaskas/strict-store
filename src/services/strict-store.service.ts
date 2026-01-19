@@ -370,32 +370,31 @@ export class StrictStoreService {
   entries(ns?: string[]): { key: StoreKey<Persistable>; value: Persistable }[] {
     if (Array.isArray(ns) && ns.length === 0) return [];
 
-    const prefixes: string[] =
-      ns === undefined ? [`${KEY_PREFIX}/`] : nsPolicy.resolveNamespacePrefixes(KEY_PREFIX, ns);
-
-    const storages: [Storage, PersistenceType][] = [
-      [localStorage, 'local'],
-      [sessionStorage, 'session'],
-    ];
-
     const result: { key: StoreKey<Persistable>; value: Persistable }[] = [];
 
-    for (let s = 0; s < storages.length; s++) {
-      const [storage, storageType] = storages[s];
+    const sources: { storage: Storage; type: PersistenceType }[] = [
+      { storage: localStorage, type: 'local' },
+      { storage: sessionStorage, type: 'session' },
+    ];
 
-      for (let i = 0; i < storage.length; i++) {
-        const rawKey = storage.key(i);
-        if (!rawKey || !keyPolicy.isStrictStoreKey(rawKey, prefixes)) continue;
+    for (const source of sources) {
+      const allKeys = Object.keys(source.storage);
 
-        const valueStr = storage.getItem(rawKey);
-        if (!valueStr) continue;
+      for (const rawKey of allKeys) {
+        if (!keyPolicy.isStoreKey(rawKey)) continue;
 
-        const storeKey = keyPolicy.parseStoreKey(rawKey, storageType);
-        if (!storeKey) continue;
+        const parsedKey = keyPolicy.parseKey(rawKey);
+        if (parsedKey === null) continue;
 
+        if (ns && ns.length > 0 && !ns.includes(parsedKey.ns)) continue;
+
+        const rawValue = source.storage.getItem(rawKey);
+        if (rawValue === null) continue;
+
+        const value = this.serializationPort.parse(rawValue);
         result.push({
-          key: storeKey,
-          value: this.serializationAdapter.parse(valueStr),
+          key: parsedKey,
+          value: value,
         });
       }
     }
