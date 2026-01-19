@@ -206,8 +206,8 @@ export class StrictStoreService {
       value: Persistable,
       index: number,
       array: {
-        key: StoreKey<Persistable>,
-        value: Persistable,
+        key: StoreKey<Persistable>;
+        value: Persistable;
       }[],
     ) => void,
     ns?: string[],
