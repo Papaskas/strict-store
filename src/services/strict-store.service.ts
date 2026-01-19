@@ -329,7 +329,7 @@ export class StrictStoreService {
       const storage = this.storagePort.get(key.persistenceType);
       const storageKey = keyPolicy.makeKey(key.ns, key.name, key.persistenceType);
 
-      const existed = storage.get(storageKey) !== null;
+      const existed = this.has(key);  
       storage.remove(storageKey);
 
       return existed;
