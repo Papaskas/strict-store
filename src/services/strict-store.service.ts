@@ -3,7 +3,7 @@ import { Persistable } from '@src/domain/entities/core/persistable.entity';
 import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
 import { PersistenceType } from '@src/domain/entities/core/persistence-type.entity';
 import { SerializerPort } from '@src/domain/ports/serializer.port';
-import { StorageProviderPort } from '@src/domain/ports/storage-provider.port';
+import { StorageResolverPort } from '@src/domain/ports/storage.resolver.port';
 import { typeMarkerSymbol } from '@src/domain/types/type-marker.symbol';
 import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
 import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
@@ -29,8 +29,8 @@ import { isEqual } from 'lodash';
  */
 export class StrictStoreService {
   constructor(
-    private readonly storagePort: StorageProviderPort,
-    private readonly serializationPort: SerializerPort,
+    private readonly storagePort: StorageResolverPort,
+    private readonly serializerPort: SerializerPort,
     private readonly mergePort: MergePort,
     private readonly eventPort: EventPort,
   ) {}
@@ -54,11 +54,11 @@ export class StrictStoreService {
    * ```
    */
   get<T extends Persistable>(key: StoreKey<T>): T | null {
-    const storage = this.storagePort.get(key.persistenceType);
+    const storage = this.storagePort.resolve(key.persistenceType);
     const raw = storage.get(keyPolicy.makeKey(key.ns, key.name, key.persistenceType));
 
     if (!raw) return null;
-    return this.serializationPort.parse<T>(raw);
+    return this.serializerPort.parse<T>(raw);
   }
 
   /**
@@ -105,12 +105,12 @@ export class StrictStoreService {
   save<T extends StoreKey<Persistable>>(key: T, value: T[typeof typeMarkerSymbol]): void {
     if (value === null) this.delete(key);
     else {
-      const storage = this.storagePort.get(key.persistenceType);
+      const storage = this.storagePort.resolve(key.persistenceType);
 
       const oldValue = this.get(key as StoreKey<Persistable>);
-      const rawOldValue = this.serializationPort.stringify(oldValue);
+      const rawOldValue = this.serializerPort.stringify(oldValue);
 
-      const rawValue = this.serializationPort.stringify(value);
+      const rawValue = this.serializerPort.stringify(value);
       const rawKey = keyPolicy.makeKey(key.ns, key.name, key.persistenceType);
 
       storage.set(rawKey, rawValue);
@@ -272,8 +272,8 @@ export class StrictStoreService {
 
       const result: EventMessage = {
         key: keyPolicy.parseKey(msg.key)!,
-        newValue: msg.newValue && this.serializationPort.parse(msg.newValue),
-        oldValue: msg.oldValue && this.serializationPort.parse(msg.oldValue),
+        newValue: msg.newValue && this.serializerPort.parse(msg.newValue),
+        oldValue: msg.oldValue && this.serializerPort.parse(msg.oldValue),
         timestamp: msg.timestamp,
       };
 
@@ -332,7 +332,7 @@ export class StrictStoreService {
     const keys = isBatch ? value : [value];
 
     const results = keys.map((key) => {
-      const storage = this.storagePort.get(key.persistenceType);
+      const storage = this.storagePort.resolve(key.persistenceType);
       const storageKey = keyPolicy.makeKey(key.ns, key.name, key.persistenceType);
 
       const existed = this.has(key);
@@ -403,7 +403,7 @@ export class StrictStoreService {
         const rawValue = source.storage.getItem(rawKey);
         if (rawValue === null) continue;
 
-        const value = this.serializationPort.parse(rawValue);
+        const value = this.serializerPort.parse(rawValue);
         result.push({
           key: parsedKey,
           value: value,
