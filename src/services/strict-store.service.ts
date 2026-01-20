@@ -12,8 +12,8 @@ import { PartialDeep } from 'type-fest';
 import { Unsubscribe } from '@src/domain/entities/on-change/unsubscribe.entity';
 import { EventMessage } from '@src/domain/entities/on-change/event-message.entity';
 import { EventPort } from '@src/domain/ports/event.port';
-import { createKey } from 'strict-store';
 import { isEqual } from 'lodash';
+import { PickResult } from '@src/domain/types/pick-result.type';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -77,13 +77,11 @@ export class StrictStoreService {
    * const [theme, lang] = StrictStore.pick([themeKey, langKey]);
    * ```
    */
-  pick<const K extends StoreKey<Persistable>[]>(
-    keys: K,
-  ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never } {
-    const out: unknown[] = new Array(keys.length);
+  pick<const K extends StoreKey<Persistable>[]>(keys: K): PickResult<K> {
+    const out = new Array(keys.length);
     for (let i = 0; i < keys.length; i++) out[i] = this.get(keys[i]);
 
-    return out as { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never };
+    return out as PickResult<K>;
   }
 
   /**
