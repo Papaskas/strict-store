@@ -9,6 +9,18 @@ export const keys = {
 
   nullKey: createKey<null>('test-ns', 'null', 'local'),
 
+  undefinedKey: createKey<undefined>('test-ns', 'undefined', 'local'),
+
+  bigintKey: createKey<bigint>('test-ns', 'bigint', 'local'),
+
+  regexpKey: createKey<RegExp>('test-ns', 'regexp', 'local'),
+
+  dateKey: createKey<Date>('test-ns', 'date', 'local'),
+
+  urlKey: createKey<URL>('test-ns', 'URL', 'local'),
+
+  errorKey: createKey<Error>('test-ns', 'null', 'local'),
+
   objIncludedObj: createKey<{ a: number; b: { c: number; d: number } }>('test-ns', 'user'),
 
   objectKey: createKey<{ name: string; age: number; email?: string }>('test-ns', 'user'),
