@@ -1,193 +1,172 @@
 import { describe, expect, vi, beforeEach, test } from 'vitest';
 import { StrictStore } from 'strict-store';
 import { keys } from '@test/entities/key.entities';
-import { keyPolicy } from '@src/domain/policies/key.policy';
-import { SuperJSON } from 'superjson';
-import { StoreEvent } from '@src/domain/entities/on-change/store-event.entity';
-import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
-import { Persistable } from '@src/domain/entities/core/persistable.entity';
 
 describe('OnChange method', () => {
-  const dispatchEvent = (
-    key: StoreKey<Persistable>,
-    newValue: Persistable,
-    oldValue: Persistable = null
-  ) => {
-    window.dispatchEvent(
-      new StorageEvent('storage', {
-        key: keyPolicy.makeKey(key.ns, key.name, key.persistenceType),
-        newValue: SuperJSON.stringify(newValue),
-        oldValue: SuperJSON.stringify(oldValue),
-        url: window.location.href,
-      }),
-    );
-  }
-
   beforeEach(() => {
     vi.restoreAllMocks();
     StrictStore.clear();
   });
 
-  test('should not invoke the callback immediately upon subscription for a string key', () => {
-    const callback = vi.fn();
+  describe('test local emitter', () => {
+    test('does not call listener immediately after subscription', () => {
+      const callback = vi.fn();
 
-    const unsub = StrictStore.onChange(callback, keys.stringKey);
+      const unsub = StrictStore.onChange(callback, keys.stringKey);
 
-    expect(callback).not.toHaveBeenCalled();
-    unsub();
-  });
+      expect(callback).not.toHaveBeenCalled();
+      unsub();
+    });
 
-  test('should not invoke the callback immediately upon subscription for a null key', () => {
-    const callback = vi.fn();
+    test('does not call listener after immediate unsubscription', () => {
+      const callback = vi.fn();
 
-    const unsub = StrictStore.onChange(callback, keys.nullKey);
+      const unsub = StrictStore.onChange(callback, keys.stringKey);
+      unsub();
 
-    expect(callback).not.toHaveBeenCalled();
-    unsub();
-  });
+      expect(callback).not.toHaveBeenCalled();
+    });
 
-  test('should ignore dispatched storage events that do not match the subscribed key', () => {
-    const callback = vi.fn();
+    test('does not call listener when another key is modified', () => {
+      const callback = vi.fn();
 
-    const unsub = StrictStore.onChange(callback, keys.nullKey);
+      const unsub = StrictStore.onChange(callback, keys.stringKey);
+      StrictStore.save(keys.numberKey, 100);
 
-    dispatchEvent(keys.stringKey, 'someValue');
+      expect(callback).not.toHaveBeenCalled();
+      unsub();
+    });
 
-    expect(callback).not.toHaveBeenCalled();
-    unsub();
-  });
+    test('does not call listener after unsubscription even if the watched key changes', () => {
+      const callback = vi.fn();
 
-  test('should trigger the callback when a storage event with a matching null key is detected', () => {
-    const callback = vi.fn();
+      const unsub = StrictStore.onChange(callback, keys.stringKey);
+      unsub();
 
-    const unsub = StrictStore.onChange(callback, keys.nullKey);
+      StrictStore.save(keys.stringKey, 'dont watching');
 
-    dispatchEvent(keys.nullKey, null);
+      expect(callback).not.toHaveBeenCalled();
+    });
 
-    expect(callback).toHaveBeenCalled();
-    unsub();
-  });
-
-  test('should trigger the callback when a storage event with a matching string key is detected', () => {
-    const callback = vi.fn();
-
-    const unsub = StrictStore.onChange(callback, keys.stringKey);
-
-    dispatchEvent(keys.stringKey, 'new val');
-
-    expect(callback).toHaveBeenCalled();
-    unsub();
-  });
-
-  test('should cease callback execution for a null key after the unsubscription function is called', () => {
-    const callback = vi.fn();
-
-    const unsub = StrictStore.onChange(callback, keys.nullKey);
-    unsub();
-
-    dispatchEvent(keys.nullKey, 'new val');
-
-    expect(callback).not.toHaveBeenCalled();
-  });
-
-  test('should cease callback execution for a string key after the unsubscription function is called', () => {
-    const callback = vi.fn();
-
-    const unsub = StrictStore.onChange(callback, keys.stringKey);
-    unsub();
-
-    dispatchEvent(keys.stringKey, 'new val');
-
-    expect(callback).not.toHaveBeenCalled();
-  });
-
-  test('should provide a correctly mapped StoreEvent object for primitive value updates', () => {
-    const callback = vi.fn((ev: StoreEvent) => {
-      expect(ev).toEqual({
-        oldValue: null,
-        newValue: 'new val',
-        url: expect.any(String),
-        key: keys.stringKey,
-        isTrusted: false,
-        timestamp: expect.any(Number),
+    test('calls listener on first save of the watched key', () => {
+      const callback = vi.fn((el) => {
+        expect(el).toEqual({
+          oldValue: null,
+          newValue: 'new value',
+          key: keys.stringKey,
+          timestamp: expect.any(Number),
+        });
       });
+
+      const unsub = StrictStore.onChange(callback, keys.stringKey);
+      StrictStore.save(keys.stringKey, 'new value');
+
+      expect(callback).toHaveBeenCalled();
+      unsub();
     });
 
-    const unsub = StrictStore.onChange(callback, keys.stringKey);
+    test('does not call listener when deleting a non-existent watched key', () => {
+      const callback = vi.fn();
 
-    dispatchEvent(keys.stringKey, 'new val');
+      const unsub = StrictStore.onChange(callback, keys.stringKey);
+      StrictStore.delete(keys.stringKey);
 
-    expect(callback).toHaveBeenCalled();
-    unsub()
-  });
+      expect(callback).not.toHaveBeenCalled();
+      unsub();
+    });
 
-  test('should provide a correctly mapped StoreEvent object with deserialized complex data structures', () => {
-    const callback = vi.fn((ev: StoreEvent) => {
-      expect(ev).toEqual({
-        oldValue: null,
-        newValue: {
-          name: 'StrictStore',
-          tags: ['storage', 'area'],
-        },
-        url: expect.any(String),
-        key: keys.objectWithArray,
-        isTrusted: false,
-        timestamp: expect.any(Number),
+    test('does not call listener when deleting a watched key that resolves to null and does not exist', () => {
+      const callback = vi.fn();
+
+      const unsub = StrictStore.onChange(callback, keys.nullKey);
+      StrictStore.delete(keys.nullKey);
+
+      expect(callback).not.toHaveBeenCalled();
+      unsub();
+    });
+
+    test('calls listener when deleting an existing watched key', () => {
+      const callback = vi.fn((el) => {
+        expect(el).toEqual({
+          oldValue: 'value',
+          newValue: null,
+          key: keys.stringKey,
+          timestamp: expect.any(Number),
+        });
       });
+
+      StrictStore.save(keys.stringKey, 'value');
+      const unsub = StrictStore.onChange(callback, keys.stringKey);
+      StrictStore.delete(keys.stringKey);
+
+      expect(callback).toHaveBeenCalled();
+      unsub();
     });
 
-    const unsub = StrictStore.onChange(callback, keys.objectWithArray);
+    test('calls listener when updating an existing watched key', () => {
+      const callback = vi.fn((el) => {
+        expect(el).toEqual({
+          oldValue: 'value',
+          newValue: 'new value',
+          key: keys.stringKey,
+          timestamp: expect.any(Number),
+        });
+      });
 
-    dispatchEvent(keys.objectWithArray, {
-      name: 'StrictStore',
-      tags: ['storage', 'area'],
+      StrictStore.save(keys.stringKey, 'value');
+      const unsub = StrictStore.onChange(callback, keys.stringKey);
+      StrictStore.save(keys.stringKey, 'new value');
+
+      expect(callback).toHaveBeenCalled();
+      unsub();
     });
 
-    expect(callback).toHaveBeenCalled();
-    unsub()
+    test('calls listener when replacing a complex object value', () => {
+      const callback = vi.fn((el) => {
+        expect(el).toEqual({
+          oldValue: {
+            user: {
+              name: 'old name',
+              tags: ['a', 'b', 'c'],
+              permissions: new Set<string>(['a', 'b', 'c']),
+            },
+          },
+          newValue: {
+            user: {
+              name: 'new name',
+              tags: ['z', 'x'],
+              permissions: new Set<string>(['z', 'x']),
+            },
+          },
+          key: keys.objectWithArrayAndSet,
+          timestamp: expect.any(Number),
+        });
+      });
+
+      StrictStore.save(keys.objectWithArrayAndSet, {
+        user: {
+          name: 'old name',
+          tags: ['a', 'b', 'c'],
+          permissions: new Set<string>(['a', 'b', 'c']),
+        },
+      });
+      const unsub = StrictStore.onChange(callback, keys.objectWithArrayAndSet);
+      StrictStore.save(keys.objectWithArrayAndSet, {
+        user: {
+          name: 'new name',
+          tags: ['z', 'x'],
+          permissions: new Set<string>(['z', 'x']),
+        },
+      });
+
+      expect(callback).toHaveBeenCalled();
+      unsub();
+    });
   });
 
-  test('should provide accurate state transitions and metadata when updating complex objects', () => {
-    const callback = vi.fn();
+  describe('test events', () => {
+    test('', () => {
 
-    const unsub = StrictStore.onChange(callback, keys.objectWithArray);
-
-    dispatchEvent(keys.objectWithArray, {
-      name: 'old val',
-      tags: ['old', 'val'],
-    });
-
-    dispatchEvent(
-      keys.objectWithArray,
-      {
-        name: 'new val',
-        tags: ['new val'],
-      },
-      {
-        name: 'old val',
-        tags: ['old', 'val'],
-      },
-    );
-
-    expect(callback).toHaveBeenCalled();
-
-    expect(callback).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        key: keys.objectWithArray,
-        oldValue: {
-          name: 'old val',
-          tags: ['old', 'val'],
-        },
-        newValue: {
-          name: 'new val',
-          tags: ['new val'],
-        },
-        isTrusted: false,
-        timestamp: expect.any(Number),
-        url: expect.any(String),
-      }),
-    );
-
-    unsub();
+    })
   });
 });

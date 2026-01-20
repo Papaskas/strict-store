@@ -9,9 +9,10 @@ import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error
 import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
 import { MergePort } from '@src/domain/ports/merge.port';
 import { PartialDeep } from 'type-fest';
-import { EventPort } from '@src/domain/ports/event.port';
 import { Unsubscribe } from '@src/domain/entities/on-change/unsubscribe.entity';
-import { StoreEvent } from '@src/domain/entities/on-change/store-event.entity';
+import { EventMessage } from '@src/domain/entities/on-change/event-message.entity';
+import { EventPort } from '@src/domain/ports/event.port';
+import { createKey } from 'strict-store';
 import { isEqual } from 'lodash';
 
 /**
@@ -106,10 +107,21 @@ export class StrictStoreService {
     else {
       const storage = this.storagePort.get(key.persistenceType);
 
+      const oldValue = this.get(key as StoreKey<Persistable>);
+      const rawOldValue = this.serializationPort.stringify(oldValue);
+
       const rawValue = this.serializationPort.stringify(value);
       const rawKey = keyPolicy.makeKey(key.ns, key.name, key.persistenceType);
 
       storage.set(rawKey, rawValue);
+
+      if (rawValue !== rawOldValue)
+        this.eventPort.publish({
+          key: rawKey,
+          timestamp: Date.now(),
+          newValue: rawValue,
+          oldValue: rawOldValue,
+        });
     }
   }
 
@@ -251,28 +263,22 @@ export class StrictStoreService {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event
    */
   onChange(
-    callback: (res: StoreEvent) => void,
+    callback: (msg: EventMessage) => void,
     target: StoreKey<Persistable>,
+    options: AddEventListenerOptions = {},
   ): Unsubscribe {
-    return this.eventPort.subscribe((res) => {
-      if (
-        res.key === null ||
-        !keyPolicy.isStoreKey(res.key) ||
-        !isEqual(keyPolicy.parseKey(res.key), target)
-      )
-        return;
+    return this.eventPort.subscribe((msg) => {
+      if (!isEqual(keyPolicy.parseKey(msg.key), target)) return;
 
-      const result: StoreEvent = {
-        key: target,
-        oldValue: res.oldValue && this.serializationPort.parse(res.oldValue),
-        newValue: res.newValue && this.serializationPort.parse(res.newValue),
-        url: res.url,
-        isTrusted: res.isTrusted,
-        timestamp: res.timeStamp,
+      const result: EventMessage = {
+        key: keyPolicy.parseKey(msg.key)!,
+        newValue: msg.newValue && this.serializationPort.parse(msg.newValue),
+        oldValue: msg.oldValue && this.serializationPort.parse(msg.oldValue),
+        timestamp: msg.timestamp,
       };
 
       callback(result);
-    });
+    }, options);
   }
 
   /**
@@ -329,7 +335,16 @@ export class StrictStoreService {
       const storage = this.storagePort.get(key.persistenceType);
       const storageKey = keyPolicy.makeKey(key.ns, key.name, key.persistenceType);
 
-      const existed = this.has(key);  
+      const existed = this.has(key);
+
+      if (existed)
+        this.eventPort.publish({
+          key: storageKey,
+          newValue: null,
+          oldValue: storage.get(storageKey),
+          timestamp: Date.now(),
+        });
+
       storage.remove(storageKey);
 
       return existed;
