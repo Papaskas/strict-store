@@ -14,6 +14,7 @@ import { EventMessage } from '@src/domain/entities/on-change/event-message.entit
 import { EventPort } from '@src/domain/ports/event.port';
 import { isEqual } from 'lodash';
 import { PickResult } from '@src/domain/types/pick-result.type';
+import { BatchEntries } from '@src/domain/types/batch-entries.type';
 
 /**
  * A type-safe wrapper around localStorage and sessionStorage
@@ -140,14 +141,8 @@ export class StrictStoreService {
    * ]);
    * ```
    */
-  saveBatch<Pairs extends readonly [StoreKey<Persistable>, Persistable][]>(
-    entries: Pairs & {
-      [K in keyof Pairs]: Pairs[K] extends [infer Key, unknown]
-        ? Key extends StoreKey<infer T>
-          ? [Key, T]
-          : never
-        : never;
-    },
+  saveBatch<Pairs extends [StoreKey<Persistable>, Persistable][]>(
+    entries: BatchEntries<Pairs>
   ): void {
     for (const [key, value] of entries) this.save(key, value);
   }
