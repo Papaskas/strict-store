@@ -41,5 +41,5 @@ export const storeKeyFactory = <T extends Persistable>(
     ns: ns,
     name: name,
     persistenceType: persistenceType,
-  } as const satisfies StoreKey<T>;
+  } as StoreKey<T>;
 };

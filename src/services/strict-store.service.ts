@@ -4,7 +4,7 @@ import { StoreKey } from '@src/domain/entities/store-key/store-key.entity';
 import { PersistenceType } from '@src/domain/entities/core/persistence-type.entity';
 import { SerializerPort } from '@src/domain/ports/serializer.port';
 import { StorageProviderPort } from '@src/domain/ports/storage-provider.port';
-import { phantomTypeSymbol } from '@src/domain/types/phantom-type.symbol';
+import { typeMarkerSymbol } from '@src/domain/types/type-marker.symbol';
 import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
 import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
 import { MergePort } from '@src/domain/ports/merge.port';
@@ -102,7 +102,7 @@ export class StrictStoreService {
    * StrictStore.save(themeKey, 'dark');
    * ```
    */
-  save<T extends StoreKey<Persistable>>(key: T, value: T[typeof phantomTypeSymbol]): void {
+  save<T extends StoreKey<Persistable>>(key: T, value: T[typeof typeMarkerSymbol]): void {
     if (value === null) this.delete(key);
     else {
       const storage = this.storagePort.get(key.persistenceType);
@@ -459,7 +459,7 @@ export class StrictStoreService {
    *
    * @remarks
    * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
-   * - The returned StoreKey objects include ns, name, persistenceType, and phantomTypeSymbol.
+   * - The returned StoreKey objects include ns, name, persistenceType, and typeMarkerSymbol.
    */
   keys(ns?: string[]): StoreKey<Persistable>[] {
     return this.entries(ns).map(({ key }) => key);

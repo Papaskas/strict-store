@@ -69,7 +69,7 @@ export const keyPolicy = {
    * //   ns: 'app',
    * //   name: 'theme',
    * //   storeType: 'local',
-   * //   phantomTypeSymbol: 'undefined'
+   * //   typeMarkerSymbol: 'undefined'
    * // }
    * ```
    */
@@ -81,6 +81,6 @@ export const keyPolicy = {
       ns: match.groups.ns,
       name: match.groups.name,
       persistenceType: match.groups.type as PersistenceType,
-    };
+    } as StoreKey<Persistable>;
   },
 };

@@ -13,7 +13,7 @@
  *   ns: string;
  *   name: string;
  *   persistenceType: PersistenceType;
- *   readonly [phantomTypeSymbol]?: T; // phantom link, no runtime field
+ *   readonly [typeMarkerSymbol]?: T; // type link, no runtime field
  * };
  *
  * declare const key: StoreKey<number>;
@@ -22,7 +22,7 @@
  * ```
  *
  * @remarks
- * Despite the historical name `phantomTypeSymbol`, the marker is not runtime.
- * It exists strictly for compile-time type safety (phantom type).
+ * Despite the historical name `typeMarkerSymbol`, the marker is not runtime.
+ * It exists strictly for compile-time type safety.
  */
-export declare const phantomTypeSymbol: unique symbol;
+export declare const typeMarkerSymbol: unique symbol;
