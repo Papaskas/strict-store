@@ -165,8 +165,6 @@ describe('OnChange method', () => {
   });
 
   describe('test events', () => {
-    test('', () => {
-
-    })
+    test('', () => {});
   });
 });

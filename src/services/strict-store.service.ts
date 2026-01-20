@@ -142,7 +142,7 @@ export class StrictStoreService {
    * ```
    */
   saveBatch<Pairs extends [StoreKey<Persistable>, Persistable][]>(
-    entries: BatchEntries<Pairs>
+    entries: BatchEntries<Pairs>,
   ): void {
     for (const [key, value] of entries) this.save(key, value);
   }

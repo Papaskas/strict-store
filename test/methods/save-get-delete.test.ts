@@ -43,43 +43,43 @@ describe('Save, get, and delete methods', () => {
   });
 
   test('pick returns nulls and delete returns falses for missing keys (batch)', () => {
-    expect(StrictStore.pick([
-      keys.stringKey,
-      keys.booleanKey,
-      keys.numberKey,
-    ])).toEqual([null, null, null]);
+    expect(StrictStore.pick([keys.stringKey, keys.booleanKey, keys.numberKey])).toEqual([
+      null,
+      null,
+      null,
+    ]);
 
-    expect(StrictStore.delete([
-      keys.stringKey,
-      keys.booleanKey,
-      keys.numberKey,
-    ])).toEqual([false, false, false])
+    expect(StrictStore.delete([keys.stringKey, keys.booleanKey, keys.numberKey])).toEqual([
+      false,
+      false,
+      false,
+    ]);
   });
 
   test('saveBatch stores values; has/pick/delete work for multiple keys', () => {
     StrictStore.saveBatch([
-      [ keys.stringKey, 'value'],
-      [ keys.booleanKey, true ],
-      [ keys.numberKey, 123 ],
+      [keys.stringKey, 'value'],
+      [keys.booleanKey, true],
+      [keys.numberKey, 123],
     ]);
 
-    expect(StrictStore.has([
-      keys.stringKey,
-      keys.booleanKey,
-      keys.numberKey,
-    ])).toEqual([true, true, true])
+    expect(StrictStore.has([keys.stringKey, keys.booleanKey, keys.numberKey])).toEqual([
+      true,
+      true,
+      true,
+    ]);
 
-    expect(StrictStore.pick([
-      keys.stringKey,
-      keys.booleanKey,
-      keys.numberKey,
-    ])).toEqual(['value', true, 123]);
+    expect(StrictStore.pick([keys.stringKey, keys.booleanKey, keys.numberKey])).toEqual([
+      'value',
+      true,
+      123,
+    ]);
 
-    expect(StrictStore.delete([
-      keys.stringKey,
-      keys.booleanKey,
-      keys.numberKey,
-    ])).toEqual([true, true, true])
+    expect(StrictStore.delete([keys.stringKey, keys.booleanKey, keys.numberKey])).toEqual([
+      true,
+      true,
+      true,
+    ]);
   });
 
   test('save overwrites existing value for same key', () => {

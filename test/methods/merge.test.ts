@@ -49,7 +49,9 @@ describe('Merge method', () => {
       StrictStore.merge(keys.numberKey, { foo: 'bar' });
     } catch (e) {
       expect(e).toBeInstanceOf(StrictStoreError);
-      expect((e as StrictStoreError).code).toBe(STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT);
+      expect((e as StrictStoreError).code).toBe(
+        STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT,
+      );
     }
   });
 
@@ -79,8 +81,8 @@ describe('Merge method', () => {
 
     expect(result).toEqual({
       name: 'Bob',
-      roles: new Set( ['editor']),
-    })
+      roles: new Set(['editor']),
+    });
   });
 
   test('should merge object with Map property', () => {
@@ -93,16 +95,12 @@ describe('Merge method', () => {
     });
 
     const result = StrictStore.merge(keys.objectWithMap, {
-      scores: new Map([
-        ['fr', 4],
-      ]),
+      scores: new Map([['fr', 4]]),
     });
 
     expect(result).toEqual({
       name: 'Carl',
-      scores: new Map([
-        ['fr', 4],
-      ]),
+      scores: new Map([['fr', 4]]),
     });
   });
 
@@ -127,7 +125,7 @@ describe('Merge method', () => {
         name: 'Dina',
         tags: ['c', 'b'],
         permissions: new Set(['write']),
-      }
-    })
+      },
+    });
   });
 });

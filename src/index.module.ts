@@ -20,8 +20,4 @@ const StrictStore = new StrictStoreService(
   broadcastAdapter,
 );
 
-export {
-  StrictStore,
-  storeKeyFactory as createKey,
-  STRICT_STORE_ERROR_CODE,
-};
+export { StrictStore, storeKeyFactory as createKey, STRICT_STORE_ERROR_CODE };
