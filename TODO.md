@@ -13,11 +13,11 @@
 
 ## Major v5
 
-- [ ] Refactor the code to follow Clean Architecture
+- [x] Refactor the code to follow Clean Architecture
 - [x] Remove the unnecessary `stress.test.ts` file
 - [ ] Rewrite `README.md`
-- [ ] Create new tests
-- [ ] Merge Dependabot pull requests
+- [x] Create new tests
+- [x] Merge Dependabot pull requests
 - [x] Set up ESLint configuration
 - [ ] Fix `baseUrl` in `tsconfig.json`
 - [x] Replace jest with vitest
@@ -28,16 +28,16 @@
 - [ ] Split `strict-store.service` into multiple files
 - [x] Refactor `serialization.adapter`
 - [x] Refactor `deepMerge` method
-- [ ] Refactor return type in `parseKey` method
+- [x] Refactor return type in `parseKey` method
 - [x] Simplify `entries` method
-- [ ] Simplify `onChange` method
+- [x] Simplify `onChange` method
 - [x] Refactor `DeepPartial` type
-- [ ] Rename `phantomType` type
+- [x] Rename `phantomType` type
 
 ### Types
 
-- [ ] Simplify `pick` method types
-- [ ] Simplify `saveBatch` method types
+- [x] Simplify `pick` method types
+- [x] Simplify `saveBatch` method types
 
 ### Docs
 
