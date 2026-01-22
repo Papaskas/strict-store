@@ -15,6 +15,8 @@ import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-stor
  * @param persistenceType - Determines which Web Storage API to use:
  *                  - 'local': Uses `localStorage`
  *                  - 'session': Uses `sessionStorage`
+ * @example
+ * const countKey = createKey<number>('stats', 'count');
  *
  * @see {@link StrictStore} for usage examples with storage methods
  */

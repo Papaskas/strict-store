@@ -17,16 +17,16 @@ import { PickResult } from '@src/domain/types/pick-result.type';
 import { BatchEntries } from '@src/domain/types/batch-entries.type';
 
 /**
- * A type-safe wrapper around localStorage and sessionStorage
+ * A typed persistence layer built on top of Web Storage.
+ *
+ * StrictStore treats storage keys as explicit contracts:
+ * each key defines its namespace, persistence scope, and value type.
+ *
+ * The service provides structured access, controlled mutation,
+ * and observable change events, while hiding raw storage APIs
+ * and serialization details from application code.
+ *
  * @public
- *
- * @example
- * ```ts
- * const themeKey = createKey<'light', 'dark'>('app', 'theme');
- *
- * StrictStore.save(themeKey, 'dark'); // Only the literal type is allowed
- * const theme: 'light' | 'dark' | null = StrictStore.get(themeKey); // Return the literal type
- * ```
  */
 export class StrictStoreService {
   constructor(
@@ -37,22 +37,12 @@ export class StrictStoreService {
   ) {}
 
   /**
-   * Retrieves a value from storage.
+   * Read a value by key.
+   *
+   * The return type is inferred from the provided StoreKey.
+   * Returns `null` if the entry does not exist.
+   *
    * @public
-   *
-   * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key - StoreKey object containing ns, name and default value
-   * @returns The stored value that provides:
-   * - Automatic JSON serialization/deserialization
-   * - Namespace support to prevent name collisions
-   * - Strict typing for all operations
-   *
-   * @example
-   * ```ts
-   * const themeKey = createKey<'light', 'dark'>('app', 'theme');
-   *
-   * const theme: 'light' | 'dark' | null = StrictStore.get(themeKey);
-   * ```
    */
   get<T extends Persistable>(key: StoreKey<T>): T | null {
     const storage = this.storagePort.resolve(key.persistenceType);
@@ -63,20 +53,17 @@ export class StrictStoreService {
   }
 
   /**
-   * Retrieves values from storage for a tuple of keys, preserving the type for each key.
-   * @public
+   * Read multiple values for a tuple of keys.
    *
-   * @typeParam K - A tuple of StoreKey objects with different value types
-   * @param keys - A tuple of StoreKey objects
-   * @returns A tuple of values (or null), corresponding to each key
+   * Preserves positional typing: each returned value
+   * corresponds to the value type of its key.
    *
    * @example
-   * ```ts
-   * const themeKey = createKey<'light' | 'dark'>('app', 'theme');
-   * const langKey = createKey<'en' | 'ru'>('app', 'lang');
+   * const [count, lang] = StrictStore.pick([countKey, langKey]);
+   * // count: number | null
+   * // lang: 'en' | 'ru' | null
    *
-   * const [theme, lang] = StrictStore.pick([themeKey, langKey]);
-   * ```
+   * @public
    */
   pick<const K extends StoreKey<Persistable>[]>(keys: K): PickResult<K> {
     const out = new Array(keys.length);
@@ -86,20 +73,14 @@ export class StrictStoreService {
   }
 
   /**
-   * Saves a value to storage with automatic serialization.
+   * Write a value by key.
+   *
+   * The value type is enforced by the key definition.
+   * Passing `null` removes the entry.
+   *
+   * A change event is published if the serialized value changes.
+   *
    * @public
-   *
-   * @typeParam T - Type of the stored value (inferred from StoreKey)
-   * @param key - StoreKey object containing ns and name
-   * @param value - Value to store
-   *
-   * @example
-   * ```ts
-   * const themeKey = createKey<'light', 'dark'>('app', 'theme');
-   *
-   * // Only the literal type is allowed
-   * StrictStore.save(themeKey, 'dark');
-   * ```
    */
   save<T extends StoreKey<Persistable>>(key: T, value: T[typeof typeMarkerSymbol]): void {
     if (value === null) this.delete(key);
@@ -125,21 +106,11 @@ export class StrictStoreService {
   }
 
   /**
-   * Saves multiple key-value pairs to storage with automatic serialization.
+   * Write multiple key/value pairs in a single operation.
+   *
+   * Each value is type-checked against its corresponding key.
+   *
    * @public
-   *
-   * @param entries - Array of [StoreKey, value] tuples
-   *
-   * const themeKey = createKey<'light' | 'dark'>('app', 'theme');
-   * const langKey = createKey<'en' | 'ru'>('app', 'lang');
-   *
-   * @example
-   * ```ts
-   * StrictStore.saveBatch([
-   *   [themeKey, 'dark'],
-   *   [langKey, 'en'],
-   * ]);
-   * ```
    */
   saveBatch<Pairs extends [StoreKey<Persistable>, Persistable][]>(
     entries: BatchEntries<Pairs>,
@@ -148,34 +119,21 @@ export class StrictStoreService {
   }
 
   /**
-   * Merges a partial value into an existing object stored under the specified key.
-   * @public
+   * Merge a partial value into an existing stored object.
    *
-   * @typeParam T - Type of the stored value (must be an object)
-   * @param key - StoreKey object identifying the item to merge into
-   * @param partial - a Partial object to merge
+   * Throws if the entry does not exist or if the current value
+   * is not a plain object.
    *
    * @example
-   * ```ts
-   * type User = {
-   *  name: string;
-   *  age: number;
-   * }
-   * const userKey = createKey<User>('app', 'user');
-   *
    * StrictStore.save(userKey, { name: 'Tom', age: 42 });
    * StrictStore.merge(userKey, { name: 'Alex' });
-   * ```
-   *
-   * @throws STRICT_STORE_ERROR_CODE.MERGE_NOT_INITIALIZED
-   * @throws STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT
    *
    * @remarks
-   * - Internally uses {@link https://lodash.com/docs/#merge | lodash.merge}.
-   * - ⚠️ Unlike lodash's default behavior, arrays in StrictStore **are replaced entirely**,
-   *   not merged by index.
-   *   - Example: merging `{ tags: ['a', 'b'] }` with `{ tags: ['x'] }` results in `{ tags: ['x'] }`.
-   * */
+   * - Merge behavior is based on {@link https://lodash.com/docs/#merge | lodash.merge}.
+   * - Arrays are replaced entirely, not merged by index.
+   *
+   * @public
+   */
   merge<T extends Persistable>(key: StoreKey<T>, partial: PartialDeep<T>): T | null {
     const value = this.get(key);
 
@@ -192,19 +150,12 @@ export class StrictStoreService {
   }
 
   /**
-   * Iterates over all StrictStore-managed key-value pairs and executes a callback for each.
+   * Iterate over entries managed by StrictStore.
+   *
+   * Executes `callback` for each `{ key, value }` pair returned by {@link entries}.
+   * Optionally restrict iteration to specific namespaces.
+   *
    * @public
-   *
-   * @param callback - Function to execute for each key-value pair.
-   *   Receives (key, value)
-   * @param ns - Optional namespace to filter keys.
-   *
-   * @example
-   * ```ts
-   * StrictStore.forEach((key, value) => {
-   *   console.log(key, value, storageType);
-   * }, ['namespace1', 'namespace2']);
-   * ```
    */
   forEach(
     callback: (
@@ -224,36 +175,21 @@ export class StrictStoreService {
   }
 
   /**
-   * Subscribes to changes of StrictStore-managed keys in localStorage/sessionStorage.
-   * @public
+   * Subscribe to changes of a specific StoreKey.
    *
-   * @param callback - Function to call when a value changes.
-   *   Receives (key, newValue, oldValue)
-   * @param target - (optional) Array of StoreKey or array of namespaces (string[]) to filter the observed changes.
-   *   If omitted, all strict-store keys are obeyed.
-   *
-   * @returns Unsubscribe function.
+   * Emits deserialized values along with a timestamp.
    *
    * @example
-   * ```ts
-   * // Listen to all changes in the 'user' namespace:
-   * const unsubscribe = StrictStore.onChange((key, newValue, oldValue) => {
-   *   console.log(key, newValue, oldValue);
-   * }, ['user']);
-   *
-   * // Listen only to specific keys:
-   * const userKey = createKey<{name: string}>('user', 'profile');
-   * const settingsKey = createKey<{theme: string}>('user', 'settings');
-   *
-   * StrictStore.onChange((key, newValue, oldValue) => { ... },
-   *   [userKey, settingsKey]
+   * const unsubscribe = StrictStore.onChange(
+   *   ({ newValue, oldValue }) => { ... },
+   *   themeKey
    * );
    *
-   * // Later, to stop listening:
-   * unsubscribe();
-   * ```
+   * @remarks
+   * Events are transported via {@link https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel | BroadcastChannel}
+   * and mirrored locally via localEmitter.
    *
-   * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event
+   * @public
    */
   onChange(
     callback: (msg: EventMessage) => void,
@@ -275,22 +211,12 @@ export class StrictStoreService {
   }
 
   /**
-   * Checks if a name exists in storage.
+   * Check whether an entry exists for a key.
+   *
+   * Returns `false` when the entry is missing or stored value is `null`.
+   * Supports a single key or a list of keys.
+   *
    * @public
-   *
-   * @param key - StoreKey object containing ns and name identifier
-   * @returns `true` if the name exists, `false` otherwise
-   *
-   * @example
-   * ```ts
-   * const themeKey = createKey<'light', 'dark'>('app', 'theme');
-   *
-   * const exists: boolean = StrictStore.has(themeKey);
-   * const exists: boolean[] = StrictStore.has([themeKey, anotherKey]);
-   * ```
-   *
-   * @remarks
-   * - If the value is null, it returns false
    */
   has(key: StoreKey<Persistable>): boolean;
   has(keys: StoreKey<Persistable>[]): boolean[];
@@ -301,22 +227,14 @@ export class StrictStoreService {
   }
 
   /**
-   * Removes a name-value pair from storage.
+   * Remove an entry by key.
+   *
+   * Returns `true` if the entry existed, otherwise `false`.
+   * Supports a single key or a list of keys.
+   *
+   * Publishes a change event (`newValue: null`) when an entry existed.
+   *
    * @public
-   *
-   * @param key - StoreKey object identifying item to delete
-   *
-   * @example
-   * ```ts
-   * const themeKey = createKey<'light', 'dark'>('app', 'theme');
-   *
-   * StrictStore.delete([themeKey]) // -> boolean[];
-   * StrictStore.delete(themeKey) // -> boolean;
-   * ```
-   *
-   * @remarks
-   * - Silent if name doesn't exist
-   * - Namespace-aware operation
    */
   delete(key: StoreKey<Persistable>): boolean;
   delete(keys: StoreKey<Persistable>[]): boolean[];
@@ -347,30 +265,12 @@ export class StrictStoreService {
   }
 
   /**
-   * Retrieves all stored key-value pairs from both localStorage and sessionStorage that belong to StrictStore.
-   * If a namespace is provided, only keys with the 'strict-store/[ns]:' prefix are included.
-   * Otherwise, all keys with the 'strict-store/' prefix are returned.
+   * List all entries managed by StrictStore.
+   *
+   * Entries are discovered by scanning storage at runtime.
+   * Returned keys are not associated with their original value types.
+   *
    * @public
-   *
-   * @param ns - (optional) Namespace to filter keys (e.g., 'user' will return all 'user:*' keys)
-   * @returns An array of objects, each containing the storage key and its parsed value.
-   *
-   * @example
-   * ```ts
-   * // Get all items stored by StrictStore
-   * const allItems = StrictStore.entries();
-   *
-   * // Get only items for the 'user' namespace
-   * const userItems = StrictStore.entries(['user']);
-   *
-   * userItems.forEach(({ key, value }) => {
-   *   console.log(key, value);
-   * });
-   * ```
-   *
-   * @remarks
-   * - Scans both localStorage and sessionStorage.
-   * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
    */
   entries(ns?: string[]): { key: StoreKey<Persistable>; value: Persistable }[] {
     if (Array.isArray(ns) && ns.length === 0) return [];
@@ -408,71 +308,36 @@ export class StrictStoreService {
   }
 
   /**
-   * Gets the total number of items in localStorage + sessionStorage, but **only from strict-store**.
-   * If ns is provided, count only items from the specified namespaces.
+   * Count entries managed by StrictStore.
+   *
+   * Counts only StrictStore-managed keys in both `localStorage` and `sessionStorage`.
+   * Optionally restrict the count to specific namespaces.
+   *
    * @public
-   *
-   * @param ns - (optional) Array of namespaces to filter by
-   * @returns Count of all items from strict-store or from the specified namespaces
-   *
-   * @example
-   * ```ts
-   * if (StrictStore.size() > 100) {
-   *   StrictStore.clear();
-   * }
-   *
-   * if (StrictStore.size(['user', 'settings']) > 10) {
-   *   StrictStore.clear(['user', 'settings']);
-   * }
-   * ```
    */
   size(ns?: string[]): number {
     return this.entries(ns).length;
   }
 
   /**
-   * Returns all StoreKey objects managed by StrictStore, optionally filtered by namespaces.
-   * Scans both localStorage and sessionStorage for keys with the 'strict-store/' prefix.
+   * List all StoreKeys managed by StrictStore.
+   *
+   * Keys are discovered dynamically, so their original
+   * generic value types are not known at compile time.
    *
    * @public
-   * @param ns - (optional) Array of namespaces to filter keys (e.g., ['user', 'settings']).
-   *             If omitted, return keys from all namespaces.
-   * @returns Array of StoreKey objects for all stored items matching the filter.
-   *
-   * @example
-   * // Get all keys managed by StrictStore:
-   * const allKeys = StrictStore.keys();
-   *
-   * // Get only keys for the 'user' namespace:
-   * const userKeys = StrictStore.keys(['user']);
-   *
-   * userKeys.forEach(key => {
-   *   console.log(key.ns, key.name, key.persistenceType);
-   * });
-   *
-   * @remarks
-   * - Only includes keys managed by StrictStore (those starting with 'strict-store/').
-   * - The returned StoreKey objects include ns, name, persistenceType, and typeMarkerSymbol.
    */
   keys(ns?: string[]): StoreKey<Persistable>[] {
     return this.entries(ns).map(({ key }) => key);
   }
 
   /**
-   * Clears all **strict-store managed** items from localStorage and sessionStorage.
+   * Remove all entries managed by StrictStore.
+   *
+   * Optionally restrict removal to specific namespaces.
+   * Returns the list of removed keys.
+   *
    * @public
-   *
-   * @param ns - Namespace prefix to clear (e.g., 'user' will delete 'user:settings', 'user:data' etc.)
-   *
-   * @example
-   * ```ts
-   * StrictStore.clear(); // Remove only strict-store keys
-   * StrictStore.clear(['auth']); // Removes all strict-store 'auth:*' keys
-   * ```
-   * @return keys of clears
-   *
-   * @remarks
-   * it only works in StrictStore
    */
   clear(ns?: string[]): StoreKey<Persistable>[] {
     const items = this.entries(ns);
