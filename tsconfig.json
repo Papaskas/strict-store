@@ -8,14 +8,14 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
+
+    "rootDir": "src",
     "outDir": "dist",
-    "baseUrl": ".",
+
     "paths": {
-      "strict-store": ["src/index.module.ts"],
-      "@test/*": ["test/*"],
-      "@src/*": ["src/*"]
+      "strict-store": ["./src/index.module.ts"],
+      "@test/*": ["./test/*"],
+      "@src/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
