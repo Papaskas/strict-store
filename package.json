@@ -34,8 +34,8 @@
     }
   },
   "license": "MIT",
-  "version": "4.3.0",
-  "description": "Strongly typed wrapper for localStorage and sessionStorage with namespace isolation and automatic serialization.",
+  "version": "5.0.0",
+  "description": "A modern, type-driven approach to Web Storage",
   "scripts": {
     "build": "vite build",
     "test": "vitest",
