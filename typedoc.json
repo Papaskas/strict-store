@@ -1,8 +1,16 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/strict-store.ts"],
+  "entryPoints": [
+    "./src/services/strict-store.service.ts",
+    "./src/domain/entities/core/persistable.entity.ts",
+    "./src/domain/entities/core/persistence-type.entity.ts",
+    "./src/domain/entities/store-key/store-key.entity.ts",
+    "./src/domain/entities/store-key/store-key.factory.ts",
+    "./src/domain/entities/errors/strict-store.error.code.ts",
+  ],
   "tsconfig": "./tsconfig.json",
   "out": "docs",
+  "outputFileStrategy": "modules",
   "plugin": ["typedoc-plugin-markdown", "typedoc-github-wiki-theme"],
   "excludePrivate": true,
   "excludeProtected": true,
