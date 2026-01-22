@@ -1,28 +1,21 @@
 /**
- * @description
- * Type-only marker for {@link StoreKey} that binds a key to the value type at compile time.
- * This symbol MUST NOT be used for runtime logic or serialization.
+ * Compile-time type marker used to bind a {@link StoreKey} to its value type.
  *
- * The marker exists only for TypeScript's type system:
- * - it is declared (not defined), so it is erased during compilation;
- * - it is a `unique symbol`, so it cannot accidentally unify with other markers.
+ * This marker allows the storage API to enforce that a key and its value
+ * always belong to the same domain type.
+ *
+ * It does not exist at runtime and must not be used in logic,
+ * comparisons, or serialization.
  *
  * @example
  * ```ts
- * export type StoreKey<T> = {
- *   ns: string;
- *   name: string;
- *   persistenceType: PersistenceType;
- *   readonly [typeMarkerSymbol]?: T; // type link, no runtime field
- * };
+ * const userKey: StoreKey<User> = createKey('user', 'profile');
  *
- * declare const key: StoreKey<number>;
- * // save(key, 123)   ✅
- * // save(key, 'x')   ❌ TypeScript error
+ * // ✅ type-safe: value matches key type
+ * StrictStore.save(userKey, { id: 1, name: 'Alice' });
+ *
+ * // ❌ compile-time error: wrong value type
+ * StrictStore.save(userKey, 123);
  * ```
- *
- * @remarks
- * Despite the historical name `typeMarkerSymbol`, the marker is not runtime.
- * It exists strictly for compile-time type safety.
  */
 export declare const typeMarkerSymbol: unique symbol;

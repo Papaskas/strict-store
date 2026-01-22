@@ -16,12 +16,6 @@ import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-stor
  *                  - 'local': Uses `localStorage`
  *                  - 'session': Uses `sessionStorage`
  *
- * @returns A frozen `StoreKey<T>` object with strict type information
- *
- * @remarks
- * - The returned object is frozen with `as const` for type safety
- * - Namespace and name are combined to form the final storage name (e.g., 'app:counter')
- *
  * @see {@link StrictStore} for usage examples with storage methods
  */
 export const storeKeyFactory = <T extends Persistable>(
