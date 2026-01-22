@@ -1,28 +1,39 @@
-import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
-import * as path from 'node:path';
+/// <reference types="vitest/config" />
+import { AliasOptions, defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
+import path from 'path';
+
+const pathAlias: AliasOptions = {
+  '@test': path.resolve(__dirname, './test'),
+
+  'strict-store': path.resolve(__dirname, './src/index.module.ts'),
+  '@src': path.resolve(__dirname, './src'),
+};
 
 export default defineConfig({
   build: {
     lib: {
-      entry: 'src/strict-store.ts',
+      entry: 'src/index.module.ts',
       name: 'strict-store',
       fileName: 'strict-store',
-      formats: ['es']
+      formats: ['es'],
     },
     emptyOutDir: true,
   },
   resolve: {
-    alias: {
-      '@src': path.resolve(__dirname, './src')
-    }
+    alias: pathAlias,
   },
   plugins: [
     dts({
       entryRoot: 'src',
       outDir: '.',
       rollupTypes: true,
-      insertTypesEntry: true
-    }
-  )]
-})
+      insertTypesEntry: true,
+    }),
+  ],
+  test: {
+    alias: pathAlias,
+    globals: true,
+    environment: 'jsdom',
+  },
+});

@@ -1,13 +1,48 @@
 # Update
-- [ ] Add `Date` type
-- [X] Add `saveBatch` method
-- [X] Add `pick` method
-- [X] Add `entries` method
-- [X] Add `remove` method
-- [X] Add `merge` method - Merges a value into an existing object stored under the specified key
-- [X] Add `forEach` method - Iterates over all key-value pairs in the storage and executes a callback for each
-- [X] Add `onChange` method - Allows you to listen for changes to the storage (this may require additional implementation for event handling) 
-- [X] Add a void check for name and ns
-- [X] Add `Clear` and `Length` methods
-- [ ] Add custom `Function` for key (key themeKey has method toggle() -> StrictStore(themeKey).toggle())
 
+- [x] Add `Date` type
+- [x] Add `saveBatch` method
+- [x] Add `pick` method
+- [x] Add `entries` method
+- [x] Add `delete` method
+- [x] Add `merge` method - Merges a value into an existing object stored under the specified key
+- [x] Add `forEach` method - Iterates over all key-value pairs in the storage and executes a callback for each
+- [x] Add `onChange` method - Allows you to listen for changes to the storage (this may require additional implementation for event handling)
+- [x] Add a void check for name and ns
+- [x] Add `Clear` and `Length` methods
+
+## Major v5
+
+- [x] Refactor the code to follow Clean Architecture
+- [x] Remove the unnecessary `stress.test.ts` file
+- [x] Create new tests
+- [x] Merge Dependabot pull requests
+- [x] Set up ESLint configuration
+- [x] Fix `baseUrl` in `tsconfig.json`
+- [x] Replace jest with vitest
+- [x] Replace custom serialization with SuperJSON
+
+### Refactor
+
+- [x] Refactor `serialization.adapter`
+- [x] Refactor `deepMerge` method
+- [x] Refactor return type in `parseKey` method
+- [x] Simplify `entries` method
+- [x] Simplify `onChange` method
+- [x] Refactor `DeepPartial` type
+- [x] Rename `phantomType` type
+
+### Types
+
+- [x] Simplify `pick` method types
+- [x] Simplify `saveBatch` method types
+- [x] Rewrite `README.md`
+
+### Docs
+
+- [x] Refactor TSDoc from 'StoreKey'
+- [x] Refactor TSDoc `strict-store`
+
+### Tests
+
+- [x] Fix imports
