@@ -15,17 +15,15 @@
 
 - [x] Refactor the code to follow Clean Architecture
 - [x] Remove the unnecessary `stress.test.ts` file
-- [ ] Rewrite `README.md`
 - [x] Create new tests
 - [x] Merge Dependabot pull requests
 - [x] Set up ESLint configuration
-- [ ] Fix `baseUrl` in `tsconfig.json`
+- [x] Fix `baseUrl` in `tsconfig.json`
 - [x] Replace jest with vitest
 - [x] Replace custom serialization with SuperJSON
 
 ### Refactor
 
-- [ ] Split `strict-store.service` into multiple files
 - [x] Refactor `serialization.adapter`
 - [x] Refactor `deepMerge` method
 - [x] Refactor return type in `parseKey` method
@@ -38,11 +36,12 @@
 
 - [x] Simplify `pick` method types
 - [x] Simplify `saveBatch` method types
+- [x] Rewrite `README.md`
 
 ### Docs
 
-- [ ] Refactor TSDoc from 'StoreKey'
-- [ ] Refactor TSDoc `strict-store`
+- [x] Refactor TSDoc from 'StoreKey'
+- [x] Refactor TSDoc `strict-store`
 
 ### Tests
 
