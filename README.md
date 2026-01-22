@@ -5,8 +5,8 @@
 [![Bundle Size](https://img.shields.io/bundlephobia/min/strict-store)](https://bundlephobia.com/package/strict-store)
 
 > 📝 **StrictStore** is a type-safe state persistence layer built on top of Web Storage.
-It treats storage keys as first-class, typed entities, centralizes key management via namespaces, and removes string-based and serialization concerns from application code.
-The library provides structured access, controlled mutation, and reactive change propagation across contexts
+> It treats storage keys as first-class, typed entities, centralizes key management via namespaces, and removes string-based and serialization concerns from application code.
+> The library provides structured access, controlled mutation, and reactive change propagation across contexts
 
 ## ✨ Features
 
@@ -125,7 +125,7 @@ A key describes what is stored, where it is stored, and which value type it is b
 import { createKey } from 'strict-store';
 
 const countKey = createKey<number>('stats', 'count');
-const langKey  = createKey<'en' | 'fr'>('app', 'lang', 'session');
+const langKey = createKey<'en' | 'fr'>('app', 'lang', 'session');
 ```
 
 Why keys matter
