@@ -4,46 +4,47 @@
 [![license](https://img.shields.io/npm/l/strict-store?v=2)](https://github.com/Papaskas/strict-store/blob/main/LICENSE)
 [![Bundle Size](https://img.shields.io/bundlephobia/min/strict-store)](https://bundlephobia.com/package/strict-store)
 
-> 📝 **Strict Store** — Strongly typed wrapper for localStorage and sessionStorage with namespace isolation and automatic serialization.
+> 📝 **StrictStore** is a type-safe state persistence layer built on top of Web Storage.
+It treats storage keys as first-class, typed entities, centralizes key management via namespaces, and removes string-based and serialization concerns from application code.
+The library provides structured access, controlled mutation, and reactive change propagation across contexts
 
 ## ✨ Features
 
-- 🛡 **Full Type Safety** — Compile-time type checking for all operations
-- 🧠 **Smart Serialization** — Automatic handling of:
-  - Primitive types
-  - Complex types
-  - TypedArray
-- 🗂 **Namespace Isolation** — Prevent name collisions with hierarchical organization
-- ⚡ **Dual Storage Support** — Switch between localStorage (persistent) and sessionStorage (session-based)
-- 🗃 **Batch Operations** — Save, delete, or pick multiple keys at once
-- 🔄 **Merge & Partial Update** — Merge new values into stored objects
-- 🕵️ **Change Listeners** — Subscribe to storage changes
-- 🔍 **forEach & getByNamespace** — Iterate and filter by namespace
+- 🛡 **Typed storage keys** — Keys are explicit objects bound to value types at compile time, eliminating string-based access and key/value mismatches.
+- 📦 **Centralized serialization** — All values are serialized and deserialized through a single abstraction `SuperJSON`, removing manual JSON handling from application code.
+- 🗂 **Namespace-based key organization** — Keys can be grouped by namespaces, enabling structured access, filtering, and bulk operations without relying on naming conventions alone.
+- 💾 **Explicit persistence scope** — Each key declares whether it is stored in `localStorage` or `sessionStorage`; storage selection is not implicit or ad hoc.
+- 🧺 **Batch operations** — Multiple keys can be read, written, or deleted in a single operation while preserving key–value relationships.
+- 🔀 **Controlled object merging** — Stored object values can be partially updated using a defined merge strategy (based on lodash.merge).
+- 🔔 **Change notifications** — Storage updates are broadcast via BroadcastChannel, allowing subscriptions to value changes across execution contexts.
+- 🔎 **Enumeration & inspection** — Iterate over all managed entries or filter them by namespace, without exposing raw storage APIs.
 
-### 🗃️ Supported types:
+## 🧩 Mental model
+
+Think of StrictStore as:
+
+> A **typed registry of persisted state**, with explicit keys, controlled mutation, and observable changes — where storage is a runtime detail, not a programming model.
+
+## 🗃️ Supported types
+
+Supported types via SuperJSON serialization:
 
 > - string
+> - union
 > - number
 > - boolean
 > - null
-> - union
+> - undefined
 > - object
 > - array
 > - enum
-> - BigInt
+> - bigint
 > - Map
 > - Set
-> - Int8Array
-> - Uint8Array
-> - Uint8ClampedArray
-> - Int16Array
-> - Uint16Array
-> - Int32Array
-> - Uint32Array
-> - Float32Array
-> - Float64Array
-> - BigInt64Array
-> - BigUint64Array
+> - Date
+> - RegExp
+> - Error
+> - URL
 
 ## 📦 Installation
 
@@ -55,205 +56,208 @@ yarn add strict-store
 pnpm add strict-store
 ```
 
+## 🧭 Overview
+
+`StrictStore` is a fully typed persistence layer that rethinks how localStorage and sessionStorage are used in applications.
+
+Instead of working with raw string keys and manual serialization, `StrictStore` introduces a structured, type-driven model where persisted data is accessed through explicit key definitions.
+Storage becomes a managed registry of entries rather than a collection of loosely related string values.
+
+### 🧠 Core ideas
+
+#### 🔑 1. Keys as contracts
+
+At the center of `StrictStore` is the concept of a `StoreKey`.
+
+A `StoreKey<T>` is not just an identifier — it is a **contract** that defines:
+
+- the logical **namespace** of the value,
+- it's **persistence scope** (`local` or `session`),
+- and the **exact value type** associated with that key.
+
+This guarantees at compile time that a key can only be used with its corresponding value type.
+Accidental mismatches between keys and values are eliminated **before runtime**.
+
+#### 🗂 2. Centralized key system
+
+All persisted values are accessed through **explicitly defined keys**.
+
+This provides:
+
+- a single source of truth for storage names,
+- predictable namespace-based grouping,
+- removal of “magic strings” scattered across the codebase.
+
+Namespaces allow related keys to form a **coherent system** rather than isolated entries.
+
+#### ⚙️ 3. Storage as an implementation detail
+
+`StrictStore` abstracts away:
+
+- string-based storage APIs,
+- manual JSON handling,
+- storage selection logic.
+
+Serialization is handled centrally using `SuperJSON`, allowing richer data structures than plain JSON.
+The choice between `localStorage` and `sessionStorage` is declarative and tied to the key itself.
+
+Application code interacts only with **typed values**, never with raw strings.
+
 ## 🛡️ Type Safety
 
-The library enforces type safety at compile time:
+Type safety is derived from the key definition, not from the storage API
 
-```typescript
+```ts
 const counterKey = createKey<number>('app', 'counter');
 
 StrictStore.save(counterKey, 'string value'); // Error: Type 'string' is not assignable to type 'number'
 StrictStore.save(counterKey, 42); // OK
 ```
 
-## 🗄️ Storage type selection
+## 🗝️ Creating keys
 
-Choose between localStorage (persistent) and sessionStorage (tab-specific):
+All interaction with `StrictStore` starts with defining keys.
 
-```typescript
-const localKey = createKey( , , 'local');
-const sessionKey = createKey( , , 'session');
+Keys are created explicitly using `createKey` (exported as an alias for `storeKeyFactory`).
+A key describes what is stored, where it is stored, and which value type it is bound to.
+
+```ts
+import { createKey } from 'strict-store';
+
+const countKey = createKey<number>('stats', 'count');
+const langKey  = createKey<'en' | 'fr'>('app', 'lang', 'session');
 ```
 
-## 🚀 Quick start
+Why keys matter
 
-```typescript
-import { createKey, StrictStore } from 'strict-store';
+A `StoreKey<T>` is not just an identifier. It defines:
 
-// Create keys for different namespaces and storage types
-const themeKey = createKey<'light' | 'dark'>('app', 'theme', 'local');
-const langKey = createKey<'en' | 'fr'>('app', 'lang', 'session');
-const userKey = createKey<{ name: string; age: number }>('app', 'user', 'local');
+- the namespace of the entry,
+- the storage scope (`local` or `session`),
+- the value type associated with the entry (at compile time).
 
-StrictStore.save(themeKey, 'dark'); // Save with type checking
-StrictStore.saveBatch([
-  // Batch operations
-  [themeKey, 'light'],
-  [langKey, 'en'],
-]);
+Once a key is defined, all `StrictStore` operations derive their type behavior from it:
 
-// Merge partial object (⚠️ cannot initialize, only update existing object)
-StrictStore.merge(userKey, { name: 'New Name' });
+```ts
+StrictStore.save(countKey, 1);
 
-const themeValue: 'light' | 'dark' | null = StrictStore.get(themeKey); // Retrieve with correct type inference
-const [theme, lang] = StrictStore.pick([themeKey, langKey]); // Retrieve batch of values
-
-// Get all items or by namespace
-const entries: { key; value }[] = StrictStore.entries();
-const appEntries: { key; value }[] = StrictStore.entries(['app']);
-
-// Get all keys or by namespace
-const keys = StrictStore.keys();
-const appKeys = StrictStore.keys(['app']);
-
-// Remove item
-StrictStore.delete([themeKey]);
-
-// Check key
-const hasKey: boolean = StrictStore.has(themeKey);
-const hasKeys: boolean[] = StrictStore.has([themeKey, langKey]);
-
-// Get the count of all StrictStore-managed items
-const count: number = StrictStore.size();
-const appCount: number = StrictStore.size(['app']);
-
-// Clear all or by namespace
-StrictStore.clear();
-StrictStore.clear(['app']);
-
-// Iterate over all items or by namespace
-StrictStore.forEach(
-  (key, value) => {
-    console.log(key, value);
-  },
-  ['app'],
-);
-
-// Listen for changes keys or ns
-const unsubscribe = StrictStore.onChange(
-  (key, newValue, oldValue) => {
-    // ...
-  },
-  [themeKey],
-); // keys or ns
-
-// Unsubscribe from changes
-unsubscribe();
+const count: number | null = StrictStore.get(countKey);
 ```
 
-## 📦 API Reference
+Validation and guarantees
 
-> Below is a summary of the main methods.
-> See the [Wiki](https://github.com/Papaskas/strict-store/wiki) for detailed usage, types, and advanced examples.
+`createKey` enforces basic invariants:
 
-### 🗝️ createKey
+- namespaces and names cannot be empty,
+- colons (:) are disallowed to keep key encoding unambiguous.
 
-```typescript
-  createKey<T>(
-    namespace: string, // namespace for key
-    name: string, // key name
-    storeType?: 'local' | 'session' = 'local' // storage type: 'local' (default) or 'session'
-  ): StoreKey<T>
+These checks ensure that all keys are valid and consistent before they ever reach storage.
+
+## 🛠️ Usage overview
+
+```ts
+/**
+ * Read a value by key.
+ * Returns `null` when the entry is missing.
+ */
+get<T extends Persistable>(key: StoreKey<T>): T | null {}
+
+/**
+ * Read multiple values for a tuple of keys.
+ * Preserves the value type for each key position.
+ */
+pick<const K extends StoreKey<Persistable>[]>(keys: K): PickResult<K> {}
+
+/**
+ * Write a value by key.
+ * Passing `null` removes the entry.
+ * Publishes a change event when the serialized value changes.
+ */
+save<T extends StoreKey<Persistable>>(key: T, value: T[typeof typeMarkerSymbol]): void {}
+
+/**
+ * Write multiple key/value pairs.
+ * Each value is type-checked against its corresponding key.
+ */
+saveBatch<Pairs extends [StoreKey<Persistable>, Persistable][]>(
+  entries: BatchEntries<Pairs>,
+): void {}
+
+/**
+ * Merge a partial object into an existing stored object.
+ * Throws if the entry does not exist or the current value is not a plain object.
+ *
+ * @remarks
+ * Merge behavior follows {@link https://lodash.com/docs/#merge | lodash.merge}.
+ */
+merge<T extends Persistable>(key: StoreKey<T>, partial: PartialDeep<T>): T | null {}
+
+/**
+ * Iterate over entries managed by StrictStore.
+ * Optionally filter by namespaces.
+ */
+forEach(
+  callback: (key: StoreKey<Persistable>, value: Persistable, index: number, array: { key: StoreKey<Persistable>; value: Persistable }[]) => void,
+  ns?: string[],
+): void {}
+
+/**
+ * Subscribe to changes for a specific key.
+ * Receives deserialized `newValue` / `oldValue` and a timestamp.
+ *
+ * @remarks
+ * Events are transported via {@link https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel | BroadcastChannel}
+ * and mirrored locally via {@link https://github.com/Papaskas/strict-store/wiki/Class.localEmitter | localEmitter}.
+ */
+onChange(
+  callback: (msg: EventMessage) => void,
+  target: StoreKey<Persistable>,
+  options: AddEventListenerOptions = {},
+): Unsubscribe {}
+
+/**
+ * Check whether an entry exists for a key (value is not `null`).
+ * Supports single key or a list of keys.
+ */
+has(key: StoreKey<Persistable>): boolean;
+has(keys: StoreKey<Persistable>[]): boolean[];
+
+/**
+ * Remove an entry by key.
+ * Publishes a change event when the entry existed.
+ * Supports single key or a list of keys.
+ */
+delete(key: StoreKey<Persistable>): boolean;
+delete(keys: StoreKey<Persistable>[]): boolean[];
+
+/**
+ * List all entries managed by StrictStore.
+ * Optionally filter by namespaces.
+ */
+entries(ns?: string[]): { key: StoreKey<Persistable>; value: Persistable }[] {}
+
+/**
+ * Count entries managed by StrictStore.
+ * Optionally filter by namespaces.
+ */
+size(ns?: string[]): number {}
+
+/**
+ * List StoreKeys for all managed entries.
+ * Optionally filter by namespaces.
+ *
+ * Note: keys returned by this method are discovered at runtime,
+ * so their original value types are not known at compile time.
+ */
+keys(ns?: string[]): StoreKey<Persistable>[] {}
+
+/**
+ * Remove all managed entries.
+ * Optionally restrict removal to specific namespaces.
+ * Returns removed keys.
+ */
+clear(ns?: string[]): StoreKey<Persistable>[] {}
 ```
-
-### 🛠️ StrictStore methods
-
-```typescript
-StrictStore
-  .get<T extends Persistable>(key: StoreKey<T>): T | null
-  // Retrieve a value by key
-
-  .pick<const K extends readonly StoreKey<Persistable>[]>(
-    keys: K
-  ): { [I in keyof K]: K[I] extends StoreKey<infer T> ? T | null : never }
-  // Retrieve multiple values, preserving tuple typing
-
-  .entries(ns?: string[]): { key: StoreKey<Persistable>, value: Persistable }[]
-  // Retrieve all items or filter by namespaces
-
-  .keys(ns?: string[]): StoreKey<Persistable>[]
-  // Get all keys as StoreKey objects
-
-  .save<T extends StoreKey<Persistable>>(key: T, value: T['__type']): void
-  // Save a value
-
-  .saveBatch(entries: [StoreKey<Persistable>, Persistable][]): void
-  // Save multiple pairs
-
-  .delete(keys: StoreKey<Persistable>[]): void
-  // Remove keys
-
-  .has(key: StoreKey<Persistable>): boolean
-  .has(keys: StoreKey<Persistable>[]): boolean[]
-  // Check existence
-
-  .size(ns?: string[]): number
-  // Count items
-
-  .clear(ns?: string[]): void
-  // Clear items (empty array = NO-OP)
-
-  .merge<T extends Record<string, Persistable>>(key: StoreKey<T>, partial: DeepPartial<T>): void
-  // Merge partial object (⚠️ cannot initialize, only update existing object)
-
-  .forEach(callback: (key: StoreKey<Persistable>, value: Persistable) => void, ns?: string[]): void
-  // Iterate over pairs
-
-  .onChange(
-    callback: (key: StoreKey<Persistable>, newValue: Persistable, oldValue: Persistable) => void,
-    target?: StoreKey<Persistable>[] | string[],
-  ): () => void
-  // Subscribe to storage changes (returns unsubscribe)
-```
-
-### 🧩 Complex type examples
-
-**Arrays:**
-
-```typescript
-const tagsKey = createKey<string[]>('app', 'tags');
-
-StrictStore.save(tagsKey, ['ts', 'storage', 'util']); // string[] preserved
-```
-
-**Objects:**
-
-```typescript
-type User = {
-  id: number;
-  name: string;
-  settings: {
-    darkMode: boolean;
-  };
-};
-
-const userKey = createKey<User>('app', 'user');
-
-StrictStore.save(userKey, {
-  id: 1,
-  name: 'Alex',
-  settings: { darkMode: true },
-}); // Structure is type-checked
-```
-
-## ⚠️ Key Isolation
-
-Strict Store **only works with keys created via the `createKey` function**.
-Each key is automatically prefixed with a unique namespace, and the library only interacts with keys that have this prefix in `localStorage` or `sessionStorage`.
-
-Keys created outside Strict Store, or without the appropriate prefix, are **not visible** to the library and will not be processed.
-
-This ensures data isolation and prevents accidental conflicts with other libraries or custom code that uses storage directly.
-
-## 🚧 Limitations
-
-- Avoid using colons (':') in namespace or name values — this symbol is reserved as a namespace delimiter.
-- The `undefined` type is not supported — it will be converted to `null` during JSON serialization.
-- Lodash is used under the hood.
-
-## ⚙️ Requirements
-
-- TypeScript >= 4.9.0
 
 ## 📚 Full documentation
 
