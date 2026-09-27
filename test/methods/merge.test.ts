@@ -1,8 +1,9 @@
 import { StrictStore } from 'strict-store';
 import { keys } from '@test/entities/key.entities';
 import { describe, test, expect, beforeEach } from 'vitest';
-import { STRICT_STORE_ERROR_CODE } from '@src/domain/entities/errors/strict-store.error.code';
-import { StrictStoreError } from '@src/domain/entities/errors/strict-store.error';
+import { StrictStoreError } from '@src/core/errors/strict-store.error';
+import { ObjectNotInitError } from '@src/application/errors/object-not-init.error';
+import { MergeTargetNotPlainObjectError } from '@src/application/errors/merge-target-not-plain-object.error';
 
 describe('Merge method', () => {
   beforeEach(() => {
@@ -32,7 +33,7 @@ describe('Merge method', () => {
       StrictStore.merge(keys.objectKey, { name: 'Ivan' });
     } catch (e) {
       expect(e).toBeInstanceOf(StrictStoreError);
-      expect((e as StrictStoreError).code).toBe(STRICT_STORE_ERROR_CODE.MERGE_NOT_INITIALIZED);
+      expect(e).toBeInstanceOf(ObjectNotInitError);
     }
   });
 
@@ -49,9 +50,7 @@ describe('Merge method', () => {
       StrictStore.merge(keys.numberKey, { foo: 'bar' });
     } catch (e) {
       expect(e).toBeInstanceOf(StrictStoreError);
-      expect((e as StrictStoreError).code).toBe(
-        STRICT_STORE_ERROR_CODE.MERGE_TARGET_NOT_PLAIN_OBJECT,
-      );
+      expect(e).toBeInstanceOf(MergeTargetNotPlainObjectError);
     }
   });
 

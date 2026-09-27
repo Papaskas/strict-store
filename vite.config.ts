@@ -6,14 +6,14 @@ import path from 'path';
 const pathAlias: AliasOptions = {
   '@test': path.resolve(__dirname, './test'),
 
-  'strict-store': path.resolve(__dirname, './src/index.module.ts'),
+  'strict-store': path.resolve(__dirname, './src/index.ts'),
   '@src': path.resolve(__dirname, './src'),
 };
 
 export default defineConfig({
   build: {
     lib: {
-      entry: 'src/index.module.ts',
+      entry: 'src/index.ts',
       name: 'strict-store',
       fileName: 'strict-store',
       formats: ['es'],
