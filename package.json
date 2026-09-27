@@ -57,7 +57,7 @@
     "eslint-config-prettier": "^10.1.8",
     "jiti": "^2.6.1",
     "jsdom": "^27.4.0",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typedoc": "^0.28.5",
